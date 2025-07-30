@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+@layer base{
+  :root{
+    --backgroundMain: #F8FAFC;
+    --darkText: #1f2937;
+    --text-medium: #4b5563; /* Gray-600 */
+    --text-light: #9ca3af; /* Gray-400 */
+    --lightText: #FFFFFF;
+    --lines: #e5e7eb;
+    --backgroundLight: #FFFFFF;
+    --primary: #4f46e5;
+    --primaryLight: #6366f1; /* Indigo-500 */
+    --primaryDark: #4338ca;
+    --secondary: #31ae42;
+    --accent: #FF6900;
+    --accentDark: #e76000;
+    --gray: #697282;
+    --backgroundActive: #232323;
+    --disabled: #A4A4A4;
+  }
+}
+
+
+
+

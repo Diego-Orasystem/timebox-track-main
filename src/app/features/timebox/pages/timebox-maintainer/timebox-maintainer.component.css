@@ -1,0 +1,145 @@
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 672px;
+  align-items: end;
+  justify-content: space-between;
+  padding: 20px 20px;
+  background-color: var(--backgroundLight);
+  border: 1px solid var(--lines);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden; 
+}
+
+.table-container {
+  width: 100%; 
+  overflow-x: auto;
+  flex-grow: 1;
+}
+
+.custom-table {
+  width: 100%;
+  min-width: 1044px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-table thead {
+  background-color: var(--backgroundMain);
+  overflow: hidden; 
+}
+
+.custom-table th {
+  padding: 18px 15px; 
+  text-align: left;
+  font-size: 12px; 
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--lines); 
+}
+
+.custom-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.custom-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+.custom-table td {
+  padding: 15px 15px;
+  text-align: left;
+  font-size: 11px;
+  border-bottom: 1px solid var(--lines);
+  font-weight: 400;
+  vertical-align: middle;
+  box-sizing: border-box; 
+}
+
+
+.custom-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cell-content-wrapper {
+  display: flex; 
+  align-items: center; 
+  height: 100%;
+  gap: 10px;
+}
+
+.picture {
+  min-width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(
+    0deg,
+    rgba(169, 207, 224, 0.15) 0%,
+    rgba(169, 207, 224, 0.15) 100%
+  );
+  border: 1px solid rgba(169, 207, 224, 0.3);
+  flex-shrink: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 5px;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 70px;
+  color: white;
+}
+
+/* --- Paginación --- */
+.pagination-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.pagination-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-item:hover {
+  background-color: var(--backgroundMain);
+
+}
+
+.pagination-item.active {
+  background-color: var(--backgroundMain);
+
+  font-weight: 600;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px; /* Ancho del scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color del track */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary); /* Color del "pulgar" del scrollbar */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primaryDark); /* Color al pasar el ratón */
+}

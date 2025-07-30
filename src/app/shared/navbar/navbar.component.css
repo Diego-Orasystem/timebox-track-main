@@ -1,0 +1,10 @@
+.navbar{
+  background-color: var(--background);
+}
+
+.mobile-menu svg {
+  transition: transform 0.2s ease-in-out;
+}
+.mobile-menu.open svg {
+  transform: rotate(90deg);
+}

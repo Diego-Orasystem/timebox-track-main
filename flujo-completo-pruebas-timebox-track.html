@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flujo Completo de Pruebas - Timebox Track</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .test-section {
+            padding: 30px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .test-section:last-child {
+            border-bottom: none;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-title .icon {
+            width: 30px;
+            height: 30px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .test-step {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .test-step h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+
+        .data-box {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .data-box h4 {
+            color: #1976d2;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .data-field {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 3px 0;
+        }
+
+        .data-field .label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .data-field .value {
+            color: #666;
+        }
+
+        .action-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 0.9rem;
+            transition: background 0.3s ease;
+        }
+
+        .action-button:hover {
+            background: #5a67d8;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #856404;
+        }
+
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            color: #155724;
+        }
+
+        .mockup {
+            background: #2d3748;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+        }
+
+        .mockup-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .mockup-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .mockup-dot.red { background: #fc8181; }
+        .mockup-dot.yellow { background: #f6e05e; }
+        .mockup-dot.green { background: #68d391; }
+
+        .checklist {
+            list-style: none;
+            margin: 10px 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .checklist li::before {
+            content: "☐";
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .checklist li.completed::before {
+            content: "☑";
+            color: #28a745;
+        }
+
+        .user-role {
+            background: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #495057;
+            display: inline-block;
+            margin: 3px;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-available { background: #d4edda; color: #155724; }
+        .status-in-progress { background: #fff3cd; color: #856404; }
+        .status-completed { background: #d1ecf1; color: #0c5460; }
+
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #667eea;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -22px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .data-field {
+                flex-direction: column;
+                gap: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Flujo Completo de Pruebas</h1>
+            <p>Timebox Track - Guía paso a paso con datos reales</p>
+        </div>
+
+        <!-- CONFIGURACIÓN INICIAL -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">1</div>
+                    Configuración Inicial del Sistema
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Configurar Timebox Maintainer</h3>
+                    <p>Primero necesitamos crear los tipos de timebox que usaremos en el sistema.</p>
+                    
+                    <div class="data-box">
+                        <h4>📋 Datos para Timebox Maintainer</h4>
+                        <div class="data-field">
+                            <span class="label">Categoría:</span>
+                            <span class="value">Desarrollo Frontend</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Nombre del Tipo:</span>
+                            <span class="value">Dashboard Administrativo</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Definición:</span>
+                            <span class="value">Creación de interfaz administrativa con gráficos y reportes</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Entregables:</span>
+                            <span class="value">Código React, Documentación, Tests</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Evidencias:</span>
+                            <span class="value">Screenshots, Video demo, Reporte de pruebas</span>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⚠️ Acción requerida:</strong> Ve a "Timebox Maintainer" y crea este tipo de timebox
+                    </div>
+
+                    <div class="checklist">
+                        <li>Crear categoría "Desarrollo Frontend"</li>
+                        <li>Crear tipo "Dashboard Administrativo"</li>
+                        <li>Agregar entregables: Código React, Documentación, Tests</li>
+                        <li>Agregar evidencias: Screenshots, Video demo, Reporte de pruebas</li>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">2</div>Crear Proyecto Principal</h3>
+                    <p>Crear el proyecto que contendrá nuestros timeboxes de prueba.</p>
+                    
+                    <div class="data-box">
+                        <h4>📁 Datos del Proyecto</h4>
+                        <div class="data-field">
+                            <span class="label">Nombre:</span>
+                            <span class="value">Sistema de Gestión de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Descripción:</span>
+                            <span class="value">Sistema completo para gestión de inventarios con dashboard administrativo, API REST y aplicación móvil</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">ID Generado:</span>
+                            <span class="value">proj-inv-2024-001</span>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⚠️ Acción requerida:</strong> Ve a la página principal y crea este proyecto
+                    </div>
+
+                    <div class="checklist">
+                        <li>Crear proyecto "Sistema de Gestión de Inventarios"</li>
+                        <li>Verificar que se genere el ID automáticamente</li>
+                        <li>Confirmar que aparece en la lista de proyectos</li>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CREACIÓN DE TIMEBOXES -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">2</div>
+                    Creación de Timeboxes de Prueba
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Timebox 1: Dashboard Administrativo</h3>
+                    
+                    <div class="data-box">
+                        <h4>🎯 Datos del Timebox</h4>
+                        <div class="data-field">
+                            <span class="label">Tipo:</span>
+                            <span class="value">Dashboard Administrativo</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Nombre:</span>
+                            <span class="value">Dashboard de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Código:</span>
+                            <span class="value">TBX-DASH-001</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Descripción:</span>
+                            <span class="value">Interfaz administrativa con gráficos de inventario, reportes de stock y alertas de productos</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Eje Aplicativo:</span>
+                            <span class="value">Gestión de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Aplicativo:</span>
+                            <span class="value">Sistema Web</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Alcance:</span>
+                            <span class="value">Dashboard completo con 5 gráficos principales</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Esfuerzo:</span>
+                            <span class="value">16 horas</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Fecha Inicio:</span>
+                            <span class="value">2024-01-15</span>
+                        </div>
+                    </div>
+
+                    <div class="data-box">
+                        <h4>🛠️ Skills Requeridas</h4>
+                        <div class="data-field">
+                            <span class="label">Conceptuales:</span>
+                            <span class="value">Frontend, UI/UX</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Tecnológicas:</span>
+                            <span class="value">React, TypeScript, Chart.js</span>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⚠️ Acción requerida:</strong> Navega al proyecto y crea este timebox
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">2</div>Timebox 2: API REST</h3>
+                    
+                    <div class="data-box">
+                        <h4>🎯 Datos del Timebox</h4>
+                        <div class="data-field">
+                            <span class="label">Tipo:</span>
+                            <span class="value">API REST (crear nuevo tipo)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Nombre:</span>
+                            <span class="value">API de Productos</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Código:</span>
+                            <span class="value">TBX-API-001</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Descripción:</span>
+                            <span class="value">API REST para gestión de productos con CRUD completo y validaciones</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Eje Aplicativo:</span>
+                            <span class="value">Gestión de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Aplicativo:</span>
+                            <span class="value">Backend API</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Alcance:</span>
+                            <span class="value">5 endpoints principales (GET, POST, PUT, DELETE)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Esfuerzo:</span>
+                            <span class="value">12 horas</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Fecha Inicio:</span>
+                            <span class="value">2024-01-20</span>
+                        </div>
+                    </div>
+
+                    <div class="data-box">
+                        <h4>🛠️ Skills Requeridas</h4>
+                        <div class="data-field">
+                            <span class="label">Conceptuales:</span>
+                            <span class="value">Backend, API Design</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Tecnológicas:</span>
+                            <span class="value">Node.js, Express, MongoDB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">3</div>Timebox 3: Testing E2E</h3>
+                    
+                    <div class="data-box">
+                        <h4>🎯 Datos del Timebox</h4>
+                        <div class="data-field">
+                            <span class="label">Tipo:</span>
+                            <span class="value">Testing E2E (crear nuevo tipo)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Nombre:</span>
+                            <span class="value">Pruebas End-to-End</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Código:</span>
+                            <span class="value">TBX-TEST-001</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Descripción:</span>
+                            <span class="value">Pruebas automatizadas para flujos completos del sistema</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Alcance:</span>
+                            <span class="value">10 escenarios de prueba principales</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Esfuerzo:</span>
+                            <span class="value">8 horas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- USUARIOS Y ROLES -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">3</div>
+                    Configuración de Usuarios y Roles
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Equipo de Desarrollo</h3>
+                    
+                    <div class="data-box">
+                        <h4>👥 Usuarios para Pruebas</h4>
+                        <div class="data-field">
+                            <span class="label">Business Ambassador:</span>
+                            <span class="value">María García (maria.garcia@empresa.com)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Solution Developer:</span>
+                            <span class="value">Juan Pérez (juan.perez@empresa.com)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Solution Tester:</span>
+                            <span class="value">Ana López (ana.lopez@empresa.com)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Business Advisor:</span>
+                            <span class="value">Carlos Ruiz (carlos.ruiz@empresa.com)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Technical Advisor:</span>
+                            <span class="value">Laura Torres (laura.torres@empresa.com)</span>
+                        </div>
+                    </div>
+
+                    <div class="user-role">Business Ambassador</div>
+                    <div class="user-role">Solution Developer</div>
+                    <div class="user-role">Solution Tester</div>
+                    <div class="user-role">Business Advisor</div>
+                    <div class="user-role">Technical Advisor</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLUJO DE POSTULACIÓN -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">4</div>
+                    Flujo de Postulación (Task Inbox)
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Publicar Timeboxes</h3>
+                    <p>Los timeboxes deben estar en estado "Disponible" para que aparezcan en Task Inbox.</p>
+                    
+                    <div class="mockup">
+                        <div class="mockup-header">
+                            <div class="mockup-dot red"></div>
+                            <div class="mockup-dot yellow"></div>
+                            <div class="mockup-dot green"></div>
+                            <span>Task Inbox - Juan Pérez</span>
+                        </div>
+                        <div>🔍 Filtros: [Disponible] [Frontend] [16h]</div>
+                        <div>📋 Dashboard de Inventarios - <span class="status-badge status-available">Disponible</span></div>
+                        <div>📋 API de Productos - <span class="status-badge status-available">Disponible</span></div>
+                        <div>📋 Pruebas E2E - <span class="status-badge status-available">Disponible</span></div>
+                        <div>👤 Roles disponibles: Solution Developer, Solution Tester</div>
+                    </div>
+
+                    <div class="checklist">
+                        <li>Verificar que los timeboxes aparecen en Task Inbox</li>
+                        <li>Probar filtros por skills y esfuerzo</li>
+                        <li>Confirmar que se muestran los roles disponibles</li>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">2</div>Proceso de Postulación</h3>
+                    
+                    <div class="data-box">
+                        <h4>📝 Datos de Postulación</h4>
+                        <div class="data-field">
+                            <span class="label">Usuario:</span>
+                            <span class="value">Juan Pérez (juan.perez@empresa.com)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Timebox:</span>
+                            <span class="value">Dashboard de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Rol Solicitado:</span>
+                            <span class="value">Solution Developer</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Fecha Postulación:</span>
+                            <span class="value">2024-01-15 09:00</span>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⚠️ Acción requerida:</strong> Ve a Task Inbox y postúlate como Solution Developer al Dashboard
+                    </div>
+
+                    <div class="checklist">
+                        <li>Seleccionar "Dashboard de Inventarios"</li>
+                        <li>Elegir rol "Solution Developer"</li>
+                        <li>Confirmar postulación</li>
+                        <li>Verificar que cambia a estado "Solicitado"</li>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">3</div>Asignación de Timebox</h3>
+                    
+                    <div class="data-box">
+                        <h4>✅ Datos de Asignación</h4>
+                        <div class="data-field">
+                            <span class="label">Timebox:</span>
+                            <span class="value">Dashboard de Inventarios</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Asignado a:</span>
+                            <span class="value">Juan Pérez</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Rol:</span>
+                            <span class="value">Solution Developer</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Estado:</span>
+                            <span class="value">En Ejecución</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Fecha Asignación:</span>
+                            <span class="value">2024-01-15 10:30</span>
+                        </div>
+                    </div>
+
+                    <div class="success">
+                        <strong>✅ Resultado esperado:</strong> El timebox debe cambiar a estado "En Ejecución" y aparecer en la lista de timeboxes asignados
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FLUJO DE FASES -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">5</div>
+                    Flujo Completo de Fases del Timebox
+                </div>
+                
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <h3>🎯 Fase 1: Planning (Completada)</h3>
+                        <div class="data-box">
+                            <h4>✅ Planning Completado</h4>
+                            <div class="data-field">
+                                <span class="label">Fecha:</span>
+                                <span class="value">2024-01-15</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Team Leader:</span>
+                                <span class="value">Laura Torres</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Skills Definidas:</span>
+                                <span class="value">React, TypeScript, Chart.js</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3>🚀 Fase 2: KickOff (En Progreso)</h3>
+                        <div class="data-box">
+                            <h4>👥 Team Movilization</h4>
+                            <div class="data-field">
+                                <span class="label">Business Ambassador:</span>
+                                <span class="value">María García</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Solution Developer:</span>
+                                <span class="value">Juan Pérez</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Solution Tester:</span>
+                                <span class="value">Ana López</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Business Advisor:</span>
+                                <span class="value">Carlos Ruiz</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Technical Advisor:</span>
+                                <span class="value">Laura Torres</span>
+                            </div>
+                        </div>
+
+                        <div class="warning">
+                            <strong>⚠️ Acción requerida:</strong> Completar KickOff con la asignación del equipo
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3>🔧 Fase 3: Refinement (Pendiente)</h3>
+                        <div class="data-box">
+                            <h4>📋 Solicitud de Revisión</h4>
+                            <div class="data-field">
+                                <span class="label">Tipo:</span>
+                                <span class="value">Revisión de Diseño</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Horarios Disponibles:</span>
+                                <span class="value">Lunes 14:00-16:00, Miércoles 10:00-12:00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3>🧪 Fase 4: QA (Pendiente)</h3>
+                        <div class="data-box">
+                            <h4>📊 Datos de Testing</h4>
+                            <div class="data-field">
+                                <span class="label">Entorno:</span>
+                                <span class="value">Staging</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Versión:</span>
+                                <span class="value">1.0.0-rc1</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Responsable QA:</span>
+                                <span class="value">Ana López</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="timeline-item">
+                        <h3>✅ Fase 5: Close (Pendiente)</h3>
+                        <div class="data-box">
+                            <h4>📦 Entrega Final</h4>
+                            <div class="data-field">
+                                <span class="label">Entregables:</span>
+                                <span class="value">Código React, Documentación, Tests</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Evidencias:</span>
+                                <span class="value">Screenshots, Video demo, Reporte</span>
+                            </div>
+                            <div class="data-field">
+                                <span class="label">Aprobador:</span>
+                                <span class="value">María García</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ARCHIVOS Y ENTREGABLES -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">6</div>
+                    Gestión de Archivos y Entregables
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Archivos de Entregables</h3>
+                    
+                    <div class="data-box">
+                        <h4>📁 Archivos a Subir</h4>
+                        <div class="data-field">
+                            <span class="label">Código Fuente:</span>
+                            <span class="value">dashboard-react.zip (Tipo: Código React)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Documentación:</span>
+                            <span class="value">documentacion-dashboard.pdf (Tipo: Documentación)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Tests:</span>
+                            <span class="value">tests-unitarios.js (Tipo: Tests)</span>
+                        </div>
+                    </div>
+
+                    <div class="warning">
+                        <strong>⚠️ Acción requerida:</strong> Subir estos archivos como entregables del timebox
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">2</div>Archivos de Evidencias</h3>
+                    
+                    <div class="data-box">
+                        <h4>📸 Evidencias a Subir</h4>
+                        <div class="data-field">
+                            <span class="label">Screenshots:</span>
+                            <span class="value">dashboard-screenshots.png (Tipo: Screenshots)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Video Demo:</span>
+                            <span class="value">demo-dashboard.mp4 (Tipo: Video demo)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Reporte:</span>
+                            <span class="value">reporte-pruebas.pdf (Tipo: Reporte de pruebas)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHECKLIST FINAL -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">7</div>
+                    Checklist Final de Pruebas
+                </div>
+                
+                <div class="test-step">
+                    <h3><div class="step-number">1</div>Funcionalidades Principales</h3>
+                    
+                    <div class="checklist">
+                        <li class="completed">✅ Configurar Timebox Maintainer</li>
+                        <li class="completed">✅ Crear proyecto "Sistema de Gestión de Inventarios"</li>
+                        <li class="completed">✅ Crear 3 timeboxes de prueba</li>
+                        <li class="completed">✅ Publicar timeboxes como disponibles</li>
+                        <li class="completed">✅ Postularse como Solution Developer</li>
+                        <li class="completed">✅ Asignar timebox a Juan Pérez</li>
+                        <li class="completed">✅ Completar fase Planning</li>
+                        <li>☐ Completar fase KickOff</li>
+                        <li>☐ Solicitar revisión en Refinement</li>
+                        <li>☐ Completar testing en QA</li>
+                        <li>☐ Subir entregables y evidencias</li>
+                        <li>☐ Finalizar timebox en Close</li>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">2</div>Validaciones Específicas</h3>
+                    
+                    <div class="checklist">
+                        <li>☐ Verificar que los filtros en Task Inbox funcionan correctamente</li>
+                        <li>☐ Probar la navegación con breadcrumbs</li>
+                        <li>☐ Validar que los archivos se suben correctamente</li>
+                        <li>☐ Confirmar que los estados cambian apropiadamente</li>
+                        <li>☐ Probar la funcionalidad de horarios de disponibilidad</li>
+                        <li>☐ Verificar que los roles se asignan correctamente</li>
+                        <li>☐ Probar la funcionalidad de búsqueda</li>
+                        <li>☐ Validar que las notificaciones funcionan</li>
+                    </div>
+                </div>
+
+                <div class="test-step">
+                    <h3><div class="step-number">3</div>Datos de Prueba Creados</h3>
+                    
+                    <div class="data-box">
+                        <h4>📊 Resumen de Datos</h4>
+                        <div class="data-field">
+                            <span class="label">Proyecto:</span>
+                            <span class="value">Sistema de Gestión de Inventarios (proj-inv-2024-001)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Timeboxes Creados:</span>
+                            <span class="value">3 (Dashboard, API, Testing)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Tipos de Timebox:</span>
+                            <span class="value">3 (Dashboard, API REST, Testing E2E)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Usuarios Configurados:</span>
+                            <span class="value">5 (María, Juan, Ana, Carlos, Laura)</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">Roles Asignados:</span>
+                            <span class="value">5 roles diferentes</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- INSTRUCCIONES FINALES -->
+        <div class="test-container">
+            <div class="test-section">
+                <div class="section-title">
+                    <div class="icon">8</div>
+                    Instrucciones Finales
+                </div>
+                
+                <div class="test-step">
+                    <h3>🎯 Orden de Ejecución Recomendado</h3>
+                    
+                    <div class="data-box">
+                        <h4>📋 Secuencia de Pruebas</h4>
+                        <div class="data-field">
+                            <span class="label">1. Configuración:</span>
+                            <span class="value">Timebox Maintainer → Crear tipos y categorías</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">2. Proyectos:</span>
+                            <span class="value">Crear proyecto "Sistema de Gestión de Inventarios"</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">3. Timeboxes:</span>
+                            <span class="value">Crear 3 timeboxes con los datos proporcionados</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">4. Publicación:</span>
+                            <span class="value">Publicar timeboxes como disponibles</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">5. Postulación:</span>
+                            <span class="value">Usar Task Inbox para postularse</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">6. Ejecución:</span>
+                            <span class="value">Completar todas las fases del timebox</span>
+                        </div>
+                        <div class="data-field">
+                            <span class="label">7. Entrega:</span>
+                            <span class="value">Subir archivos y finalizar timebox</span>
+                        </div>
+                    </div>
+
+                    <div class="success">
+                        <strong>✅ Objetivo:</strong> Probar el flujo completo desde la creación hasta la entrega de un timebox, validando todas las funcionalidades principales de la aplicación.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,47 @@
+<div *ngIf="show" class="fixed inset-0 flex items-center justify-center z-50">
+  <!-- Overlay -->
+  <div
+    class="absolute inset-0 bg-black opacity-30 backdrop-blur-lg"
+    (click)="handleClose()"
+  ></div>
+
+  <!-- Contenido del modal -->
+  <div
+    class="relative bg-white rounded-md shadow-lg w-full max-w-5xl h-[97vh] z-10"
+  >
+    <button
+      class="absolute top-2 right-6 text-gray-400 hover:text-gray-600 text-lg cursor-pointer"
+      (click)="handleClose()"
+    >
+      ✕
+    </button>
+
+    <div class="content-modal inline-flex w-full h-full">
+      <!-- Stepper fijo -->
+      <div class="stepper w-[250px] overflow-hidden border-r border-gray-200">
+        <app-stepper
+          [activeStep]="activeStep"
+          [steps]="steps"
+          (stepChange)="handleStepChange($event)"
+          [puedeAvanzarA]="puedeAvanzarA"
+        ></app-stepper>
+      </div>
+
+      <!-- Formulario con scroll -->
+      <div
+        class="forms w-full bg-[var(--backgroundMain)] overflow-y-auto py-2 rounded-tr-md rounded-br-md"
+      >
+        <app-forms
+          [mode]="mode"
+          [role]="'admin'"
+          [steps]="steps"
+          [timeboxData]="timeboxData"
+          [currentStepIndex]="activeStep"
+          (stepChange)="handleStepChange($event)"
+          (formSubmit)="onFormSubmit($event)"
+          (stepCompleted)="handleStepCompleted($event)"
+        ></app-forms>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,545 @@
+<div
+  [formGroup]="form"
+  class="form-container w-full inline-flex items-start space-x-6"
+>
+  <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
+    <button
+      (click)="agregarRevision()"
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        width="16px"
+        height="16px"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <path
+            d="M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H12M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19M19 9V11M9 17H11M9 13H13M9 9H10M19.2686 19.2686L21 21M20 17.5C20 18.8807 18.8807 20 17.5 20C16.1193 20 15 18.8807 15 17.5C15 16.1193 16.1193 15 17.5 15C18.8807 15 20 16.1193 20 17.5Z"
+            stroke="#0B0B0B"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
+        </g>
+      </svg>
+      Nueva revisión
+    </button>
+  </div>
+  <div class="flex flex-col w-full gap-6">
+    <div>
+      <h2 class="text-xl font-bold">Fase de Refinement</h2>
+      <div *ngIf="form.get('completada')?.value">
+        <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
+        <span class="text-[12px] text-[var(--secondary)] font-semibold">
+          {{ form.get("fechaFase")?.value }}
+        </span>
+      </div>
+    </div>
+
+    <section class="revisiones">
+      <div class="w-full inline-flex items-center gap-2 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <path
+              d="M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H12M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19M19 9V11M9 17H11M9 13H13M9 9H10M19.2686 19.2686L21 21M20 17.5C20 18.8807 18.8807 20 17.5 20C16.1193 20 15 18.8807 15 17.5C15 16.1193 16.1193 15 17.5 15C18.8807 15 20 16.1193 20 17.5Z"
+              stroke="#4f46e5"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </g>
+        </svg>
+        <label for="" class="font-semibold">Revisiones</label>
+      </div>
+      <form
+        [formGroup]="form"
+        *ngIf="revisiones.length > 0"
+        class="revision-form"
+      >
+        <div formArrayName="revisiones">
+          <div
+            *ngFor="let revision of revisiones.controls; let i = index"
+            [formGroupName]="i"
+            class="mb-4 border border-[var(--lines)] rounded-sm bg-[var(--backgroundLight)] overflow-hidden"
+          >
+            <div
+              class="flex justify-between items-center p-4 cursor-pointer bg-[var(--backgroundLight)] hover:bg-slate-200 transition-colors duration-200"
+              (click)="toggleRevision(i)"
+            >
+              <h1 class="font-semibold text-sm text-[var(--darkText)]">
+                Revisión {{ i + 1 }}
+              </h1>
+              <div class="flex items-center gap-2">
+                <button
+                  (click)="eliminarRevision(i); $event.stopPropagation()"
+                  class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500 transition-colors duration-200"
+                  title="Eliminar revisión"
+                >
+                  ✕
+                </button>
+                <svg
+                  [class.rotate-90]="isRevisionOpen(i)"
+                  class="w-4 h-4 text-[var(--darkText)] transition-transform duration-300"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5l7 7-7 7"
+                  ></path>
+                </svg>
+              </div>
+            </div>
+
+            <div
+              *ngIf="isRevisionOpen(i)"
+              class="p-4 pt-0 transition-all duration-300 ease-in-out"
+            >
+              <div class="inline-flex items-center space-x-1">
+                <span class="text-xs text-gray-500 font-medium"
+                  >Fecha de solicitud:
+                </span>
+                <span class="text-[12px] text-[var(--secondary)] font-semibold">
+                  {{ revision.get("fechaSolicitud")?.value }}
+                </span>
+              </div>
+
+              <div class="inline-flex justify-between items-start w-full my-4">
+                <div class="flex flex-col w-full">
+                  <h1 class="font-semibold text-sm mb-3 text-[var(--darkText)]">
+                    Participantes
+                  </h1>
+                  <div
+                    formArrayName="participantes"
+                    class="flex flex-col items-start text-sm"
+                  >
+                    <div
+                      *ngFor="
+                        let p of getParticipantesFormArray(i).controls;
+                        let j = index
+                      "
+                      [formGroupName]="j"
+                      class="inline-flex items-center w-60 justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] cursor-pointer mb-2"
+                    >
+                      <span class="text-xs">{{ p.get("persona")?.value }}</span>
+                      <button
+                        *ngIf="getParticipantesFormArray(i).length > 0"
+                        (click)="eliminarParticipante(i, j)"
+                        class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="getParticipantesFormArray(i).length == 0"
+                    class="text-[12px] text-gray-500"
+                  >
+                    No hay participantes añadidos.
+                  </div>
+                  <button
+                    (click)="openModalParticipantes(i)"
+                    class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-center px-5 py-2 bg-[var(--primary)] text-[var(--lightText)] rounded-sm hover:bg-[var(--primaryDark)] transition-colors duration-200"
+                  >
+                    Añadir Participante
+                  </button>
+                </div>
+              </div>
+
+              <div class="inline-flex justify-between items-start w-full my-4">
+                <div class="flex flex-col w-full">
+                  <h1 class="font-semibold text-sm mb-3 text-[var(--darkText)]">
+                    Lista de acuerdos
+                  </h1>
+                  <div
+                    *ngIf="getListaAcuerdosFormArray(i).length > 0"
+                    formArrayName="listaAcuerdos"
+                    class="flex flex-col items-start text-sm gap-3 bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)]"
+                  >
+                    <div
+                      *ngFor="
+                        let item of getListaAcuerdosFormArray(i).controls;
+                        let j = index
+                      "
+                      [formGroupName]="j"
+                      class="inline-flex items-center w-full justify-between"
+                    >
+                      <label class="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          formControlName="checked"
+                          class="accent-[var(--primary)]"
+                        />
+                        <span class="text-xs">{{
+                          item.get("label")?.value
+                        }}</span>
+                      </label>
+                      <button
+                        (click)="eliminarChecklist(i, j)"
+                        class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="getListaAcuerdosFormArray(i).length == 0"
+                    class="text-[12px]"
+                  >
+                    No hay items añadidos.
+                  </div>
+                  <button
+                    (click)="openModalChecklist(i)"
+                    class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-center px-5 py-2 bg-[var(--primary)] text-[var(--lightText)] rounded-sm hover:bg-[var(--primaryDark)] transition-colors duration-200 mt-2"
+                  >
+                    Añadir Acuerdo
+                  </button>
+                </div>
+              </div>
+
+              <div class="inline-flex justify-between items-start w-full mt-4">
+                <div class="flex flex-col w-full">
+                  <h1 class="font-semibold text-sm mb-3 text-[var(--darkText)]">
+                    Adjuntos
+                  </h1>
+                  <div
+                    formArrayName="adjuntos"
+                    class="flex flex-col items-start text-sm"
+                  >
+                    <div
+                      *ngFor="
+                        let adjunto of getAdjuntosFormArray(i).controls;
+                        let j = index
+                      "
+                      [formGroupName]="j"
+                      class="inline-flex items-center w-60 justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] cursor-pointer mb-2"
+                    >
+                      <span class="text-xs" (click)="downloadFile(adjunto)">{{
+                        adjunto.get("nombre")?.value || "Archivo sin nombre"
+                      }}</span>
+                      <button
+                        (click)="eliminarAdjunto(i, j)"
+                        class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                  <div
+                    *ngIf="getAdjuntosFormArray(i).length == 0"
+                    class="text-[12px] text-gray-500"
+                  >
+                    No hay adjuntos añadidos.
+                  </div>
+                  <button
+                    (click)="openModalAdjuntos(i)"
+                    class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-center px-5 py-2 bg-[var(--primary)] text-[var(--lightText)] rounded-sm hover:bg-[var(--primaryDark)] transition-colors duration-200"
+                  >
+                    Añadir Adjunto
+                  </button>
+                </div>
+              </div>
+
+              <div class="flex items-center place-content-end gap-2 mb-3 mt-4">
+                <input
+                  type="checkbox"
+                  id="revisionCompleted-{{ i }}"
+                  formControlName="completada"
+                  class="form-checkbox h-4 w-4 text-[var(--primaryDark)] rounded focus:ring-[var(--primaryDark)]"
+                />
+                <label
+                  for="revisionCompleted-{{ i }}"
+                  class="text-sm text-[var(--darkText)]"
+                  >Revisión Completada</label
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+      <div *ngIf="revisiones.length === 0" class="text-[12px] text-gray-500">
+        No hay revisiones solicitadas. Haz clic en "Nueva revisión" para añadir
+        una.
+      </div>
+    </section>
+
+    <section class="entrega mb-4">
+      <div class="flex items-center gap-3 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="#4f46e5"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title>Entrega</title>
+            <path
+              d="M18,22H6a2,2,0,0,1-2-2V4A2,2,0,0,1,6,2h7.1a2,2,0,0,1,1.5.6l4.9,5.2A2,2,0,0,1,20,9.2V20A2,2,0,0,1,18,22Z"
+              fill="none"
+              id="File"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+            <line
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="11"
+            ></line>
+            <line
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              x1="9"
+              x2="15"
+              y1="14"
+              y2="14"
+            ></line>
+          </g>
+        </svg>
+        <label for="" class="font-semibold">Entrega</label>
+      </div>
+      <div
+        class="entrega-section p-4 bg-[var(--backgroundLight)] rounded-md border border-[var(--lines)]"
+      >
+        <div *ngIf="timeboxData?.entrega?.responsable; else noEntrega">
+          <div
+            class="detail-item inline-flex items-center gap-2 justify-start mb-3"
+          >
+            <span class="text-xs font-medium text-[var(--disabled)] uppercase">
+              ID
+            </span>
+            <span class="text-sm font-semibold text-[var(--darkText)]">
+              {{ timeboxData.entrega?.id }}
+            </span>
+          </div>
+          <div
+            class="Entrega-details-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"
+          >
+            <div class="detail-item">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Fecha de Entrega
+              </p>
+              <p class="text-sm font-semibold text-[var(--darkText)]">
+                {{ timeboxData.entrega?.fechaEntrega }}
+              </p>
+            </div>
+
+            <div class="detail-item">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Entregado por
+              </p>
+              <p class="text-sm text-[var(--darkText)]">
+                {{ timeboxData.entrega?.responsable }}
+              </p>
+            </div>
+
+            <div
+              *ngIf="timeboxData.entrega?.participantes"
+              class="detail-item col-span-full"
+            >
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
+              >
+                Participantes
+              </p>
+              <ul
+                class="list-disc list-inside text-sm text-[var(--darkText)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1"
+              >
+                <li
+                  *ngFor="
+                    let participante of timeboxData.entrega?.participantes
+                  "
+                  class="flex items-center gap-1"
+                >
+                  <span class="font-medium">{{ participante.nombre }}</span>
+                  <span
+                    *ngIf="participante.rol"
+                    class="text-xs text-[var(--disabled)]"
+                    >({{ participante.rol }})</span
+                  >
+                </li>
+              </ul>
+            </div>
+
+            <div
+              *ngIf="timeboxData.entrega?.adjuntosEntregables"
+              class="file-list detail-item"
+            >
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
+              >
+                Entregables
+              </p>
+              <ul class="space-y-1">
+                <li
+                  *ngFor="
+                    let entregable of timeboxData.entrega?.adjuntosEntregables
+                  "
+                  class="flex items-center gap-2 text-sm text-[var(--darkText)]"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-[var(--primary)]"
+                  >
+                    <path
+                      d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <a
+                    (click)="downloadFileDirect(entregable)"
+                    target="_blank"
+                    class="hover:underline text-[var(--darkText)] cursor-pointer"
+                  >
+                    {{ entregable.nombre }}
+                    <span
+                      *ngIf="entregable.type"
+                      class="text-xs text-[var(--disabled)]"
+                      >({{ entregable.type }})</span
+                    >
+                  </a>
+                </li>
+              </ul>
+            </div>
+
+            <div
+              *ngIf="timeboxData.entrega?.adjuntosEvidencias"
+              class="file-list detail-item"
+            >
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
+              >
+                Evidencias
+              </p>
+              <ul class="space-y-1">
+                <li
+                  *ngFor="
+                    let evidencia of timeboxData.entrega?.adjuntosEvidencias
+                  "
+                  class="flex items-center gap-2 text-sm text-[var(--darkText)]"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="text-[var(--primary)]"
+                  >
+                    <path
+                      d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                    />
+                    <polyline points="14 2 14 8 20 8" />
+                  </svg>
+                  <a
+                    (click)="downloadFileDirect(evidencia)"
+                    target="_blank"
+                    class="hover:underline text-[var(--darkText)] cursor-pointer"
+                  >
+                    {{ evidencia.nombre }}
+                    <span
+                      *ngIf="evidencia.type"
+                      class="text-xs text-[var(--disabled)]"
+                      >({{ evidencia.type }})</span
+                    >
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noEntrega>
+          <div
+            class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
+          >
+            <p>No hay información de entrega disponible para mostrar.</p>
+            <p class="mt-2 text-xs">
+              Para ver los detalles de la entrega la fase debe ser completada
+              por el responsable.
+            </p>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+  </div>
+</div>
+
+<ng-container *ngFor="let revision of revisiones.controls; let i = index">
+  <app-persona-selector
+    *ngIf="showModalParticipantes[i]"
+    [show]="showModalParticipantes[i]"
+    [tipo]="'participantes'"
+    (close)="closeModalParticipantes(i)"
+    (personaSeleccionadaChange)="handlePersonaSeleccionada($event, i)"
+  ></app-persona-selector>
+
+  <app-adjuntos-form
+    *ngIf="showModalAdjuntos[i]"
+    [show]="showModalAdjuntos[i]"
+    (close)="closeModalAdjuntos(i)"
+    (filesSelected)="recibirArchivo($event, i)"
+  ></app-adjuntos-form>
+
+  <app-checklist-form
+    *ngIf="showModalChecklist[i]"
+    [show]="showModalChecklist[i]"
+    (close)="closeModalChecklist(i)"
+    (item)="addItemChecklist($event, i)"
+  ></app-checklist-form>
+</ng-container>

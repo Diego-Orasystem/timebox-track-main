@@ -1,0 +1,366 @@
+<div class="form-container w-full inline-flex items-start space-x-6">
+  <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
+    <button
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        fill="#000000"
+        height="16px"
+        width="16px"
+        version="1.1"
+        id="XMLID_207_"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        viewBox="0 0 24 24"
+        xml:space="preserve"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <g id="test">
+            <g>
+              <path
+                d="M23,24H1v-4.3l7-12V2H6V0h12v2h-2v5.7l7,12V24z M12,22h9v-1.7l-3.4-5.9l0,0c-2.6-1.5-3.9-0.8-5.4-0.1S9,15.7,6.5,14.5 l-3.4,5.9V22H12z M7.4,12.7C9,13.4,10,13,11.3,12.4c1.2-0.5,2.7-1.2,4.7-0.7l-2-3.4V2h-4v6.3L7.4,12.7z"
+              ></path>
+            </g>
+            <g><circle cx="14.5" cy="17.5" r="1.5"></circle></g>
+            <g><circle cx="9.5" cy="18.5" r="1.5"></circle></g>
+          </g>
+        </g>
+      </svg>
+      Solicitar QA
+    </button>
+  </div>
+  <section class="form flex flex-col w-full gap-6">
+    <div>
+      <h2 class="text-xl font-bold">Fase de Despliegue y Testing</h2>
+      <div *ngIf="form.get('completada')?.value">
+        <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
+        <span class="text-[12px] text-[var(--secondary)] font-semibold">
+          {{ form.get("fechaFase")?.value }}
+        </span>
+      </div>
+    </div>
+    <form
+      [formGroup]="form"
+      class="qa-section p-4 bg-[var(--backgroundLight)] rounded-md border border-[var(--lines)] mb-6"
+    >
+      <div class="header-container flex items-center gap-3 mb-5">
+        <!-- Icono para QA/Testing -->
+        <svg
+          class="w-6 h-6 text-[var(--primary)]"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <path
+              d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M9 12L11 14L15 10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </g>
+        </svg>
+        <h3 class="font-semibold text-[var(--darkText)]">
+          Detalles de QA y Pruebas
+        </h3>
+      </div>
+
+      <!-- Ahora *ngIf="form" asegura que el FormGroup exista antes de intentar acceder a sus controles -->
+      <div
+        *ngIf="form; else noQAInfo"
+        class="qa-details-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"
+      >
+        <!-- Sección 1: Estado General de QA -->
+        <div class="detail-group col-span-full mb-4">
+          <h4
+            class="text-sm font-semibold text-[var(--darkText)] mb-3 border-b border-[var(--lines)] pb-1"
+          >
+            Estado General
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Estado de la Calidad
+              </p>
+              <span class="text-sm text-[var(--darkText)] font-semibold">{{
+                form.get("estadoCalidad")?.value || "N/A"
+              }}</span>
+            </div>
+            <div *ngIf="form.get('progresoQA')?.value">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Progreso QA
+              </p>
+              <span class="text-sm text-[var(--darkText)]"
+                >{{ form.get("progresoQA")?.value }}% completado</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 2: Despliegue para Pruebas -->
+        <div class="detail-group col-span-full mb-4">
+          <h4
+            class="text-sm font-semibold text-[var(--darkText)] mb-3 border-b border-[var(--lines)] pb-1"
+          >
+            Despliegue para Pruebas
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Entorno de Pruebas
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("entornoPruebas")?.value || "No definido"
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Versión Desplegada
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("versionDespliegue")?.value || "N/A"
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Fecha de Despliegue
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("fechaDespliegue")?.value
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Responsable Despliegue
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("responsableDespliegue")?.value || "No asignado"
+              }}</span>
+            </div>
+            <div
+              *ngIf="form.get('observacionesDespliegue')?.value"
+              class="col-span-full"
+            >
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Observaciones del Despliegue
+              </p>
+              <p class="text-sm text-[var(--darkText)] italic leading-relaxed">
+                {{ form.get("observacionesDespliegue")?.value }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 3: Resultados de Testing -->
+        <div class="detail-group col-span-full mb-4">
+          <h4
+            class="text-sm font-semibold text-[var(--darkText)] mb-3 border-b border-[var(--lines)] pb-1"
+          >
+            Resultados de Testing
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Plan de Pruebas
+              </p>
+              <a
+                [href]="form.get('urlPlanPruebas')?.value || '#'"
+                target="_blank"
+                class="text-sm text-[var(--primary)] hover:underline"
+                >{{ form.get("nombrePlanPruebas")?.value || "No definido" }}</a
+              >
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Resultados Generales
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("resultadosPruebas")?.value || "No reportados"
+              }}</span>
+            </div>
+            <div *ngIf="form.get('bugsIdentificados')?.value">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Bugs Identificados
+              </p>
+              <a
+                [href]="form.get('urlBugs')?.value || '#'"
+                target="_blank"
+                class="text-sm text-[var(--primary)] hover:underline"
+                >{{ form.get("bugsIdentificados")?.value }}</a
+              >
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Responsable QA
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("responsableQA")?.value || "No asignado"
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 4: Pruebas de Aceptación de Usuario (UAT) -->
+        <div class="detail-group col-span-full mb-4">
+          <h4
+            class="text-sm font-semibold text-[var(--darkText)] mb-3 border-b border-[var(--lines)] pb-1"
+          >
+            Pruebas de Aceptación de Usuario (UAT)
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-8">
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Estado UAT
+              </p>
+              <span class="text-sm text-[var(--darkText)] font-semibold">{{
+                form.get("estadoUAT")?.value || "Pendiente"
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Fecha de Inicio UAT
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("fechaInicioUAT")?.value
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Fecha de Fin UAT
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("fechaFinUAT")?.value
+              }}</span>
+            </div>
+            <div>
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Responsable UAT
+              </p>
+              <span class="text-sm text-[var(--darkText)]">{{
+                form.get("responsableUAT")?.value || "No asignado"
+              }}</span>
+            </div>
+            <div *ngIf="form.get('feedbackUAT')?.value" class="col-span-full">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Feedback UAT
+              </p>
+              <p class="text-sm text-[var(--darkText)] italic leading-relaxed">
+                {{ form.get("feedbackUAT")?.value }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección 5: Entregables de QA -->
+        <div
+          *ngIf="form.get('adjuntosQA')?.value && adjuntosformArray.length > 0"
+          class="file-list detail-group col-span-full"
+        >
+          <h4
+            class="text-sm font-semibold text-[var(--darkText)] mb-3 border-b border-[var(--lines)] pb-1"
+          >
+            Entregables de QA
+          </h4>
+          <ul class="space-y-1">
+            <li
+              *ngFor="let adjuntoControl of adjuntosformArray.controls"
+              class="flex items-center gap-2 text-sm text-[var(--darkText)]"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="text-[var(--primary)]"
+              >
+                <path
+                  d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"
+                />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <a
+                (click)="downloadFileDirect(adjuntoControl.value)"
+                class="hover:underline text-[var(--darkText)] cursor-pointer"
+              >
+                {{ adjuntoControl.get("nombre")?.value }}
+                <span
+                  *ngIf="adjuntoControl.get('type')?.value"
+                  class="text-xs text-[var(--disabled)]"
+                  >({{ adjuntoControl.get("type")?.value }})</span
+                >
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <ng-template #noQAInfo>
+        <div
+          class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
+        >
+          <p>No hay información de Control de Calidad (QA) disponible.</p>
+          <p class="mt-2 text-xs">
+            Completa los detalles de QA y testing para verlos aquí.
+          </p>
+        </div>
+      </ng-template>
+    </form>
+  </section>
+</div>

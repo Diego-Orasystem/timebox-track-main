@@ -1,0 +1,525 @@
+<div class="form-container w-full inline-flex items-start space-x-6">
+  <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
+    <button
+      (click)="openModalChecklist()"
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        width="16px"
+        height="16px"
+        viewBox="0 0 24 24"
+        version="1.1"
+        xmlns="http://www.w3.org/2000/svg"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        fill="#000000"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <title>list_check_2_line</title>
+          <g
+            id="页面-1"
+            stroke="none"
+            stroke-width="1"
+            fill="none"
+            fill-rule="evenodd"
+          >
+            <g
+              id="Editor"
+              transform="translate(0.000000, -192.000000)"
+              fill-rule="nonzero"
+            >
+              <g
+                id="list_check_2_line"
+                transform="translate(0.000000, 192.000000)"
+              >
+                <path
+                  d="M24,0 L24,24 L0,24 L0,0 L24,0 Z M12.5934901,23.257841 L12.5819402,23.2595131 L12.5108777,23.2950439 L12.4918791,23.2987469 L12.4918791,23.2987469 L12.4767152,23.2950439 L12.4056548,23.2595131 C12.3958229,23.2563662 12.3870493,23.2590235 12.3821421,23.2649074 L12.3780323,23.275831 L12.360941,23.7031097 L12.3658947,23.7234994 L12.3769048,23.7357139 L12.4804777,23.8096931 L12.4953491,23.8136134 L12.4953491,23.8136134 L12.5071152,23.8096931 L12.6106902,23.7357139 L12.6232938,23.7196733 L12.6232938,23.7196733 L12.6266527,23.7031097 L12.609561,23.275831 C12.6075724,23.2657013 12.6010112,23.2592993 12.5934901,23.257841 L12.5934901,23.257841 Z M12.8583906,23.1452862 L12.8445485,23.1473072 L12.6598443,23.2396597 L12.6498822,23.2499052 L12.6498822,23.2499052 L12.6471943,23.2611114 L12.6650943,23.6906389 L12.6699349,23.7034178 L12.6699349,23.7034178 L12.678386,23.7104931 L12.8793402,23.8032389 C12.8914285,23.8068999 12.9022333,23.8029875 12.9078286,23.7952264 L12.9118235,23.7811639 L12.8776777,23.1665331 C12.8752882,23.1545897 12.8674102,23.1470016 12.8583906,23.1452862 L12.8583906,23.1452862 Z M12.1430473,23.1473072 C12.1332178,23.1423925 12.1221763,23.1452606 12.1156365,23.1525954 L12.1099173,23.1665331 L12.0757714,23.7811639 C12.0751323,23.7926639 12.0828099,23.8018602 12.0926481,23.8045676 L12.108256,23.8032389 L12.3092106,23.7104931 L12.3186497,23.7024347 L12.3186497,23.7024347 L12.3225043,23.6906389 L12.340401,23.2611114 L12.337245,23.2485176 L12.337245,23.2485176 L12.3277531,23.2396597 L12.1430473,23.1473072 Z"
+                  id="MingCute"
+                  fill-rule="nonzero"
+                ></path>
+                <path
+                  d="M7.23767,17.0125 C7.62819,16.622 8.26136,16.622 8.65188,17.0125 C9.01236,17.3729615 9.04008923,17.9402207 8.73506769,18.3324973 L8.65188,18.4267 L6.35378,20.7248 C5.89817333,21.1804533 5.17834996,21.2108302 4.68751439,20.8159307 L4.58602,20.7248 L3.34856,19.4874 C2.95803,19.0968 2.95803,18.4637 3.34856,18.0731 C3.70904,17.7126385 4.27627503,17.6849107 4.6685635,17.9899166 L4.76277,18.0731 L5.4699,18.7803 L7.23767,17.0125 Z M20.0002,17.9999 C20.5525,17.9999 21.0002,18.4477 21.0002,18.9999 C21.0002,19.5522 20.5525,19.9999 20.0002,19.9999 L11.0002,19.9999 C10.4479,19.9999 10.0002,19.5522 10.0002,18.9999 C10.0002,18.4477 10.4479,17.9999 11.0002,17.9999 L20.0002,17.9999 Z M8.65188,10.0125 C9.0424,10.403 9.0424,11.0362 8.65188,11.4267 L6.35378,13.7248 C5.86563,14.213 5.07417,14.213 4.58602,13.7248 L3.34856,12.4873 C2.95803,12.0968 2.95803,11.4637 3.34856,11.0731 C3.73908,10.6826 4.37225,10.6826 4.76277,11.0731 L5.4699,11.7803 L7.23767,10.0125 C7.62819,9.62197 8.26136,9.62197 8.65188,10.0125 Z M20.0002,10.9999 C20.5525,10.9999 21.0002,11.4477 21.0002,11.9999 C21.0002,12.51275 20.614173,12.9354092 20.1168239,12.9931725 L20.0002,12.9999 L11.0002,12.9999 C10.4479,12.9999 10.0002,12.5522 10.0002,11.9999 C10.0002,11.4871429 10.386227,11.0644041 10.8835761,11.0066289 L11.0002,10.9999 L20.0002,10.9999 Z M7.23767,3.0125 C7.62819,2.62197 8.26136,2.62197 8.65188,3.0125 C9.01236,3.37298 9.04008923,3.94021503 8.73506769,4.3325035 L8.65188,4.42671 L6.35378,6.72481 C5.89817333,7.18041667 5.17834996,7.21079044 4.68751439,6.81593133 L4.58602,6.72481 L3.34856,5.48735 C2.95803,5.09683 2.95803,4.46366 3.34856,4.07314 C3.70904,3.71265077 4.27627503,3.68492083 4.6685635,3.98995018 L4.76277,4.07314 L5.4699,4.78026 L7.23767,3.0125 Z M20.0002,3.99995 C20.5525,3.99995 21.0002,4.44766 21.0002,4.99995 C21.0002,5.51278143 20.614173,5.93545653 20.1168239,5.9932222 L20.0002,5.99995 L11.0002,5.99995 C10.4479,5.99995 10.0002,5.55223 10.0002,4.99995 C10.0002,4.48710929 10.386227,4.06444214 10.8835761,4.00667766 L11.0002,3.99995 L20.0002,3.99995 Z"
+                  id="形状"
+                  fill="#0B0B0B"
+                ></path>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+      Checklist
+    </button>
+    <button
+      (click)="openModalAprobador()"
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        width="16px"
+        height="16px"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        fill="#000000"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <title></title>
+          <g id="Complete">
+            <g id="user">
+              <g>
+                <path
+                  d="M20,21V19a4,4,0,0,0-4-4H8a4,4,0,0,0-4,4v2"
+                  fill="none"
+                  stroke="#0B0B0B"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></path>
+                <circle
+                  cx="12"
+                  cy="7"
+                  fill="none"
+                  r="4"
+                  stroke="#0B0B0B"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></circle>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+      Aprobador
+    </button>
+    <button
+      (click)="openModalAdjuntos()"
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        width="16px"
+        height="16px"
+        viewBox="0 0 24 24"
+        xmlns="http://www.w3.org/2000/svg"
+        aria-labelledby="clipIconTitle"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        fill="none"
+        color="#000000"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <title id="clipIconTitle">Attachment (paper clip)</title>
+          <path
+            d="M7.93517 13.7796L15.1617 6.55304C16.0392 5.67631 17.4657 5.67631 18.3432 6.55304C19.2206 7.43052 19.2206 8.85774 18.3432 9.73522L8.40091 19.5477C6.9362 21.0124 4.56325 21.0124 3.09854 19.5477C1.63382 18.0837 1.63382 15.7093 3.09854 14.2453L12.9335 4.53784C14.984 2.48739 18.3094 2.48739 20.3569 4.53784C22.4088 6.58904 22.4088 9.91146 20.3584 11.9619L13.239 19.082"
+          ></path>
+        </g>
+      </svg>
+      Adjuntos
+    </button>
+    <button
+      (click)="openModalMejoras()"
+      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
+    >
+      <svg
+        width="16px"
+        height="16px"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+        <g
+          id="SVGRepo_tracerCarrier"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        ></g>
+        <g id="SVGRepo_iconCarrier">
+          <g id="Interface / Trending_Up">
+            <path
+              id="Vector"
+              d="M20.0005 7L14.1543 12.9375C14.0493 13.0441 13.9962 13.0976 13.9492 13.1396C13.1899 13.8193 12.0416 13.8193 11.2822 13.1396C11.2352 13.0976 11.1817 13.0442 11.0767 12.9375C10.9716 12.8308 10.9191 12.7774 10.8721 12.7354C10.1127 12.0557 8.96397 12.0557 8.20461 12.7354C8.15771 12.7773 8.10532 12.8305 8.00078 12.9367L4 17M20.0005 7L20 13M20.0005 7H14"
+              stroke="#0B0B0B"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </g>
+        </g>
+      </svg>
+      Mejoras
+    </button>
+  </div>
+  <form [formGroup]="form" class="form flex flex-col w-full gap-6">
+    <div>
+      <h2 class="text-xl font-bold">Fase de Cierre</h2>
+      <div *ngIf="form.get('completada')?.value">
+        <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
+        <span class="text-[12px] text-[var(--secondary)] font-semibold">
+          {{ form.get("fechaFase")?.value }}
+        </span>
+      </div>
+    </div>
+    <section class="checklist">
+      <div class="w-full inline-flex items-center gap-2 mb-4">
+        <svg
+          fill="#4f46e5"
+          width="18px"
+          height="18px"
+          viewBox="0 0 32 32"
+          version="1.1"
+          xmlns="http://www.w3.org/2000/svg"
+          stroke="#4f46e5"
+          stroke-width="0.48"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title>list-check</title>
+            <path
+              d="M30 14.75h-17c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h17c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0zM13 6.25h17c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0h-17c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0zM6 22.75h-2c-1.794 0.002-3.248 1.456-3.25 3.25v2c0.002 1.794 1.456 3.248 3.25 3.25h2c1.794-0.002 3.248-1.456 3.25-3.25v-2c-0.002-1.794-1.456-3.248-3.25-3.25h-0zM6.75 28c-0 0.414-0.336 0.75-0.75 0.75h-2c-0.414-0-0.75-0.336-0.75-0.75v-2c0-0.414 0.336-0.75 0.75-0.75h2c0.414 0 0.75 0.336 0.75 0.75v0zM30 25.75h-17c-0.69 0-1.25 0.56-1.25 1.25s0.56 1.25 1.25 1.25v0h17c0.69 0 1.25-0.56 1.25-1.25s-0.56-1.25-1.25-1.25v0zM9.078 11.877l-5.121 5.598-1.076-1.069c-0.226-0.225-0.537-0.363-0.881-0.363-0.69 0-1.25 0.559-1.25 1.25 0 0.346 0.141 0.66 0.369 0.886l2 1.988 0.022 0.015 0.015 0.021c0.073 0.059 0.156 0.112 0.246 0.153l0.007 0.003c0.038 0.028 0.082 0.055 0.128 0.080l0.006 0.003c0.135 0.056 0.292 0.088 0.457 0.088 0.175 0 0.341-0.037 0.491-0.103l-0.008 0.003c0.053-0.031 0.098-0.061 0.14-0.094l-0.003 0.002c0.102-0.050 0.189-0.11 0.268-0.179l-0.001 0.001 0.015-0.023 0.020-0.014 6-6.559c0.205-0.222 0.331-0.52 0.331-0.847 0-0.69-0.56-1.25-1.25-1.25-0.366 0-0.696 0.158-0.924 0.409l-0.001 0.001zM9.078 0.877l-5.121 5.598-1.076-1.069c-0.226-0.223-0.536-0.361-0.878-0.361-0.69 0-1.25 0.56-1.25 1.25 0 0.345 0.14 0.658 0.366 0.884v0l2 1.987 0.022 0.015 0.015 0.021c0.072 0.058 0.153 0.109 0.24 0.15l0.007 0.003c0.040 0.029 0.086 0.058 0.134 0.084l0.007 0.003c0.135 0.056 0.292 0.088 0.456 0.088 0.175 0 0.341-0.037 0.491-0.103l-0.008 0.003c0.053-0.031 0.098-0.061 0.14-0.094l-0.003 0.002c0.102-0.050 0.189-0.11 0.268-0.179l-0.001 0.001 0.015-0.023 0.020-0.014 6-6.559c0.206-0.222 0.332-0.521 0.332-0.848 0-0.69-0.56-1.25-1.25-1.25-0.367 0-0.697 0.158-0.925 0.41l-0.001 0.001z"
+            ></path>
+          </g>
+        </svg>
+        <label for="" class="font-semibold">Checklist Cumplimiento</label>
+      </div>
+      <div
+        *ngIf="checklist.controls.length > 0"
+        formArrayName="checklist"
+        class="flex flex-col items-start text-sm gap-3 bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)]"
+      >
+        <div
+          *ngFor="let item of checklist.controls; let i = index"
+          [formGroupName]="i"
+          class="inline-flex items-center w-full justify-between"
+        >
+          <label class="flex items-center gap-2">
+            <input
+              type="checkbox"
+              formControlName="checked"
+              class="accent-[var(--primary)]"
+            />
+            <span class="text-xs">{{ item.get("label")?.value }}</span>
+          </label>
+          <button
+            (click)="eliminarChecklist(i)"
+            class="text-[var(--disabled)] text-sm cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      </div>
+      <div *ngIf="checklist.length == 0" class="text-[12px] text-gray-500">
+        No hay items añadidos.
+      </div>
+    </section>
+    <hr class="border-t border-[var(--lines)]" />
+    <section class="cumplimiento">
+      <div class="inline-flex items-center gap-2 mb-4">
+        <svg
+          width="20px"
+          height="20px"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          class="text-[var(--primary)]"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <path
+              d="M15 19L17 21L21 17M13 3H8.2C7.0799 3 6.51984 3 6.09202 3.21799C5.71569 3.40973 5.40973 3.71569 5.21799 4.09202C5 4.51984 5 5.0799 5 6.2V17.8C5 18.9201 5 19.4802 5.21799 19.908C5.40973 20.2843 5.71569 20.5903 6.09202 20.782C6.51984 21 7.0799 21 8.2 21H11.5M13 3L19 9M13 3V7.4C13 7.96005 13 8.24008 13.109 8.45399C13.2049 8.64215 13.3578 8.79513 13.546 8.89101C13.7599 9 14.0399 9 14.6 9H19M19 9V13.4M9 17H11.5M9 13H15M9 9H10"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </g>
+        </svg>
+        <h3 class="text-base font-semibold text-gray-800">Cumplimiento</h3>
+      </div>
+
+      <div
+        class="bg-[var(--backgroundLight)] p-4 rounded-sm border border-[var(--lines)] mb-6"
+      >
+        <div *ngFor="let option of optionsCumplimiento" class="mb-3 last:mb-0">
+          <label
+            class="flex items-center gap-3 cursor-pointer text-sm text-[var(--darkText)] hover:bg-gray-100 p-2 rounded-xs transition-colors duration-200 ease-in-out"
+          >
+            <input
+              type="radio"
+              name="cumplimiento"
+              formControlName="cumplimiento"
+              [value]="option"
+              (change)="emitValue(option)"
+              class="hidden peer"
+            />
+            <div
+              class="w-3 h-3 rounded-full border-2 border-gray-400 flex items-center justify-center transition-all duration-200 ease-in-out peer-checked:border-[var(--primary)] peer-checked:bg-[var(--primary)] peer-checked:ring-2 peer-checked:ring-[var(--primary)] peer-checked:ring-offset-2 peer-checked:ring-offset-[var(--backgroundLight)]"
+            >
+              <div
+                class="w-3 h-3 rounded-full bg-white opacity-0 peer-checked:opacity-100 transition-opacity duration-150 ease-in-out"
+              ></div>
+            </div>
+            <span class="text-xs">{{ option }}</span>
+          </label>
+        </div>
+      </div>
+
+      <label
+        for="observaciones"
+        class="block text-xs font-semibold mb-2 text-[var(--darkText)]"
+      >
+        Observaciones (opcional)
+      </label>
+      <textarea
+        placeholder="Escribe aquí las observaciones de cierre del timebox"
+        formControlName="observaciones"
+        class="w-full bg-[var(--backgroundLight)] rounded-sm text-xs placeholder:text-[var(--disabled)] p-3 border border-[var(--lines)] focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all duration-200 ease-in-out resize-y"
+        name="observaciones"
+        id="observaciones"
+        rows="3"
+      ></textarea>
+    </section>
+    <hr class="border-t border-[var(--lines)]" />
+    <section class="aprobador">
+      <div class="w-full inline-flex items-center gap-2 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="#000000"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title></title>
+            <g id="Complete">
+              <g id="user">
+                <g>
+                  <path
+                    d="M20,21V19a4,4,0,0,0-4-4H8a4,4,0,0,0-4,4v2"
+                    fill="none"
+                    stroke="#4f46e5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></path>
+                  <circle
+                    cx="12"
+                    cy="7"
+                    fill="none"
+                    r="4"
+                    stroke="#4f46e5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                  ></circle>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <label for="">Aprobador</label>
+      </div>
+      <div class="flex flex-col gap-2 items-start text-sm mb-2">
+        <div
+          *ngIf="aprobador.value !== null"
+          class="inline-flex items-center w-60 justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] cursor-pointer"
+        >
+          <span class="text-xs">{{ aprobador.value }}</span>
+          <button
+            *ngIf="aprobador"
+            (click)="eliminarAprobador()"
+            class="text-[var(--disabled)] text-sm cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+        <div *ngIf="aprobador.value == null" class="text-[12px] text-gray-500">
+          No hay aprobador designado.
+        </div>
+      </div>
+      <label
+        class="block text-xs font-semibold mb-2 text-[var(--darkText)]"
+        for="ev_mad_apl"
+        >Evaluación madurez aplicativo
+      </label>
+      <textarea
+        placeholder="Escribe aquí"
+        formControlName="evMadurezAplicativo"
+        class="w-full bg-[var(--backgroundLight)] rounded-sm text-[12px] placeholder:text-[var(--disabled)] p-2 mt-2 border border-[var(--lines)] focus:ring-0"
+        name=""
+        id="ev_mad_apl"
+        rows="3"
+      ></textarea>
+    </section>
+    <hr class="border-t border-[var(--lines)]" />
+    <section class="adjuntos">
+      <div class="w-full inline-flex items-center gap-2 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-labelledby="clipIconTitle"
+          stroke="#4f46e5"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          fill="none"
+          color="#000000"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title id="clipIconTitle">Attachment (paper clip)</title>
+            <path
+              d="M7.93517 13.7796L15.1617 6.55304C16.0392 5.67631 17.4657 5.67631 18.3432 6.55304C19.2206 7.43052 19.2206 8.85774 18.3432 9.73522L8.40091 19.5477C6.9362 21.0124 4.56325 21.0124 3.09854 19.5477C1.63382 18.0837 1.63382 15.7093 3.09854 14.2453L12.9335 4.53784C14.984 2.48739 18.3094 2.48739 20.3569 4.53784C22.4088 6.58904 22.4088 9.91146 20.3584 11.9619L13.239 19.082"
+            ></path>
+          </g>
+        </svg>
+        <label for="">Adjuntos</label>
+      </div>
+      <div
+        formArrayName="adjuntos"
+        class="flex flex-col items-start text-sm gap-2"
+      >
+        <div
+          *ngFor="let adjunto of getAdjuntosFormArray().controls; let i = index"
+          [formGroupName]="i"
+          class="inline-flex items-center w-full justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+        >
+          <span (click)="downloadFile(adjunto)" class="text-xs">{{
+            adjunto.get("nombre")?.value
+          }}</span>
+          <button
+            (click)="eliminarAdjunto(i)"
+            class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500"
+          >
+            ✕
+          </button>
+        </div>
+        <div *ngIf="adjuntos.length == 0" class="text-[12px] text-gray-500">
+          No hay adjuntos.
+        </div>
+      </div>
+    </section>
+    <hr class="border-t border-[var(--lines)]" />
+    <section class="mejoras">
+      <div class="w-full inline-flex items-center gap-2 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <g id="Interface / Trending_Up">
+              <path
+                id="Vector"
+                d="M20.0005 7L14.1543 12.9375C14.0493 13.0441 13.9962 13.0976 13.9492 13.1396C13.1899 13.8193 12.0416 13.8193 11.2822 13.1396C11.2352 13.0976 11.1817 13.0442 11.0767 12.9375C10.9716 12.8308 10.9191 12.7774 10.8721 12.7354C10.1127 12.0557 8.96397 12.0557 8.20461 12.7354C8.15771 12.7773 8.10532 12.8305 8.00078 12.9367L4 17M20.0005 7L20 13M20.0005 7H14"
+                stroke="#4f46e5"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ></path>
+            </g>
+          </g>
+        </svg>
+        <label for="">Mejoras</label>
+      </div>
+      <div class="subcategories flex flex-col gap-2">
+        <div *ngFor="let grupo of groupedMejoras | keyvalue">
+          <h2 class="font-semibold text-xs">{{ grupo.key }}</h2>
+          <div
+            class="flex flex-col items-start text-xs"
+            *ngFor="let mejora of grupo.value; let i = index"
+            [formGroup]="mejora"
+          >
+            <div
+              class="inline-flex items-center w-full justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] cursor-pointer"
+            >
+              <span class="text-sm">{{
+                mejora.get("descripcion")?.value
+              }}</span>
+              <button
+                (click)="eliminarMejora(i)"
+                class="text-[var(--disabled)] text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="mejoras.length == 0" class="text-[12px] text-gray-500">
+          No hay mejoras agregadas.
+        </div>
+      </div>
+    </section>
+  </form>
+</div>
+
+<!--Modals-->
+<app-adjuntos-form
+  [show]="showModalAdjuntos"
+  (close)="closeModalAdjuntos()"
+  (filesSelected)="recibirArchivo($event)"
+></app-adjuntos-form>
+<app-persona-selector
+  *ngIf="showModalAprobador"
+  [show]="showModalAprobador"
+  [tipo]="'responsable'"
+  (close)="closeModalAprobador()"
+  (personaSeleccionadaChange)="handlePersonaSeleccionada($event)"
+></app-persona-selector>
+<app-checklist-form
+  [show]="showModalChecklist"
+  (close)="closeModalChecklist()"
+  (item)="addItemChecklist($event)"
+></app-checklist-form>
+<app-mejora-form
+  [show]="showModalMejoras"
+  (close)="closeModalMejoras()"
+  (info)="addMejora($event)"
+></app-mejora-form>

@@ -1,0 +1,7 @@
+/* En tu archivo styles.css o app.component.css */
+
+.active-link {
+  background-color: var(--primary) !important; /* Usa tu color primario para el fondo del link activo */
+  color: var(--lightText) !important;       /* Asegura que el texto sea blanco */
+  font-weight: 600 !important;              /* Haz el texto un poco más audaz */
+}
