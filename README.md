@@ -2,6 +2,49 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 18.2.19.
 
+## 🐳 Docker
+
+### Opción 1: Usando Docker Compose (Recomendado)
+
+#### Producción
+```bash
+# Construir y ejecutar la aplicación en modo producción
+docker-compose up --build
+
+# Ejecutar en segundo plano
+docker-compose up -d --build
+```
+
+#### Desarrollo
+```bash
+# Ejecutar en modo desarrollo con hot-reload
+docker-compose --profile dev up --build
+```
+
+### Opción 2: Usando Docker directamente
+
+#### Producción
+```bash
+# Construir la imagen
+docker build -t timebox-track .
+
+# Ejecutar el contenedor
+docker run -p 4000:4000 timebox-track
+```
+
+#### Desarrollo
+```bash
+# Construir la imagen de desarrollo
+docker build -f Dockerfile.dev -t timebox-track-dev .
+
+# Ejecutar el contenedor de desarrollo
+docker run -p 4200:4200 -v $(pwd):/app -v /app/node_modules timebox-track-dev
+```
+
+### Acceso a la aplicación
+- **Producción (SSR)**: http://localhost:4000
+- **Desarrollo**: http://localhost:4200
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

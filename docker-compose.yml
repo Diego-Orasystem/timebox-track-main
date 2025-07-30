@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  timebox-track:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+    restart: unless-stopped
+    container_name: timebox-track-app
+
+  # Servicio de desarrollo (opcional)
+  timebox-track-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    profiles:
+      - dev
+    container_name: timebox-track-dev
