@@ -129,10 +129,10 @@ export class ProjectDetailComponent implements OnInit {
       const projectId = params.get('projectId');
       if (projectId) {
         this.projectService.getProjectById(projectId).subscribe({
-          next: (project) => {
+          next: (project: Project) => {
             this.currentProject = project;
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error cargando proyecto:', error);
             this.currentProject = undefined;
           }

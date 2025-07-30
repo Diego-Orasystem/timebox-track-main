@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ItemCreationModalComponent } from '../../../../../shared/components/modals/item-creation-modal.component';
 
-import { ProjectContent } from '../../../../../shared/interfaces/project.interface';
+import { Project, ProjectContent } from '../../../../../shared/interfaces/project.interface';
 import { ProjectService } from '../../../services/project.service';
 
 @Component({
@@ -156,12 +156,12 @@ export class FolderDetailComponent implements OnInit {
         this.loadContents(this.currentProjectId);
         // Si es el proyecto raíz, el nombre de la carpeta será el nombre del proyecto
         this.projectService.getProjectById(this.currentProjectId).subscribe({
-          next: (project) => {
+          next: (project: Project) => {
             this.currentFolderName = project
               ? project.nombre
               : 'Proyecto no encontrado';
           },
-          error: (error) => {
+          error: (error: any) => {
             console.error('Error cargando proyecto:', error);
             this.currentFolderName = 'Proyecto no encontrado';
           }
@@ -177,7 +177,7 @@ export class FolderDetailComponent implements OnInit {
   loadFolderDetails(folderId: string): void {
     // Buscar la carpeta en los datos en memoria primero
     this.projectService.getProjects().subscribe({
-      next: (projects) => {
+      next: (projects: Project[]) => {
         for (const project of projects) {
           const folder = this.findContentItemById(project.contenido, folderId);
           if (folder && folder.tipo === 'Carpeta') {
@@ -188,7 +188,7 @@ export class FolderDetailComponent implements OnInit {
         // Si no se encuentra en memoria, usar un nombre genérico
         this.currentFolderName = 'Subcarpeta';
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error cargando proyectos:', error);
         this.currentFolderName = 'Subcarpeta';
       }
@@ -220,11 +220,11 @@ export class FolderDetailComponent implements OnInit {
   loadContents(parentId: string): void {
     // Llama a tu servicio para obtener el contenido hijo del parentId
     this.projectService.getContentsByParent(parentId).subscribe({
-      next: (contents) => {
+      next: (contents: ProjectContent[]) => {
         this.folders = contents;
         console.log('Contenido cargado:', contents);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error cargando contenido:', error);
         this.folders = [];
         
@@ -273,9 +273,10 @@ export class FolderDetailComponent implements OnInit {
     if (this.currentParentIdForModal) {
       this.projectService.addContentToParent(
         this.currentParentIdForModal,
+        this.currentProjectId!,
         newItem // newItem ya tiene 'tipo', 'nombre', 'descripcion', 'adjunto'
       ).subscribe({
-        next: (addedItem) => {
+        next: (addedItem: ProjectContent) => {
           // Actualiza la lista de contenido para reflejar el nuevo ítem
           if (this.currentParentIdForModal) {
             this.loadContents(this.currentParentIdForModal);
@@ -285,7 +286,7 @@ export class FolderDetailComponent implements OnInit {
           // Recargar los proyectos para mantener sincronizados los datos en memoria
           this.projectService.reloadProjects();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error al añadir el ítem:', error);
           alert('Error al crear el ítem. Inténtalo de nuevo.');
         }

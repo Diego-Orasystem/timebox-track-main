@@ -131,10 +131,10 @@ export class ProjectListComponent implements OnInit {
 
   loadProjects(): void {
     this.projectService.getProjects().subscribe({
-      next: (projects) => {
+      next: (projects: Project[]) => {
         this.projects = projects;
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error cargando proyectos:', error);
         this.projects = [];
       }
@@ -160,12 +160,12 @@ export class ProjectListComponent implements OnInit {
         newItem.nombre,
         newItem.descripcion
       ).subscribe({
-        next: (newProject) => {
+        next: (newProject: Project) => {
           this.projects.push(newProject);
           console.log('Nuevo Proyecto creado:', newProject);
           // Aquí podrías añadir el nuevo proyecto a tu lista de proyectos mostrada en la vista
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error creando proyecto:', error);
           alert('Error al crear el proyecto. Inténtalo de nuevo.');
         }

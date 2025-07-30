@@ -14,17 +14,17 @@
           [class.selected]="timebox.id === selectedTimebox.id"
         >
           <td>
-            {{ timebox.tipo_nombre || timebox.fases?.planning?.nombre || "Sin nombre" }}
+            {{ timebox.tipo_nombre || timebox.fases.planning?.nombre || "Sin nombre" }}
           </td>
           <td>
             {{ timebox.tipo_nombre || timebox.tipoTimebox || "Sin tipo" }}
           </td>
           <td>
-            {{ timebox.fases?.planning?.esfuerzo || timebox.fases?.planning?.esfuerzo || "Sin definir" }}
+            {{ timebox.fases.planning?.esfuerzo || "Sin definir" }}
           </td>
           <td>
             {{
-              getFormattedDate(timebox.fases?.planning?.fecha_inicio || timebox.fases?.planning?.fechaInicio) ||
+              getFormattedDate(timebox.fases.planning?.fecha_inicio || timebox.fases.planning?.fechaInicio) ||
                 "Sin definir"
             }}
           </td>

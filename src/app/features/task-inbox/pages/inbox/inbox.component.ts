@@ -488,13 +488,13 @@ export class InboxComponent implements OnInit {
 
     // Actualizar el timebox en el servicio de persistencia
     this.projectService.updateTimebox(tbx.projectId, tbx).subscribe({
-      next: (updatedTimebox) => {
+      next: (updatedTimebox: Timebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox }; // Actualizar el seleccionado para la UI
         this.loadTimeboxes(); // Recargar la lista para reflejar los cambios en los filtros
         this.obtenerRolesDisponibles(); // Re-calcular los roles disponibles (para que el rol postulado desaparezca)
         alert(mensajeExito);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al postular al Timebox:', error);
         alert('Error al postular al Timebox. Inténtalo de nuevo.');
       }
@@ -552,7 +552,7 @@ export class InboxComponent implements OnInit {
       ...tbx,
       entrega: entrega,
     }).subscribe({
-      next: (updatedTimebox) => {
+      next: (updatedTimebox: Timebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Entrega realizada:', updatedTimebox);
@@ -561,7 +561,7 @@ export class InboxComponent implements OnInit {
         this.selectedFiles[tbx.id] = [];
         this.selectedDeliverableType = null; // Resetear el tipo seleccionado
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al entregar el Timebox. Inténtalo de nuevo.');
       }
@@ -625,13 +625,13 @@ export class InboxComponent implements OnInit {
         } as any,
       },
     }).subscribe({
-      next: (updatedTimebox) => {
+      next: (updatedTimebox: Timebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Solicitud de cierre registrada:', updatedTimebox);
         alert('¡Solicitud de cierre registrada con éxito!');
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al solicitar el cierre del Timebox. Inténtalo de nuevo.');
       }
@@ -784,12 +784,12 @@ export class InboxComponent implements OnInit {
         },
       },
     }).subscribe({
-      next: (updatedTimebox) => {
+      next: (updatedTimebox: Timebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Solicitud de revisión exitosa', updatedTimebox);
       },
-      error: (error) => {
+      error: (error: any) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al solicitar revisión. Inténtalo de nuevo.');
       }

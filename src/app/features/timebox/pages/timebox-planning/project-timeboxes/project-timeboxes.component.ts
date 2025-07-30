@@ -119,11 +119,11 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
   loadProjectTimeboxes(): void {
     if (this.projectId) {
       this.projectService.getTimeboxesByProjectId(this.projectId).subscribe({
-        next: (timeboxes) => {
+        next: (timeboxes: Timebox[]) => {
           this.projectTimeboxes = timeboxes || [];
           console.log('Timeboxes cargados:', this.projectTimeboxes);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error cargando timeboxes del proyecto:', error);
           this.projectTimeboxes = [];
         }
@@ -197,12 +197,12 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
         this.projectId,
         timeboxFromModal
       ).subscribe({
-        next: (resultTimebox) => {
+        next: (resultTimebox: Timebox) => {
           console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
           this.selectedTimebox = { ...resultTimebox };
           this.loadProjectTimeboxes();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('❌ Error actualizando timebox:', error);
           alert('Error al actualizar el timebox. Inténtalo de nuevo.');
         }
@@ -213,11 +213,11 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
         this.projectId,
         timeboxFromModal
       ).subscribe({
-        next: (resultTimebox) => {
+        next: (resultTimebox: Timebox) => {
           this.selectedTimebox = { ...resultTimebox };
           this.loadProjectTimeboxes();
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error creando timebox:', error);
           alert('Error al crear el timebox. Inténtalo de nuevo.');
         }
