@@ -4,46 +4,108 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 
 ## 🐳 Docker
 
-### Opción 1: Usando Docker Compose (Recomendado)
+### 🚀 Inicio Rápido
 
-#### Producción
+#### Usando scripts de ayuda (Recomendado)
+
+**Windows:**
+```cmd
+# Producción
+docker-run.bat prod
+
+# Desarrollo
+docker-run.bat dev
+
+# Ver ayuda
+docker-run.bat help
+```
+
+**Linux/MacOS:**
 ```bash
-# Construir y ejecutar la aplicación en modo producción
+# Hacer ejecutable (solo la primera vez)
+chmod +x docker-run.sh
+
+# Producción
+./docker-run.sh prod
+
+# Desarrollo
+./docker-run.sh dev
+
+# Ver ayuda
+./docker-run.sh help
+```
+
+### 📋 Opciones Manuales
+
+#### Opción 1: Docker Compose
+
+**Producción:**
+```bash
 docker-compose up --build
-
-# Ejecutar en segundo plano
-docker-compose up -d --build
+# URL: http://localhost:4000
 ```
 
-#### Desarrollo
+**Desarrollo:**
 ```bash
-# Ejecutar en modo desarrollo con hot-reload
 docker-compose --profile dev up --build
+# URL: http://localhost:4200
 ```
 
-### Opción 2: Usando Docker directamente
+#### Opción 2: Docker Directo
 
-#### Producción
+**Producción:**
 ```bash
-# Construir la imagen
 docker build -t timebox-track .
-
-# Ejecutar el contenedor
 docker run -p 4000:4000 timebox-track
 ```
 
-#### Desarrollo
+**Desarrollo:**
 ```bash
-# Construir la imagen de desarrollo
 docker build -f Dockerfile.dev -t timebox-track-dev .
-
-# Ejecutar el contenedor de desarrollo
 docker run -p 4200:4200 -v $(pwd):/app -v /app/node_modules timebox-track-dev
 ```
 
-### Acceso a la aplicación
-- **Producción (SSR)**: http://localhost:4000
-- **Desarrollo**: http://localhost:4200
+### 🌐 URLs de Acceso
+
+#### Docker (Backend Productivo)
+- **Producción**: http://localhost:4000 → Backend: http://10.90.0.190:3000
+- **Desarrollo**: http://localhost:4200 → Backend: http://10.90.0.190:3000
+
+#### Desarrollo Local (ng serve)
+- **Frontend**: http://localhost:4200 → Backend: http://localhost:3000
+
+### ⚙️ Configuraciones de Entorno
+
+La aplicación está configurada para usar diferentes backends automáticamente:
+
+| Entorno | Frontend | Backend | Comando |
+|---------|----------|---------|---------|
+| **Docker Producción** | localhost:4000 | 10.90.0.190:3000 | `docker-run.bat prod` |
+| **Docker Desarrollo** | localhost:4200 | 10.90.0.190:3000 | `docker-run.bat dev` |
+| **Local Desarrollo** | localhost:4200 | localhost:3000 | `ng serve` |
+
+Los archivos de configuración están en:
+- `src/environments/environment.ts` - Desarrollo local
+- `src/environments/environment.docker.ts` - Docker (productivo)
+- `src/environments/environment.prod.ts` - Producción
+
+### 🛠️ Comandos Útiles
+```bash
+# Detener contenedores
+docker-compose down
+
+# Ver logs
+docker-compose logs -f
+
+# Limpiar todo
+docker-compose down --volumes --remove-orphans
+
+# Desarrollo local con backend local
+ng serve
+
+# Ver configuración actual en consola del navegador
+# (Se muestra automáticamente al cargar la app)
+```
 
 ## Development server
 

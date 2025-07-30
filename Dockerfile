@@ -13,8 +13,8 @@ RUN npm ci --only=production=false
 # Copiar código fuente
 COPY . .
 
-# Construir la aplicación para producción
-RUN npm run build
+# Construir la aplicación para Docker (con backend de producción)
+RUN npm run build:docker
 
 # Etapa 2: Imagen de producción
 FROM node:20-alpine AS production
