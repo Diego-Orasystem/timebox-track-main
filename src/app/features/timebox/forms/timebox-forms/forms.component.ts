@@ -808,11 +808,17 @@ export class FormsComponent implements OnInit {
       },
     };
 
-    // Lógica para el estado final del Timebox si es el último paso y está completado
-    const isLastStep = this.currentStepIndex === this.steps.length - 1;
-    if (isLastStep) {
-      if (groupToUpdate.get('completada')?.value || keyToUpdate === 'entrega') {
-        updatedTimebox.estado = 'Finalizado';
+    // Lógica para el estado final del Timebox
+    if (publishTimebox) {
+      // Si se está publicando, cambiar estado a "Disponible"
+      updatedTimebox.estado = 'Disponible';
+    } else {
+      // Lógica para el estado final del Timebox si es el último paso y está completado
+      const isLastStep = this.currentStepIndex === this.steps.length - 1;
+      if (isLastStep) {
+        if (groupToUpdate.get('completada')?.value || keyToUpdate === 'entrega') {
+          updatedTimebox.estado = 'Finalizado';
+        }
       }
     }
 

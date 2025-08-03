@@ -35,7 +35,7 @@ export const routes: Routes = [
       ).then((m) => m.TimeboxRequestsComponent),
   },
   {
-    path: ':projectId', // Nivel 2: Contenido de un proyecto (subcarpetas y 'timeboxes' por defecto)
+    path: 'projects/:projectId', // Nivel 2: Contenido de un proyecto (subcarpetas y 'timeboxes' por defecto)
     component: ProjectDetailComponent, // Nuevo componente para el detalle de un proyecto
     data: { breadcrumb: 'Detalle de Proyecto' },
     children: [

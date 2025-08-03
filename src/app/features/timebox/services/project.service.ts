@@ -1,192 +1,322 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
-import { v4 as uuidv4 } from 'uuid';
+import { map, catchError } from 'rxjs/operators';
 import { Project, ProjectContent } from '../../../shared/interfaces/project.interface';
 import { Timebox } from '../../../shared/interfaces/timebox.interface';
+import { ApiService } from '../../../shared/services/api.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProjectService {
-  private projects: Project[] = [];
   private projectsSubject = new BehaviorSubject<Project[]>([]);
 
-  constructor() {
-    // Cargar datos iniciales
-    this.loadInitialData();
+  constructor(private apiService: ApiService) {
+    // Cargar proyectos desde el backend al inicializar
+    this.loadProjectsFromApi();
+  }
+
+  /**
+   * Transforma un timebox del backend al formato esperado por el frontend
+   */
+  private transformTimeboxFromBackend(timebox: any): Timebox {
+    return {
+      ...timebox,
+      // Mapear campos del backend al frontend
+      tipoTimebox: timebox.tipo_timebox_id || timebox.tipoTimebox,
+      projectId: timebox.project_id || timebox.projectId,
+      // Asegurar que fases existe con estructura básica
+      fases: timebox.fases || {
+        planning: undefined,
+        kickOff: undefined,
+        refinement: undefined,
+        qa: undefined,
+        close: undefined
+      },
+      // Asegurar que entrega existe
+      entrega: timebox.entrega || undefined,
+      // Asegurar que publicacionOferta existe
+      publicacionOferta: timebox.publicacionOferta || undefined
+    };
+  }
+
+  /**
+   * Carga los proyectos desde el backend
+   */
+  private loadProjectsFromApi(): void {
+    this.apiService.getData<{status: boolean, message: string, data: Project[]}>('/project/all')
+      .pipe(catchError(error => {
+        console.error('Error cargando proyectos:', error);
+        return of({status: false, message: 'Error', data: []});
+      }))
+      .subscribe(response => {
+        if (response.status && response.data) {
+          this.projectsSubject.next(response.data);
+        }
+      });
   }
 
   /**
    * Obtiene todos los proyectos
    */
   getProjects(): Observable<Project[]> {
-    return of(this.projects);
+    return this.apiService.getData<{status: boolean, message: string, data: Project[]}>('/project/all')
+      .pipe(
+        map(response => response.data),
+        catchError(error => {
+          console.error('Error obteniendo proyectos:', error);
+          return of([]);
+        })
+      );
   }
 
   /**
    * Obtiene un proyecto por ID
    */
   getProjectById(id: string): Observable<Project> {
-    const project = this.projects.find(p => p.id === id);
-    if (project) {
-      return of(project);
-    } else {
-      return throwError(() => new Error(`Proyecto con ID ${id} no encontrado`));
-    }
+    return this.apiService.getData<{status: boolean, message: string, data: Project}>(`/project/${id}`)
+      .pipe(
+        map(response => response.data),
+        catchError(error => {
+          console.error(`Error obteniendo proyecto ${id}:`, error);
+          return throwError(() => new Error(`Proyecto con ID ${id} no encontrado`));
+        })
+      );
   }
 
   /**
    * Crea un nuevo proyecto
    */
   createProject(nombre: string, descripcion: string): Observable<Project> {
-    const newProject: Project = {
-      id: uuidv4(),
+    const projectData = {
       nombre,
-      descripcion,
-      fechaCreacion: new Date().toISOString(),
-      contenido: [],
-      timeboxes: []
+      descripcion
     };
 
-    this.projects.push(newProject);
-    this.projectsSubject.next([...this.projects]);
-    return of(newProject);
+    return this.apiService.post<{status: boolean, message: string, data: Project}>('/project', projectData)
+      .pipe(
+        map(response => {
+          // Actualizar la lista local
+          this.loadProjectsFromApi();
+          return response.data;
+        }),
+        catchError(error => {
+          console.error('Error creando proyecto:', error);
+          return throwError(() => new Error('Error al crear el proyecto'));
+        })
+      );
   }
 
   /**
    * Actualiza un proyecto existente
    */
   updateProject(id: string, updateData: Partial<Project>): Observable<Project> {
-    const projectIndex = this.projects.findIndex(p => p.id === id);
-    if (projectIndex === -1) {
-      return throwError(() => new Error(`Proyecto con ID ${id} no encontrado`));
-    }
-
-    this.projects[projectIndex] = { ...this.projects[projectIndex], ...updateData };
-    this.projectsSubject.next([...this.projects]);
-    return of(this.projects[projectIndex]);
+    return this.apiService.put<{status: boolean, message: string, data: Project}>(`/project/${id}`, updateData)
+      .pipe(
+        map(response => {
+          // Actualizar la lista local
+          this.loadProjectsFromApi();
+          return response.data;
+        }),
+        catchError(error => {
+          console.error(`Error actualizando proyecto ${id}:`, error);
+          return throwError(() => new Error(`Error al actualizar el proyecto con ID ${id}`));
+        })
+      );
   }
 
   /**
    * Elimina un proyecto
    */
   deleteProject(id: string): Observable<boolean> {
-    const projectIndex = this.projects.findIndex(p => p.id === id);
-    if (projectIndex === -1) {
-      return throwError(() => new Error(`Proyecto con ID ${id} no encontrado`));
-    }
-
-    this.projects.splice(projectIndex, 1);
-    this.projectsSubject.next([...this.projects]);
-    return of(true);
+    return this.apiService.delete<{status: boolean, message: string}>(`/project/${id}`)
+      .pipe(
+        map(response => {
+          // Actualizar la lista local
+          this.loadProjectsFromApi();
+          return response.status;
+        }),
+        catchError(error => {
+          console.error(`Error eliminando proyecto ${id}:`, error);
+          return throwError(() => new Error(`Error al eliminar el proyecto con ID ${id}`));
+        })
+      );
   }
 
   /**
    * Obtiene los timeboxes de un proyecto específico
    */
   getTimeboxesByProjectId(projectId: string): Observable<Timebox[]> {
-    const project = this.projects.find(p => p.id === projectId);
-    if (project) {
-      return of(project.timeboxes || []);
-    }
-    return throwError(() => new Error(`Proyecto con ID ${projectId} no encontrado`));
+    return this.apiService.getData<{status: boolean, message: string, data: Timebox[]}>(`/project/${projectId}/timeboxes`)
+      .pipe(
+        map(response => response.data.map(timebox => this.transformTimeboxFromBackend(timebox))),
+        catchError(error => {
+          console.error(`Error obteniendo timeboxes del proyecto ${projectId}:`, error);
+          return of([]);
+        })
+      );
   }
 
   /**
    * Actualiza un timebox en un proyecto
    */
   updateTimebox(projectId: string, timebox: Timebox): Observable<Timebox> {
-    const project = this.projects.find(p => p.id === projectId);
-    if (!project) {
-      return throwError(() => new Error(`Proyecto con ID ${projectId} no encontrado`));
-    }
+    // Mapear los campos del frontend al formato esperado por el backend
+    const timeboxData = {
+      tipoTimeboxId: timebox.tipoTimebox, // Mapear tipoTimebox a tipoTimeboxId
+      businessAnalystId: timebox.business_analyst_id || null,
+      monto: timebox.monto || null,
+      estado: timebox.estado,
+      // Enviar las fases completas
+      fases: timebox.fases || {},
+      entrega: timebox.entrega || null,
+      publicacionOferta: timebox.publicacionOferta || null
+    };
 
-    const timeboxIndex = project.timeboxes.findIndex(t => t.id === timebox.id);
-    if (timeboxIndex === -1) {
-      return throwError(() => new Error(`Timebox con ID ${timebox.id} no encontrado`));
-    }
-
-    project.timeboxes[timeboxIndex] = { ...project.timeboxes[timeboxIndex], ...timebox };
-    return of(project.timeboxes[timeboxIndex]);
+    return this.apiService.put<{status: boolean, message: string, data: Timebox}>(`/project/${projectId}/timeboxes/${timebox.id}`, timeboxData)
+      .pipe(
+        map(response => this.transformTimeboxFromBackend(response.data)),
+        catchError(error => {
+          console.error(`Error actualizando timebox ${timebox.id} en proyecto ${projectId}:`, error);
+          return throwError(() => new Error(`Error al actualizar timebox con ID ${timebox.id}`));
+        })
+      );
   }
 
   /**
    * Crea un nuevo timebox en un proyecto
    */
   createTimebox(projectId: string, timebox: Omit<Timebox, 'id'>): Observable<Timebox> {
-    const project = this.projects.find(p => p.id === projectId);
-    if (!project) {
-      return throwError(() => new Error(`Proyecto con ID ${projectId} no encontrado`));
-    }
-
-    const newTimebox: Timebox = {
-      ...timebox,
-      id: uuidv4(),
-      projectId: projectId
+    // Mapear los campos del frontend al formato esperado por el backend
+    const timeboxData = {
+      tipoTimeboxId: timebox.tipoTimebox, // Mapear tipoTimebox a tipoTimeboxId
+      projectId: projectId,
+      businessAnalystId: timebox.business_analyst_id || null,
+      monto: timebox.monto || null,
+      estado: timebox.estado || 'En Definición',
+      // Enviar las fases completas
+      fases: timebox.fases || {},
+      entrega: timebox.entrega || null,
+      publicacionOferta: timebox.publicacionOferta || null
     };
 
-    if (!project.timeboxes) {
-      project.timeboxes = [];
-    }
-    project.timeboxes.push(newTimebox);
+    return this.apiService.post<{status: boolean, message: string, data: Timebox}>(`/project/${projectId}/timeboxes`, timeboxData)
+      .pipe(
+        map(response => this.transformTimeboxFromBackend(response.data)),
+        catchError(error => {
+          console.error(`Error creando timebox en proyecto ${projectId}:`, error);
+          return throwError(() => new Error('Error al crear el timebox'));
+        })
+      );
+  }
 
-    return of(newTimebox);
+  /**
+   * Obtiene el contenido raíz de un proyecto específico
+   */
+  getProjectRootContent(projectId: string): Observable<ProjectContent[]> {
+    return this.apiService.getData<{status: boolean, message: string, data: Project}>(`/project/${projectId}/content`)
+      .pipe(
+        map(response => {
+          // Filtrar solo el contenido que está a nivel raíz (parent_id = null)
+          if (response.data && response.data.contenido) {
+            return response.data.contenido.filter(content => !content.parent_id);
+          }
+          return [];
+        }),
+        catchError(error => {
+          console.error('Error obteniendo contenido del proyecto:', error);
+          return of([]);
+        })
+      );
+  }
+
+  /**
+   * Obtiene el contenido hijo de una carpeta específica
+   */
+  getFolderContent(contentId: string): Observable<ProjectContent[]> {
+    return this.apiService.getData<{status: boolean, message: string, data: any}>(`/project/content/${contentId}`)
+      .pipe(
+        map(response => {
+          if (response.data && response.data.contenido) {
+            return response.data.contenido;
+          }
+          return [];
+        }),
+        catchError(error => {
+          console.error('Error obteniendo contenido de la carpeta:', error);
+          return of([]);
+        })
+      );
   }
 
   /**
    * Obtiene el contenido de un proyecto por ID de padre
+   * @deprecated Usar getProjectRootContent o getFolderContent en su lugar
    */
   getContentsByParent(parentId: string | null): Observable<ProjectContent[]> {
-    // Buscar en todos los proyectos
-    for (const project of this.projects) {
-      const contents = this.findContentsByParent(project.contenido, parentId);
-      if (contents.length > 0) {
-        return of(contents);
-      }
-    }
-    return of([]);
+    // Para contenido, necesitamos usar el endpoint que obtiene el proyecto con contenido
+    // Como no sabemos qué proyecto, podemos obtener todos y filtrar
+    return this.getProjects().pipe(
+      map(projects => {
+        const allContents: ProjectContent[] = [];
+        for (const project of projects) {
+          if (project.contenido) {
+            const contents = this.findContentsByParent(project.contenido, parentId);
+            allContents.push(...contents);
+          }
+        }
+        return allContents;
+      }),
+      catchError(error => {
+        console.error('Error obteniendo contenido:', error);
+        return of([]);
+      })
+    );
   }
 
   /**
    * Añade contenido a un padre específico
    */
   addContentToParent(parentId: string | null, projectId: string, content: Omit<ProjectContent, 'id'>): Observable<ProjectContent> {
-    const project = this.projects.find(p => p.id === projectId);
-    if (!project) {
-      return throwError(() => new Error(`Proyecto con ID ${projectId} no encontrado`));
-    }
-
-    const newContent: ProjectContent = {
-      ...content,
-      id: uuidv4(),
-      project_id: projectId,
-      parent_id: parentId || undefined
+    // Crear el payload con los nombres de campos que espera el backend
+    const contentData: any = {
+      nombre: content.nombre,
+      tipo: content.tipo,
+      descripcion: content.descripcion,
+      projectId
     };
 
-    if (parentId === null) {
-      // Añadir al nivel raíz del proyecto
-      project.contenido.push(newContent);
-    } else {
-      // Buscar el padre y añadir el contenido
-      const parent = this.findContentById(project.contenido, parentId);
-      if (parent && parent.tipo === 'Carpeta') {
-        if (!parent.contenido) {
-          parent.contenido = [];
-        }
-        parent.contenido.push(newContent);
-      } else {
-        return throwError(() => new Error(`Carpeta padre con ID ${parentId} no encontrada`));
-      }
+    // Solo agregar parentId si no es null
+    if (parentId !== null && parentId !== undefined && parentId !== '') {
+      contentData.parentId = parentId;
     }
 
-    return of(newContent);
+    // Agregar adjuntoId si existe en el contenido
+    if ('adjuntoId' in content) {
+      contentData.adjuntoId = (content as any).adjuntoId;
+    }
+
+
+
+    return this.apiService.post<{status: boolean, message: string, data: ProjectContent}>('/project/content', contentData)
+      .pipe(
+        map(response => {
+          // Actualizar la lista local
+          this.loadProjectsFromApi();
+          return response.data;
+        }),
+        catchError(error => {
+          console.error('Error añadiendo contenido:', error);
+          return throwError(() => new Error('Error al añadir contenido'));
+        })
+      );
   }
 
   /**
    * Recarga los proyectos (para uso interno)
    */
   reloadProjects(): void {
-    this.projectsSubject.next([...this.projects]);
+    this.loadProjectsFromApi();
   }
 
   // Métodos auxiliares privados
@@ -221,37 +351,5 @@ export class ProjectService {
     return null;
   }
 
-  private loadInitialData(): void {
-    // Datos de ejemplo para desarrollo
-    const sampleProject: Project = {
-      id: 'sample-project-1',
-      nombre: 'Proyecto de Ejemplo',
-      descripcion: 'Un proyecto de ejemplo para demostrar la funcionalidad',
-      fechaCreacion: new Date().toISOString(),
-      contenido: [
-        {
-          id: 'folder-1',
-          nombre: 'Documentación',
-          tipo: 'Carpeta',
-          descripcion: 'Carpeta de documentación del proyecto',
-          project_id: 'sample-project-1',
-          parent_id: undefined,
-          contenido: []
-        },
-        {
-          id: 'folder-2',
-          nombre: 'Recursos',
-          tipo: 'Carpeta',
-          descripcion: 'Carpeta de recursos del proyecto',
-          project_id: 'sample-project-1',
-          parent_id: undefined,
-          contenido: []
-        }
-      ],
-      timeboxes: []
-    };
 
-    this.projects = [sampleProject];
-    this.projectsSubject.next([...this.projects]);
-  }
 }

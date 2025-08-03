@@ -2,10 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import {
-  GLOBAL_DELIVERABLES,
-  GLOBAL_EVIDENCES,
-} from '../../../data/mock-timebox-category-type';
-import {
   TimeboxType,
   TimeboxCategory,
 } from '../../../../../shared/interfaces/timebox.interface';
@@ -19,12 +15,8 @@ export class TimeboxTypeService {
   timeboxTypesSubject = new BehaviorSubject<TimeboxType[]>([]);
   private timeboxCategoriesSubject = new BehaviorSubject<TimeboxCategory[]>([]);
 
-  private globalDeliverablesSubject = new BehaviorSubject<string[]>(
-    GLOBAL_DELIVERABLES
-  );
-  private globalEvidencesSubject = new BehaviorSubject<string[]>(
-    GLOBAL_EVIDENCES
-  );
+  private globalDeliverablesSubject = new BehaviorSubject<string[]>([]);
+  private globalEvidencesSubject = new BehaviorSubject<string[]>([]);
 
   // Observable para que los componentes se suscriban a los tipos de timebox
   timeboxTypes$: Observable<TimeboxType[]> =
@@ -42,6 +34,33 @@ export class TimeboxTypeService {
     // Cargar tipos de timebox reales desde el backend
     this.loadTimeboxTypes();
     this.loadTimeboxCategories();
+    // Inicializar entregables y evidencias globales (pueden venir de la configuración o base de datos)
+    this.initializeGlobalData();
+  }
+
+  private initializeGlobalData(): void {
+    // Por ahora, inicializamos con valores básicos
+    // En el futuro, estos pueden venir de una API de configuración
+    const basicDeliverables = [
+      'Documento de requisitos',
+      'Código fuente',
+      'Documentación técnica',
+      'Manual de usuario',
+      'Plan de pruebas',
+      'Reporte de pruebas'
+    ];
+    
+    const basicEvidences = [
+      'Acta de reunión',
+      'Captura de pantalla',
+      'Log de sistema',
+      'Reporte de bug',
+      'Documento de aceptación',
+      'Certificado de pruebas'
+    ];
+    
+    this.globalDeliverablesSubject.next(basicDeliverables);
+    this.globalEvidencesSubject.next(basicEvidences);
   }
 
   loadTimeboxTypes(): void {

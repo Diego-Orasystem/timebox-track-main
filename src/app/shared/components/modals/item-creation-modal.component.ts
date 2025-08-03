@@ -236,6 +236,8 @@ export class ItemCreationModalComponent implements OnInit {
       parentId: this.parentId, // Incluir el parentId si existe
     };
 
+
+
     // Lógica para manejar adjuntos (documentos, videos, imágenes)
     if (
       this.selectedTypeItem === 'Documento' ||

@@ -380,11 +380,9 @@ export class InboxComponent implements OnInit {
 
   /**Helper para determinar si se ha solicitado alguna vez  */
   getEstadoSolicitado(tbx: Timebox): boolean {
-    return (
-      tbx.publicacionOferta?.postulaciones?.some(
-        (p) => p.desarrollador === this.usuario
-      ) ?? false
-    );
+    return tbx.publicacionOferta?.postulaciones?.some(
+      (p) => p.desarrollador === this.usuario
+    ) ?? false;
   }
 
   /**Determinar si un timebox fue asignado */
@@ -463,6 +461,7 @@ export class InboxComponent implements OnInit {
       estadoSolicitud: 'Pendiente',
       asignacion: {
         asignado: false,
+        fechaAsignacion: undefined
       },
     };
 

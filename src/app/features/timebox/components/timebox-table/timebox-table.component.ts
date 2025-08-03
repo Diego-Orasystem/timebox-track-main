@@ -52,4 +52,6 @@ export class TimeboxTableComponent implements OnChanges {
     console.log('🔍 getFormattedDate retorna:', formatted);
     return formatted;
   }
+
+
 }

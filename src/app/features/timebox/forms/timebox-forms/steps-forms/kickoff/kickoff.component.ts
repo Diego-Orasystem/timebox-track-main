@@ -20,7 +20,7 @@ import { ChecklistFormComponent } from '../../../../../../shared/components/moda
 import { PersonaSelectorComponent } from '../../../../../../shared/components/modals/persona-selector.component';
 import { Persona } from '../../../../../../shared/interfaces/fases-timebox.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
-import { MOCK_PERSONAS } from '../../../../data/mock-personas';
+import { TimeboxApiService } from '../../../../services/timebox-api.service';
 
 @Component({
   selector: 'app-kickoff',
@@ -67,14 +67,23 @@ export class KickoffComponent implements OnDestroy {
 
   constructor(
     private fb: FormBuilder,
-    private rootFormGroup: FormGroupDirective
+    private rootFormGroup: FormGroupDirective,
+    private timeboxApiService: TimeboxApiService
   ) {}
 
   ngOnInit(): void {
     this.form = this.rootFormGroup.control.get(this.formGroupName) as FormGroup;
 
-    // Cargar todas las personas del mock
-    this.allPersonas = MOCK_PERSONAS;
+    // Cargar todas las personas desde la API
+    this.timeboxApiService.getPersonas().subscribe({
+      next: (personas) => {
+        this.allPersonas = personas;
+      },
+      error: (error) => {
+        console.error('Error cargando personas:', error);
+        this.allPersonas = [];
+      }
+    });
 
     // Inicializar los inputs de búsqueda si ya hay valores en el formulario
     this.initializeSearchControl(

@@ -20,8 +20,9 @@ import { SelectTimeboxTypeComponent } from './components/select-type.component';
 import { TimeboxTypeService } from '../../../../pages/timebox-maintainer/services/timebox-maintainer.service';
 import { Persona } from '../../../../../../shared/interfaces/fases-timebox.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
-import { MOCK_PERSONAS } from '../../../../data/mock-personas';
+import { TimeboxApiService } from '../../../../services/timebox-api.service';
 import { formatDate } from '../../../../../../shared/helpers/date-formatter';
+import { UploadService } from '../../../../../../shared/services/upload.service';
 
 @Component({
   selector: 'app-planning',
@@ -53,15 +54,26 @@ export class PlanningComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     public rootFormGroup: FormGroupDirective,
-    private timeboxTypeService: TimeboxTypeService
+    private timeboxTypeService: TimeboxTypeService,
+    private timeboxApiService: TimeboxApiService,
+    private uploadService: UploadService
   ) {}
 
   ngOnInit(): void {
     this.form = this.rootFormGroup.control.get(this.formGroupName) as FormGroup;
 
-    this.teamLeaders = MOCK_PERSONAS.filter(
-      (persona) => persona.rol === 'Team Leader'
-    );
+    // Cargar personas desde la API
+    this.timeboxApiService.getPersonas().subscribe({
+      next: (personas) => {
+        this.teamLeaders = personas.filter(
+          (persona) => persona.rol === 'Team Leader'
+        );
+      },
+      error: (error) => {
+        console.error('Error cargando personas:', error);
+        this.teamLeaders = [];
+      }
+    });
 
     const currentTeamLeader: Persona | null =
       this.form.get('teamLeader')?.value;
@@ -302,14 +314,41 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   recibirArchivo(files: File[]) {
     const adjuntos = this.getAdjuntosFormArray();
+    
+    // Subir cada archivo al servidor
     files.forEach((file) => {
-      adjuntos.push(
-        this.fb.group({
-          nombre: [file.name],
-          url: [''],
-        })
-      );
+      // Agregar temporalmente el archivo con estado de carga
+      const adjuntoGroup = this.fb.group({
+        nombre: [file.name],
+        url: ['Subiendo...'],
+        uploading: [true],
+        adjuntoId: [null as string | null]
+      });
+      adjuntos.push(adjuntoGroup);
+      
+      // Subir archivo al servidor
+      this.uploadService.uploadFile(file).subscribe({
+        next: (uploadResult) => {
+          // Actualizar con la URL real del archivo subido
+          adjuntoGroup.patchValue({
+            url: uploadResult.data.url,
+            uploading: false,
+            adjuntoId: uploadResult.data.id
+          });
+          console.log('Archivo subido exitosamente:', uploadResult);
+        },
+        error: (error) => {
+          console.error('Error al subir archivo:', error);
+          // Remover el adjunto fallido
+          const index = adjuntos.controls.indexOf(adjuntoGroup);
+          if (index > -1) {
+            adjuntos.removeAt(index);
+          }
+          alert(`Error al subir archivo ${file.name}: ${error.message || 'Error desconocido'}`);
+        }
+      });
     });
+    
     this.closeModalAdjuntos();
   }
 

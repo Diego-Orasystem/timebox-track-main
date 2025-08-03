@@ -152,7 +152,8 @@ export class FolderDetailComponent implements OnInit {
         this.loadContents(this.currentFolderId); // Cargar contenido dentro de esta carpeta
       } else if (this.currentProjectId) {
         // Estamos en el nivel 2.1: mostrando contenido del proyecto (carpetas, documentos, etc.)
-        this.currentParentIdForModal = this.currentProjectId;
+        // Para contenido a nivel raíz del proyecto, el parentId debe ser null
+        this.currentParentIdForModal = null;
         this.loadContents(this.currentProjectId);
         // Si es el proyecto raíz, el nombre de la carpeta será el nombre del proyecto
         this.projectService.getProjectById(this.currentProjectId).subscribe({
@@ -217,26 +218,43 @@ export class FolderDetailComponent implements OnInit {
     return undefined;
   }
 
-  loadContents(parentId: string): void {
-    // Llama a tu servicio para obtener el contenido hijo del parentId
-    this.projectService.getContentsByParent(parentId).subscribe({
-      next: (contents: ProjectContent[]) => {
-        this.folders = contents;
-        console.log('Contenido cargado:', contents);
-      },
-      error: (error: any) => {
-        console.error('Error cargando contenido:', error);
-        this.folders = [];
-        
-        // Si el error es "Contenido no encontrado", redirigir al proyecto padre
-        if (error.message && error.message.includes('Contenido no encontrado')) {
-          console.log('Contenido no encontrado, redirigiendo al proyecto padre...');
-          if (this.currentProjectId) {
-            this.router.navigate(['/timebox-planning', this.currentProjectId, 'folders']);
-          }
-        }
-      }
+  loadContents(idToLoad: string): void {
+    console.log('🔍 loadContents llamado con:', {
+      idToLoad,
+      currentProjectId: this.currentProjectId,
+      currentFolderId: this.currentFolderId,
+      currentParentIdForModal: this.currentParentIdForModal
     });
+
+    // Determinar si estamos cargando contenido de proyecto raíz o de una carpeta
+    if (this.currentFolderId) {
+      // Estamos dentro de una carpeta, cargar contenido de la carpeta
+      this.projectService.getFolderContent(idToLoad).subscribe({
+        next: (contents: ProjectContent[]) => {
+          this.folders = contents;
+          console.log('📁 Contenido de carpeta cargado:', contents);
+        },
+        error: (error: any) => {
+          console.error('Error cargando contenido de carpeta:', error);
+          this.folders = [];
+        }
+      });
+    } else if (this.currentProjectId && idToLoad === this.currentProjectId) {
+      // Estamos a nivel raíz del proyecto, cargar contenido raíz
+      this.projectService.getProjectRootContent(idToLoad).subscribe({
+        next: (contents: ProjectContent[]) => {
+          this.folders = contents;
+          console.log('🏠 Contenido raíz del proyecto cargado:', contents);
+        },
+        error: (error: any) => {
+          console.error('Error cargando contenido del proyecto:', error);
+          this.folders = [];
+        }
+      });
+    } else {
+      console.warn('🚨 No se pudo determinar qué tipo de contenido cargar');
+      this.folders = [];
+    }
   }
 
   selectFolder(item: ProjectContent): void {
@@ -270,7 +288,9 @@ export class FolderDetailComponent implements OnInit {
   }
 
   handleItemSaved(newItem: any): void {
-    if (this.currentParentIdForModal) {
+
+
+    if (this.currentProjectId) {
       this.projectService.addContentToParent(
         this.currentParentIdForModal,
         this.currentProjectId!,
@@ -279,7 +299,11 @@ export class FolderDetailComponent implements OnInit {
         next: (addedItem: ProjectContent) => {
           // Actualiza la lista de contenido para reflejar el nuevo ítem
           if (this.currentParentIdForModal) {
+            // Si estamos dentro de una carpeta, recargar contenido de esa carpeta
             this.loadContents(this.currentParentIdForModal);
+          } else if (this.currentProjectId) {
+            // Si estamos a nivel raíz del proyecto, recargar contenido del proyecto
+            this.loadContents(this.currentProjectId);
           }
           console.log('Nuevo ítem añadido:', addedItem);
           

@@ -142,7 +142,7 @@ export class ProjectListComponent implements OnInit {
   }
 
   selectProject(project: any): void {
-    this.router.navigate([project.id]); // Navega a la ruta del proyecto seleccionado
+    this.router.navigate(['projects', project.id]); // Navega a la ruta del proyecto seleccionado
   }
 
   openModal(mode: 'create' | 'edit'): void {

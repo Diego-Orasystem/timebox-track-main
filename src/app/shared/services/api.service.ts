@@ -58,15 +58,24 @@ export class ApiService {
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'Ha ocurrido un error';
     
-    if (error.error instanceof ErrorEvent) {
+    // Verificar si estamos en el navegador y ErrorEvent está disponible
+    if (typeof window !== 'undefined' && typeof ErrorEvent !== 'undefined' && error.error instanceof ErrorEvent) {
       // Error del lado del cliente
       errorMessage = `Error: ${error.error.message}`;
     } else {
-      // Error del lado del servidor
-      errorMessage = `Código de error: ${error.status}\nMensaje: ${error.message}`;
+      // Error del lado del servidor o entorno SSR
+      if (error.status === 0) {
+        errorMessage = 'Error de conexión. Verifique su conexión a internet.';
+      } else if (error.status === 404) {
+        errorMessage = 'Recurso no encontrado.';
+      } else if (error.status >= 500) {
+        errorMessage = 'Error interno del servidor.';
+      } else {
+        errorMessage = `Error ${error.status}: ${error.message || 'Error desconocido'}`;
+      }
     }
     
-    console.error(errorMessage);
+    console.error('Error en API:', errorMessage, error);
     return throwError(() => new Error(errorMessage));
   }
 } 
