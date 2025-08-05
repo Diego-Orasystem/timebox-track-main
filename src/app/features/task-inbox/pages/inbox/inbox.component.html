@@ -476,7 +476,7 @@
     <section class="mb-4" *ngIf="timeboxSeleccionado.publicacionOferta && timeboxSeleccionado.publicacionOferta.postulaciones && timeboxSeleccionado.publicacionOferta.postulaciones.length > 0">
       <div class="mb-4">
         <h2 class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2">
-          Postulaciones ({{ timeboxSeleccionado.publicacionOferta?.postulaciones?.length || 0 }})
+          Postulaciones ({{ (timeboxSeleccionado.publicacionOferta && timeboxSeleccionado.publicacionOferta.postulaciones) ? timeboxSeleccionado.publicacionOferta.postulaciones.length : 0 }})
         </h2>
         <p class="text-xs">Desarrolladores que se han postulado a este timebox</p>
       </div>

@@ -23,6 +23,7 @@ import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { TimeboxApiService } from '../../../../services/timebox-api.service';
 import { formatDate } from '../../../../../../shared/helpers/date-formatter';
 import { UploadService } from '../../../../../../shared/services/upload.service';
+import { environment } from '../../../../../../../environments/environment';
 
 @Component({
   selector: 'app-planning',
@@ -355,11 +356,80 @@ export class PlanningComponent implements OnInit, OnDestroy {
   downloadFile(adjuntoControl: AbstractControl) {
     const adjuntoValue = adjuntoControl.value;
     if (adjuntoValue && adjuntoValue.url) {
-      const url = adjuntoValue.url;
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = adjuntoValue.nombre || 'download';
-      a.click();
+      // Construir la URL completa usando la URL base del environment
+      const baseUrl = environment.apiUrl.replace('/api', ''); // Remover /api para obtener solo el servidor
+      const fullUrl = `${baseUrl}${adjuntoValue.url}`;
+      
+      console.log('🔍 Debug archivo planning:', {
+        adjuntoValue: adjuntoValue,
+        adjuntoUrl: adjuntoValue.url,
+        environmentApiUrl: environment.apiUrl,
+        baseUrl: baseUrl,
+        fullUrl: fullUrl
+      });
+      
+      // Para PDFs, intentar abrir directamente en el navegador
+      if (adjuntoValue.url.includes('.pdf')) {
+        // Intentar abrir en nueva pestaña primero
+        const newWindow = window.open(fullUrl, '_blank');
+        
+        // Si el navegador bloquea la nueva ventana, mostrar en modal
+        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+          console.log('Nueva ventana bloqueada, mostrando en modal...');
+          
+          // Crear un iframe temporal para abrir el PDF
+          const iframe = document.createElement('iframe');
+          iframe.src = fullUrl;
+          iframe.style.width = '100%';
+          iframe.style.height = '600px';
+          iframe.style.border = 'none';
+          
+          // Crear una ventana modal para mostrar el PDF
+          const modal = document.createElement('div');
+          modal.style.position = 'fixed';
+          modal.style.top = '0';
+          modal.style.left = '0';
+          modal.style.width = '100%';
+          modal.style.height = '100%';
+          modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
+          modal.style.zIndex = '9999';
+          modal.style.display = 'flex';
+          modal.style.justifyContent = 'center';
+          modal.style.alignItems = 'center';
+          
+          const content = document.createElement('div');
+          content.style.backgroundColor = 'white';
+          content.style.padding = '20px';
+          content.style.borderRadius = '8px';
+          content.style.width = '90%';
+          content.style.height = '90%';
+          content.style.position = 'relative';
+          
+          const closeBtn = document.createElement('button');
+          closeBtn.textContent = 'Cerrar';
+          closeBtn.style.position = 'absolute';
+          closeBtn.style.top = '10px';
+          closeBtn.style.right = '10px';
+          closeBtn.style.padding = '8px 16px';
+          closeBtn.style.backgroundColor = '#f44336';
+          closeBtn.style.color = 'white';
+          closeBtn.style.border = 'none';
+          closeBtn.style.borderRadius = '4px';
+          closeBtn.style.cursor = 'pointer';
+          closeBtn.onclick = () => document.body.removeChild(modal);
+          
+          content.appendChild(closeBtn);
+          content.appendChild(iframe);
+          modal.appendChild(content);
+          document.body.appendChild(modal);
+        }
+      } else {
+        // Para otros tipos de archivo, descargar normalmente
+        const a = document.createElement('a');
+        a.href = fullUrl;
+        a.download = adjuntoValue.nombre || 'download';
+        a.click();
+      }
     } else if (adjuntoValue instanceof File) {
       const url = window.URL.createObjectURL(adjuntoValue);
       const a = document.createElement('a');
