@@ -170,6 +170,9 @@ export class ItemCreationModalComponent implements OnInit {
     // Establecer el tipo seleccionado inicialmente
     if (this.itemTypeContext) {
       this.selectedTypeItem = this.itemTypeContext;
+    } else if (this.parentId) {
+      // Si hay parentId, usar 'Carpeta' como tipo por defecto
+      this.selectedTypeItem = 'Carpeta';
     } else if (this.availableTypes.length > 0) {
       // Si no hay un contexto específico y hay opciones, seleccionar la primera por defecto
       this.selectedTypeItem = this.availableTypes[0];
@@ -210,8 +213,16 @@ export class ItemCreationModalComponent implements OnInit {
     this.itemName = '';
     this.itemDescription = '';
     this.selectedFile = null;
-    this.selectedTypeItem =
-      this.itemTypeContext || this.availableTypes[0] || ''; // Reiniciar al tipo inicial o primero disponible
+    // Reiniciar al tipo inicial con la misma lógica que ngOnInit
+    if (this.itemTypeContext) {
+      this.selectedTypeItem = this.itemTypeContext;
+    } else if (this.parentId) {
+      this.selectedTypeItem = 'Carpeta';
+    } else if (this.availableTypes.length > 0) {
+      this.selectedTypeItem = this.availableTypes[0];
+    } else {
+      this.selectedTypeItem = '';
+    }
   }
 
   handleFileSelected(event: Event): void {

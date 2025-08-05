@@ -260,7 +260,12 @@ export class FolderDetailComponent implements OnInit {
   selectFolder(item: ProjectContent): void {
     // Si el item es una carpeta, navega a ella; de lo contrario, puedes manejar la apertura del documento/video/imagen
     if (item.tipo === 'Carpeta') {
-      this.router.navigate([item.id], { relativeTo: this.route });
+      // Navegar a la subcarpeta usando la ruta correcta
+      if (this.currentProjectId) {
+        this.router.navigate(['projects', this.currentProjectId, 'folders', item.id]);
+      } else {
+        console.error('No se pudo determinar el projectId para la navegación');
+      }
     } else {
       console.log(`Abriendo ${item.tipo}: ${item.nombre}`, item.adjunto?.url);
       
