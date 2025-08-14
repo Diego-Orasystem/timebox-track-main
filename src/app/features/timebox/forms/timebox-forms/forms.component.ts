@@ -15,7 +15,7 @@ import { QaComponent } from './steps-forms/qa/qa.component';
 import { CloseComponent } from './steps-forms/close/close.component';
 
 // Importa tus interfaces
-import { Timebox } from '../../../../shared/interfaces/timebox.interface';
+import { Timebox, Postulacion } from '../../../../shared/interfaces/timebox.interface';
 import { formatDate } from '../../../../shared/helpers/date-formatter'; // Asegúrate de que esta ruta sea correcta
 import {
   Persona,
@@ -56,6 +56,14 @@ export class FormsComponent implements OnInit {
   @Output() formSubmit = new EventEmitter<Timebox>(); // Emite el Timebox completo
   @Output() stepCompleted = new EventEmitter<number>();
   @Output() stepChange = new EventEmitter<number>();
+  
+  // Método para manejar las solicitudes de guardado automático desde los componentes hijos
+  handleTimeboxSaveRequest(timeboxData: Timebox): void {
+    console.log('🔄 Guardado automático solicitado desde componente hijo:', timeboxData);
+    console.log('📤 Emitiendo formSubmit al componente padre...');
+    this.formSubmit.emit(timeboxData);
+    console.log('✅ formSubmit emitido al componente padre');
+  }
 
   isTimeboxPublished: boolean = false; // Indica si el Timebox ya ha sido publicado
 
@@ -64,7 +72,11 @@ export class FormsComponent implements OnInit {
   ngOnInit(): void {
     this.createForm();
 
+    console.log('🔍 FormsComponent ngOnInit - timeboxData:', this.timeboxData);
+    console.log('🔍 FormsComponent ngOnInit - mode:', this.mode);
+
     if (this.timeboxData && this.timeboxData.id) {
+      console.log('🔍 FormsComponent - timeboxData tiene ID:', this.timeboxData.id);
       this.patchFormValues(this.timeboxData);
       // Inicializa el estado de publicación al cargar el Timebox
       this.isTimeboxPublished =
@@ -72,6 +84,8 @@ export class FormsComponent implements OnInit {
       if (this.mode === 'read') {
         this.form.disable();
       }
+    } else {
+      console.log('🔍 FormsComponent - timeboxData NO tiene ID o está vacío');
     }
   }
 
@@ -107,6 +121,12 @@ export class FormsComponent implements OnInit {
           solutionTester: [null],
           businessAdvisor: [null],
           technicalAdvisor: [null],
+        }),
+        financiamiento: this.fb.group({
+          moneda: ['CLP', Validators.required],
+          montoBase: [null, [Validators.required, Validators.min(0)]],
+          porcentajeAnticipado: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
+          observaciones: ['']
         }),
         adjuntos: this.fb.array([]),
         participantes: this.fb.array([]),
@@ -184,14 +204,45 @@ export class FormsComponent implements OnInit {
     this.resetFormArrays(); // Limpia los FormArrays antes de rellenarlos
     
     console.log('🔍 Parchando formulario con timebox:', timebox);
+    console.log('🔍 Timebox ID:', timebox.id);
+    console.log('🔍 Timebox fases:', timebox.fases);
     
     // Mapear campos del backend al formulario
-    this.form.get('tipoTimebox')?.patchValue(timebox.tipoTimebox || timebox.tipo_timebox_id);
+    this.form.get('tipoTimebox')?.patchValue(timebox.tipoTimebox);
     this.form.get('estado')?.patchValue(timebox.estado);
     
     // Si hay datos de fases, usarlos; si no, inicializar con datos básicos
     if (timebox.fases) {
-      this.form.get('planning')?.patchValue(timebox.fases.planning || {});
+      // Patch específico para planning con logging detallado
+      if (timebox.fases.planning) {
+        console.log('🔍 Planning data before patch:', timebox.fases.planning);
+        
+        // Hacer patch de todos los campos excepto arrays
+        const planningData = {
+          nombre: timebox.fases.planning.nombre || '',
+          codigo: timebox.fases.planning.codigo || '',
+          descripcion: timebox.fases.planning.descripcion || '',
+          eje: timebox.fases.planning.eje || '',
+          aplicativo: timebox.fases.planning.aplicativo || '',
+          alcance: timebox.fases.planning.alcance || '',
+          esfuerzo: timebox.fases.planning.esfuerzo || '',
+          fechaInicio: timebox.fases.planning.fechaInicio || '',
+          teamLeader: timebox.fases.planning.teamLeader || null,
+          completada: timebox.fases.planning.completada || false
+        };
+        
+        console.log('🔍 Planning data to patch:', planningData);
+        this.form.get('planning')?.patchValue(planningData);
+        
+        // Establecer tipoTimebox por separado
+        this.form.get('planning.tipoTimebox')?.setValue(timebox.tipoTimebox);
+        
+        // Verificar que se aplicó correctamente
+        setTimeout(() => {
+          console.log('🔍 Planning form after patch:', this.form.get('planning')?.value);
+        }, 100);
+      }
+      
       this.form.get('kickOff')?.patchValue(timebox.fases.kickOff || {});
       this.form.get('refinement')?.patchValue(timebox.fases.refinement || {});
       this.form.get('qa')?.patchValue(timebox.fases.qa || {});
@@ -199,16 +250,16 @@ export class FormsComponent implements OnInit {
     } else {
       // Inicializar con datos básicos del timebox
       const basicPlanningData = {
-        nombre: timebox.tipo_nombre || '',
+        nombre: '',
         codigo: '',
-        descripcion: timebox.tipo_definicion || '',
-        tipoTimebox: timebox.tipo_timebox_id || timebox.tipoTimebox,
+        descripcion: '',
+        tipoTimebox: timebox.tipoTimebox,
         eje: '',
         aplicativo: '',
         alcance: '',
         esfuerzo: '',
         fechaInicio: '',
-        teamLeader: '',
+        teamLeader: null,
         adjuntos: [],
         skills: [],
         cumplimiento: [],
@@ -224,6 +275,29 @@ export class FormsComponent implements OnInit {
     // Llenar FormArrays específicos para cada fase.
     if (timebox.fases?.planning) {
       const planningGroup = this.form.get('planning') as FormGroup;
+      
+      console.log('🔍 Planning phase data being patched:', timebox.fases.planning);
+      console.log('🔍 Team Leader from API:', timebox.fases.planning.teamLeader);
+      console.log('🔍 Skills from API:', timebox.fases.planning.skills);
+      console.log('🔍 Completada from API:', timebox.fases.planning.completada);
+      
+      // Patch específico para teamLeader
+      if (timebox.fases.planning.teamLeader) {
+        console.log('🔍 Setting teamLeader in form:', timebox.fases.planning.teamLeader);
+        planningGroup.get('teamLeader')?.setValue(timebox.fases.planning.teamLeader);
+          // Forzar propagación para que el hijo sincronice su input
+          const tlCtrl = planningGroup.get('teamLeader');
+          tlCtrl?.markAsTouched();
+          tlCtrl?.markAsDirty();
+          tlCtrl?.updateValueAndValidity({ emitEvent: true });
+      }
+      
+      // Patch específico para completada
+      if (timebox.fases.planning.completada !== undefined) {
+        console.log('🔍 Setting completada in form:', timebox.fases.planning.completada);
+        planningGroup.get('completada')?.setValue(timebox.fases.planning.completada);
+      }
+      
       timebox.fases.planning.adjuntos?.forEach((adj) =>
         (planningGroup.get('adjuntos') as FormArray).push(
           this.createAdjuntoGroup(adj)
@@ -239,6 +313,13 @@ export class FormsComponent implements OnInit {
           this.createChecklistGroup(check)
         )
       );
+      
+      // Log final del estado del formulario
+      console.log('🔍 Final planning form state:', {
+        teamLeader: planningGroup.get('teamLeader')?.value,
+        skills: planningGroup.get('skills')?.value,
+        completada: planningGroup.get('completada')?.value
+      });
     }
 
     if (timebox.fases?.kickOff) {
@@ -394,26 +475,42 @@ export class FormsComponent implements OnInit {
           timebox.fases.close.solicitudCierre
         );
       }
+
+      if (timebox.fases.close.adjuntosEvidencias) {
+        timebox.fases.close.adjuntosEvidencias?.forEach((adj) =>
+          (closeGroup.get('adjuntosEvidencias') as FormArray).push(
+            this.createAdjuntoGroup(adj)
+          )
+        );
+      }
     }
 
     if (timebox.entrega) {
       const entregaGroup = this.form.get('entrega') as FormGroup;
-      timebox.entrega.participantes?.forEach((part) =>
-        (entregaGroup.get('participantes') as FormArray).push(
-          this.createPersonaGroup(part)
-        )
-      );
       timebox.entrega.adjuntosEntregables?.forEach((adj) =>
         (entregaGroup.get('adjuntosEntregables') as FormArray).push(
           this.createAdjuntoGroup(adj)
         )
       );
-      timebox.entrega.adjuntosEvidencias?.forEach((adj) =>
-        (entregaGroup.get('adjuntosEvidencias') as FormArray).push(
-          this.createAdjuntoGroup(adj)
-        )
-      );
     }
+
+    if (timebox.publicacionOferta) {
+      const publicacionGroup = this.form.get('publicacionOferta') as FormGroup;
+      timebox.publicacionOferta.postulaciones?.forEach((postulacion) => {
+        (publicacionGroup.get('postulaciones') as FormArray).push(
+          this.createPostulacionGroup(postulacion)
+        );
+      });
+    }
+    
+    // Log final del método patchFormValues
+    console.log('🔍 patchFormValues completado - Estado final del formulario:', {
+      planning: this.form.get('planning')?.value,
+      kickOff: this.form.get('kickOff')?.value,
+      refinement: this.form.get('refinement')?.value,
+      qa: this.form.get('qa')?.value,
+      close: this.form.get('close')?.value
+    });
   }
   /**Helper Resetea los arrays del form */
   private resetFormArrays(): void {
@@ -457,17 +554,21 @@ export class FormsComponent implements OnInit {
     this.resetFormArrays(); // Limpia los FormArrays y los reinicializa si es necesario
 
     // Restablece valores por defecto para los controles específicos de fase en la raíz
-    this.form.get('planning')?.patchValue({ completada: false, fechaFase: '' });
-    this.form.get('kickOff')?.patchValue({ completada: false, fechaFase: '' });
+    this.form
+      .get('planning')
+      ?.patchValue({ completada: false, fechaCompletado: '' });
+    this.form
+      .get('kickOff')
+      ?.patchValue({ completada: false, fechaCompletado: '' });
     this.form.get('refinement')?.patchValue({
       completada: false,
-      fechaFase: '',
+      fechaCompletado: '',
     });
-    this.form.get('qa')?.patchValue({ completada: false, fechaFase: '' });
+    this.form.get('qa')?.patchValue({ completada: false, fechaCompletado: '' });
     this.form.get('close')?.patchValue({
       cumplimiento: 'Total',
       completada: false,
-      fechaFase: '',
+      fechaCompletado: '',
     });
     // entrega no tiene 'completada' en tu interfaz
     console.log('FormsComponent: Form reset to initial state.');
@@ -483,7 +584,10 @@ export class FormsComponent implements OnInit {
       participantes: this.fb.array([]),
       adjuntos: this.fb.array([]),
       listaAcuerdos: this.fb.array([]),
-      completada: [revision?.completada || false],
+      cierreSolicitud: this.fb.group({
+        completada: [false],
+        fechaDeRealizacion: [''],
+      }),
     });
   }
   /**Método para actualizar la publicación de la oferta */
@@ -495,9 +599,14 @@ export class FormsComponent implements OnInit {
 
     if (publicar && !publicacionOfertaControl.get('publicado')?.value) {
       publicacionOfertaControl.patchValue({
-        solicitado: false, // Asumiendo que publicar implica que fue solicitado
-        publicado: true,
-        fechaPublicacion: fechaPub.toISOString(),
+        solicitado:
+          publicacionOfertaControl.controls['solicitado'].value || false, // Asumiendo que publicar implica que fue solicitado
+        publicado: publicacionOfertaControl.controls['publicado'].value || true,
+        fechaPublicacion:
+          publicacionOfertaControl.controls['fechaPublicacion'].value ||
+          fechaPub.toISOString(),
+        postulaciones:
+          publicacionOfertaControl.controls['postulaciones'].value || [],
       });
       this.isTimeboxPublished = true; // Actualiza la bandera local
     } else if (!publicar && publicacionOfertaControl.get('publicado')?.value) {
@@ -506,10 +615,17 @@ export class FormsComponent implements OnInit {
     }
   }
   /**Crea un grupo para una postulación */
-  private createPostulacionGroup(): FormGroup {
+  private createPostulacionGroup(postulacion: Postulacion): FormGroup {
     return this.fb.group({
-      fechaPostulacion: [''],
-      desarrollador: [''],
+      id: [postulacion.id || ''],
+      rol: [postulacion.rol || ''],
+      desarrollador: [postulacion.desarrollador || ''],
+      fechaPostulacion: [postulacion.fechaPostulacion || ''],
+      estadoSolicitud: [postulacion.estadoSolicitud || ''],
+      asignacion: this.fb.group({
+        asignado: [postulacion.asignacion.asignado || false],
+        fechaAsignacion: [postulacion.asignacion.fechaAsignacion || ''],
+      }),
     });
   }
   /**Crea un grupo de persona */
@@ -614,7 +730,7 @@ export class FormsComponent implements OnInit {
 
     // Si es el último paso y no está completado, el botón es "Completar Fase".
     if (this.currentStepIndex === this.steps.length - 1 && !isPhaseCompleted) {
-      return 'Completar Fase';
+      return 'Completar Timebox';
     }
 
     // Por defecto para otras fases no completadas.
@@ -684,8 +800,28 @@ export class FormsComponent implements OnInit {
         this.phaseToConfirmName = 'planning-create';
         this.showConfirmModal = true;
       } else {
-        // Es un Timebox existente, solo guardar cambios sin completar la fase ni avanzar
-        this.saveFormAndEmit(phaseKey, false, true, false); // <--- CAMBIO AQUÍ: avanzar después de guardar
+        // Es un Timebox existente, verificar si todos los campos requeridos están llenos
+        const planningForm = this.form.get('planning') as FormGroup;
+        const requiredFields = ['nombre', 'codigo', 'eje', 'aplicativo', 'alcance', 'esfuerzo', 'fechaInicio'];
+        const allRequiredFieldsFilled = requiredFields.every(field => {
+          const value = planningForm.get(field)?.value;
+          return value && (typeof value === 'string' ? value.trim() !== '' : true);
+        });
+
+        // Validar teamLeader por separado ya que puede ser un objeto o string
+        const teamLeaderValue = planningForm.get('teamLeader')?.value;
+        const teamLeaderValid = teamLeaderValue && (
+          typeof teamLeaderValue === 'string' ? teamLeaderValue.trim() !== '' : 
+          typeof teamLeaderValue === 'object' ? teamLeaderValue.id || teamLeaderValue.nombre : false
+        );
+
+        if (allRequiredFieldsFilled && teamLeaderValid && !planningForm.get('completada')?.value) {
+          // Si todos los campos requeridos están llenos y la fase no está completada, completar la fase
+          this.saveFormAndEmit(phaseKey, true, true, false);
+        } else {
+          // Solo guardar cambios sin completar la fase
+          this.saveFormAndEmit(phaseKey, false, true, false);
+        }
       }
     }
     // Lógica específica para KICKOFF
@@ -694,7 +830,7 @@ export class FormsComponent implements OnInit {
 
       if (this.isTimeboxPublished) {
         // Si ya está publicado, solo guardar cambios y avanzar si todos los roles están asignados.
-        this.saveFormAndEmit(phaseKey, false, allRolesAssigned, false); // <--- CAMBIO AQUÍ: avanzar condicionalmente
+        this.saveFormAndEmit(phaseKey, allRolesAssigned, allRolesAssigned, false); // <--- CORREGIDO: marcar como completada si todos los roles están asignados
         if (!allRolesAssigned) {
           alert(
             'Roles de Team Movilization incompletos. Se guardaron los cambios, pero la fase KickOff no se marcó como completada y no se avanzó de paso.'
@@ -707,11 +843,16 @@ export class FormsComponent implements OnInit {
           this.phaseToConfirmName = 'kickoff-publish-and-complete';
           this.showConfirmModal = true;
         } else {
-          // Si FALTAN roles por asignar: Publicar, PERO NO completar KickOff y NO avanzar.
-          this.phaseToConfirmName = 'kickoff-publish-only';
-          this.showConfirmModal = true;
+          // Si FALTAN roles por asignar: Publicar automáticamente sin confirmación
+          this.saveFormAndEmit(phaseKey, false, false, true);
         }
       }
+    } else if (
+      this.buttonText() === 'Completar Timebox' &&
+      !isPhaseCompletedInForm
+    ) {
+      this.phaseToConfirmName = 'close';
+      this.showConfirmModal = true;
     }
     // Lógica para otras fases (Refinement, QA, Close)
     else if (
@@ -758,10 +899,12 @@ export class FormsComponent implements OnInit {
       const isPhaseCurrentlyCompleted =
         groupToUpdate.get('completada')?.value || false;
 
-      const fechaFase = new Date();
+      const fechaCompletado = new Date();
       if (!isPhaseCurrentlyCompleted) {
         groupToUpdate.get('completada')?.setValue(true);
-        groupToUpdate.get('fechaFase')?.setValue(fechaFase.toISOString());
+        groupToUpdate
+          .get('fechaCompletado')
+          ?.setValue(fechaCompletado.toISOString());
         // Notificar al stepper que esta fase se ha completado.
         const index = this.steps.findIndex(
           (s) =>
@@ -781,6 +924,24 @@ export class FormsComponent implements OnInit {
 
     // Obtener todos los valores del formulario
     const formValues = this.form.getRawValue();
+    
+    // Debug: verificar los valores del formulario
+    console.log('🔍 saveFormAndEmit - formValues completos:', formValues);
+    console.log('🔍 saveFormAndEmit - kickOff values:', formValues.kickOff);
+    console.log('🔍 saveFormAndEmit - financiamiento values:', formValues.kickOff?.financiamiento);
+    console.log('🔍 saveFormAndEmit - planning values:', formValues.planning);
+    console.log('🔍 saveFormAndEmit - planning.teamLeader:', formValues.planning?.teamLeader);
+
+    // Debug adicional para financiamiento
+    console.log('🔍 saveFormAndEmit - financiamiento detallado:', {
+      moneda: formValues.kickOff?.financiamiento?.moneda,
+      montoBase: formValues.kickOff?.financiamiento?.montoBase,
+      porcentajeAnticipado: formValues.kickOff?.financiamiento?.porcentajeAnticipado,
+      observaciones: formValues.kickOff?.financiamiento?.observaciones,
+      isValid: formValues.kickOff?.financiamiento?.moneda && 
+               formValues.kickOff?.financiamiento?.montoBase !== null && 
+               formValues.kickOff?.financiamiento?.porcentajeAnticipado !== null
+    });
 
     // Crear el objeto Timebox actualizado
     const updatedTimebox: Timebox = {
@@ -822,6 +983,12 @@ export class FormsComponent implements OnInit {
       }
     }
 
+    // Debug: verificar el objeto final que se envía
+    console.log('🔍 saveFormAndEmit - updatedTimebox final:', updatedTimebox);
+    console.log('🔍 saveFormAndEmit - kickOff final:', updatedTimebox.fases?.kickOff);
+    console.log('🔍 saveFormAndEmit - planning final:', updatedTimebox.fases?.planning);
+    console.log('🔍 saveFormAndEmit - planning.teamLeader final:', updatedTimebox.fases?.planning?.teamLeader);
+    
     // Emitir el formulario completo
     this.formSubmit.emit(updatedTimebox);
 

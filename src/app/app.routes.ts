@@ -14,6 +14,21 @@ export const routes: Routes = [
     data: { breadcrumb: 'Proyectos' },
   },
   {
+    path: 'home',
+    loadComponent: () =>
+      import('./features/general/pages/inicio/inicio.component').then(
+        (m) => m.InicioComponent
+      ),
+  },
+  {
+    path: 'home/:nombreProyecto',
+    loadComponent: () =>
+      import(
+        './features/general/pages/detalle-proyecto/detalle-proyecto.component'
+      ).then((m) => m.DetalleProyectoComponent),
+  },
+
+  {
     path: 'timebox-maintainer',
     loadComponent: () =>
       import(
@@ -67,7 +82,20 @@ export const routes: Routes = [
       // Puedes añadir más rutas para otros tipos de contenido dentro de subcarpetas si es necesario
     ],
   },
-
+{
+    path: 'mis-pagos',
+    loadComponent: () =>
+      import('./features/finanzas/pages/mis-pagos/mis-pagos.component').then(
+        (m) => m.MisPagosComponent
+      ),
+  },
+  {
+    path: 'ordenes-pago',
+    loadComponent: () =>
+      import(
+        './features/finanzas/pages/orden-de-pago/orden-de-pago.component'
+      ).then((m) => m.OrdenDePagoComponent),
+  },
   {
     path: '**',
     redirectTo: '',

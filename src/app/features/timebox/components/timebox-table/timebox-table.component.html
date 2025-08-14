@@ -1,33 +1,37 @@
 <div class="dashboard rounded-md">
   <div class="table-container">
     <table class="custom-table rounded-sm">
-      <thead>
+      <thead class="min-w-full divide-y divide-[var(--lines)]">
         <tr>
-          <th *ngFor="let label of tableLabels">{{ label }}</th>
+          <th
+            *ngFor="let label of tableLabels"
+            scope="col"
+            class="px-6 py-3 text-left text-xs font-medium text-[var(--text-medium)] uppercase tracking-wider"
+          >
+            {{ label }}
+          </th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="bg-[var(--backgroundLight)] divide-y divide-[var(--lines)]">
         <tr
           *ngFor="let timebox of timeboxes"
           (click)="onSelectTimebox(timebox)"
-          class="cursor-pointer hover:bg-[var(--backgroundMain)] duration-200"
+          class="cursor-pointer hover:bg-[var(--backgroundMain)] transition-colors duration-200"
           [class.selected]="timebox.id === selectedTimebox.id"
         >
           <td>
-            {{ timebox.tipo_nombre || (timebox.fases && timebox.fases.planning && timebox.fases.planning.nombre) || "Sin nombre" }}
+            {{ timebox.fases.planning?.nombre }}
           </td>
           <td>
-            {{ timebox.tipo_nombre || timebox.tipoTimebox || "Sin tipo" }}
+            {{ timebox.tipoTimebox }}
           </td>
           <td>
-            {{ (timebox.fases && timebox.fases.planning && timebox.fases.planning.esfuerzo) || "Sin definir" }}
+            {{ timebox.fases.planning?.esfuerzo || "Sin definir" }}
           </td>
           <td>
             {{
-              getFormattedDate(
-                (timebox.fases && timebox.fases.planning && timebox.fases.planning.fecha_inicio) || 
-                (timebox.fases && timebox.fases.planning && timebox.fases.planning.fechaInicio)
-              ) || "Sin definir"
+              getFormattedDate(timebox.fases.planning?.fechaInicio) ||
+                "Sin definir"
             }}
           </td>
           <td>
@@ -40,6 +44,29 @@
               class="flex items-center text-xs font-semibold py-1.5 px-3 rounded-full w-fit"
               [ngClass]="{
                 'bg-yellow-100 text-yellow-700':
+                  getTipoPendiente(timebox) === 'Entrega',
+                'bg-green-100 text-green-700':
+                  getTipoPendiente(timebox) === 'Cierre',
+                'bg-indigo-100 text-indigo-700':
+                  getTipoPendiente(timebox) === 'Revision',
+                'bg-gray-100 text-gray-700':
+                  getTipoPendiente(timebox) === 'Ninguno'
+              }"
+            >
+              <ng-container [ngSwitch]="getTipoPendiente(timebox)">
+                <ng-container *ngSwitchCase="'Entrega'">Entrega</ng-container>
+                <ng-container *ngSwitchCase="'Cierre'">Cierre</ng-container>
+                <ng-container *ngSwitchCase="'Revision'">Revisión</ng-container>
+                <ng-container *ngSwitchCase="'Ninguno'"> N/A </ng-container>
+              </ng-container>
+            </div>
+          </td>
+
+          <td>
+            <div
+              class="flex items-center text-xs font-semibold py-1.5 px-3 rounded-full w-fit"
+              [ngClass]="{
+                'bg-yellow-100 text-yellow-700':
                   timebox.estado === 'En Definición',
                 'bg-green-100 text-green-700': timebox.estado === 'Disponible',
                 'bg-indigo-100 text-indigo-700':
@@ -47,7 +74,18 @@
                 'bg-gray-100 text-gray-700': timebox.estado === 'Finalizado'
               }"
             >
-              {{ timebox.estado || 'Sin definir' }}
+              <ng-container *ngIf="timebox.estado === 'En Definición'"
+                >En Definición</ng-container
+              >
+              <ng-container *ngIf="timebox.estado === 'Disponible'"
+                >Publicado</ng-container
+              >
+              <ng-container *ngIf="timebox.estado === 'En Ejecución'"
+                >En Ejecución</ng-container
+              >
+              <ng-container *ngIf="timebox.estado === 'Finalizado'"
+                >Finalizado</ng-container
+              >
             </div>
           </td>
         </tr>

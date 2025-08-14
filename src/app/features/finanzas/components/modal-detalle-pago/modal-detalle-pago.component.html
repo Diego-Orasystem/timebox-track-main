@@ -1,0 +1,381 @@
+<div
+  *ngIf="show"
+  class="fixed inset-0 flex items-center justify-center z-50 p-4"
+>
+  <!-- Overlay para cerrar el modal al hacer clic fuera -->
+  <div
+    class="absolute inset-0 bg-black opacity-30"
+    (click)="handleClose()"
+  ></div>
+
+  <!-- Contenedor principal del modal -->
+  <div
+    class="relative bg-[var(--backgroundLight)] rounded-xl shadow-2xl p-8 max-w-xl w-full mx-auto my-8 flex flex-col gap-6"
+    *ngIf="pago; else noPago"
+  >
+    <!-- Encabezado del modal -->
+    <div>
+      <h2 class="text-[var(--darkText)] font-extrabold text-2xl mb-2">
+        Orden de Pago
+      </h2>
+      <p class="text-[var(--text-medium)] text-sm">
+        Revisa el detalle del monto y visualiza/adjunta tu documento de
+        facturación (Boleta de Honorarios u otro).
+      </p>
+    </div>
+
+    <!-- Contenido desplazable del modal -->
+    <div class="flex flex-col gap-6 overflow-y-auto h-[75vh] pr-2">
+      <!-- Contenedor para las dos columnas principales: Resumen y Datos de Facturación -->
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Sección de Resumen del Pago (Columna 1) -->
+        <div class="flex flex-col gap-4">
+          <div
+            class="bg-[var(--backgroundMain)] rounded-lg p-6 space-y-4 text-[var(--darkText)]"
+          >
+            <!-- ID y Timebox + Estado -->
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <span class="text-xs text-[var(--text-medium)] font-mono">{{
+                  pago.dataTimebox.idTimebox
+                }}</span>
+                <a
+                  href="#"
+                  class="text-sm text-[var(--primary)] font-medium underline"
+                >
+                  {{ pago.dataTimebox.nombreTimebox }}
+                </a>
+              </div>
+              <!-- Badge de Estado -->
+              <div
+                class="px-3 py-1 text-xs font-semibold rounded-full w-fit"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700':
+                    pago.ordenDePago.estado === 'Solicitado',
+                  'bg-green-100 text-green-700':
+                    pago.ordenDePago.estado === 'Pagado',
+                  'bg-indigo-100 text-indigo-700':
+                    pago.ordenDePago.estado === 'Aprobado',
+                  'bg-gray-100 text-gray-700':
+                    pago.ordenDePago.estado === 'Rechazado'
+                }"
+              >
+                {{ pago.ordenDePago.estado }}
+              </div>
+            </div>
+
+            <hr class="border-[var(--lines)]" />
+
+            <!-- Título Resumen -->
+            <span class="font-semibold text-base text-[var(--darkText)]"
+              >Resumen</span
+            >
+
+            <!-- Detalles del Monto -->
+            <div class="flex justify-between items-center text-sm mt-3">
+              <span class="text-[var(--text-medium)]">Monto base</span>
+              <span class="font-medium">{{
+                formatCurrency(pago.ordenDePago.montoBase)
+              }}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]"
+                >Porcentaje Entrega Anticipada</span
+              >
+              <span class="font-medium">{{
+                formatPercentage(pago.ordenDePago.porcentajeEntregaAnt)
+              }}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]">Monto Total</span>
+
+              <span class="font-bold">{{
+                formatCurrency(
+                  calcularMontoTotal(
+                    pago.ordenDePago.montoBase,
+                    pago.ordenDePago.porcentajeEntregaAnt
+                  )
+                )
+              }}</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]"
+                >Retención SII (14,5%)</span
+              >
+              <span class="font-medium">{{
+                formatCurrency(
+                  calcularMontoSII(
+                    calcularMontoTotal(
+                      pago.ordenDePago.montoBase,
+                      pago.ordenDePago.porcentajeEntregaAnt
+                    )
+                  )
+                )
+              }}</span>
+            </div>
+
+            <hr class="border-[var(--lines)]" />
+
+            <!-- Glosa -->
+            <div class="flex justify-between items-start text-sm">
+              <span class="font-semibold text-base text-[var(--darkText)]"
+                >Glosa</span
+              >
+              <span class="text-[var(--text-medium)] text-right max-w-[60%]">{{
+                pago.ordenDePago.glosa
+              }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de Datos de Facturación (Columna 2) -->
+        <div class="flex flex-col gap-4">
+          <div
+            class="bg-[var(--backgroundMain)] rounded-lg p-6 space-y-4 text-[var(--darkText)]"
+          >
+            <h3 class="font-semibold text-base text-[var(--darkText)]">
+              Datos de Facturación
+            </h3>
+            <hr class="border-[var(--lines)]" />
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]">RUT</span>
+              <span class="font-medium">76.522.832-8</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]">Empresa</span>
+              <span class="font-medium">FIts Innovaciones SpA</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]">Dirección</span>
+              <span class="font-medium">Colipi 867</span>
+            </div>
+            <div class="flex justify-between items-center text-sm">
+              <span class="text-[var(--text-medium)]">Comuna</span>
+              <span class="font-medium">Copiapó</span>
+            </div>
+            <div class="flex justify-between items-start text-sm">
+              <span class="text-[var(--text-medium)] mr-4">Giro</span>
+              <span
+                class="font-medium text-right whitespace-pre-line max-w-[60%]"
+                >Consultoria y comercializacion de soluciones tecnologicas</span
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Documentos (Ancho completo debajo de las columnas) -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-semibold text-base text-[var(--darkText)]">
+          Documentos
+        </h3>
+
+        <!-- Área de Subida de Archivo (si no hay documento de facturación) -->
+        <div
+          *ngIf="!pago.ordenDePago.documentoFacturacion"
+          class="file-upload-container border-2 border-dashed border-[var(--lines)] rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 hover:border-[var(--primary)]"
+          (click)="fileName ? null : fileInput.click()"
+        >
+          <input
+            type="file"
+            #fileInput
+            (change)="onFileSelected($event)"
+            class="hidden"
+            accept=".pdf,.doc,.docx,.jpg,.png"
+          />
+          <ng-container *ngIf="!fileName; else fileInfo">
+            <div
+              class="flex flex-col items-center justify-center text-[var(--text-medium)]"
+            >
+              <!-- Icono de Nube -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-cloud-upload"
+              >
+                <path
+                  d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"
+                />
+                <path d="M12 12v9" />
+                <path d="m16 16-4-4-4 4" />
+              </svg>
+              <p class="mt-2 text-sm font-medium">
+                Adjunta el documento de facturación. Haz click para
+                <span class="text-[var(--primary)] font-semibold"
+                  >seleccionar un archivo.</span
+                >
+              </p>
+              <p class="text-xs text-[var(--text-light)] mt-1">
+                PDF, DOC, DOCX, JPG, PNG
+              </p>
+            </div>
+          </ng-container>
+
+          <!-- Información del archivo seleccionado -->
+          <ng-template #fileInfo>
+            <div
+              class="flex items-center justify-center gap-3 text-sm font-medium text-[var(--darkText)]"
+            >
+              <!-- Icono de Archivo -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-file text-[var(--primaryDark)]"
+              >
+                <path
+                  d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+                />
+                <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+              </svg>
+              <span class="truncate max-w-[calc(100%-60px)]">{{
+                fileName
+              }}</span>
+              <button
+                (click)="removeFile($event)"
+                class="text-[var(--gray)] hover:text-[var(--accent)] transition-colors duration-200 text-xl leading-none p-1 rounded-full"
+                title="Eliminar archivo"
+              >
+                &times;
+              </button>
+            </div>
+          </ng-template>
+        </div>
+
+        <!-- Documento de Facturación Adjunto -->
+        <div *ngIf="pago.ordenDePago.documentoFacturacion">
+          <h4 class="text-sm font-medium text-[var(--darkText)] mb-2">
+            Boleta de Honorarios Adjunta
+          </h4>
+          <div
+            class="inline-flex items-center w-full justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-lg border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+          >
+            <span
+              class="w-fit text-[var(--primary)] text-sm mb-1 sm:mb-0 truncate"
+            >
+              {{ pago.ordenDePago.documentoFacturacion.nombre }}
+            </span>
+            <div
+              class="inline-flex justify-end w-full items-center text-xs text-[var(--text-medium)] sm:ml-2"
+            >
+              Fecha adjunto:
+              <span class="ml-1 font-medium">{{
+                getFormattedDate(
+                  pago.ordenDePago.documentoFacturacion.fechaAdjunto
+                )
+              }}</span>
+              <!-- Icono de Descarga -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-download ml-2 text-[var(--primary)] cursor-pointer hover:text-[var(--primaryDark)]"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Comprobante de Pago Adjunto -->
+        <div *ngIf="pago.ordenDePago.pago?.comprobantePago">
+          <h4 class="text-sm font-medium text-[var(--darkText)] mb-2">
+            Comprobante de Pago
+          </h4>
+          <div
+            class="flex flex-col sm:flex-row items-start sm:items-center justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-lg border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+          >
+            <span
+              class="flex-grow text-[var(--primary)] text-sm mb-1 sm:mb-0 truncate"
+            >
+              {{ pago.ordenDePago.pago?.comprobantePago?.nombre }}
+            </span>
+            <div
+              class="flex items-center text-xs text-[var(--text-medium)] sm:ml-2"
+            >
+              Fecha Pago:
+              <span class="ml-1 font-medium">{{
+                pago.ordenDePago.pago?.fechaPago
+              }}</span>
+              <!-- Icono de Descarga -->
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-download ml-2 text-[var(--primary)] cursor-pointer hover:text-[var(--primaryDark)]"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" x2="12" y1="15" y2="3" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div
+        *ngIf="!pago.ordenDePago.documentoFacturacion"
+        class="buttonContainer inline-flex justify-between items-center gap-4"
+      >
+        <button
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+        >
+          Cerrar
+        </button>
+        <button
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mensaje si no se encuentra el pago -->
+  <ng-template #noPago>
+    <div
+      class="relative bg-[var(--backgroundLight)] rounded-xl shadow-2xl p-8 max-w-sm w-full text-center text-[var(--darkText)]"
+    >
+      <p class="text-lg font-semibold">No se encontró el pago asociado.</p>
+      <p class="text-[var(--text-medium)] text-sm mt-2">
+        Por favor, verifica la información e intenta de nuevo.
+      </p>
+      <button
+        (click)="handleClose()"
+        class="mt-6 px-6 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-lg font-semibold hover:bg-[var(--primaryDark)] transition-colors duration-200"
+      >
+        Cerrar
+      </button>
+    </div>
+  </ng-template>
+</div>

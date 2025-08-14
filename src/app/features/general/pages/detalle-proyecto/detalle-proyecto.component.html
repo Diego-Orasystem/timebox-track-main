@@ -1,0 +1,132 @@
+<div class="p-10 flex flex-col gap-10 w-full">
+  <!-- Encabezado y acciones -->
+  <div
+    class="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+  >
+    <div class="flex flex-col select-none">
+      <h1 class="text-md font-extrabold text-[var(--text-dark)]">
+        Apps del proyecto
+      </h1>
+      <h2 class="text-xl font-bold text-[var(--primary)] mb-2">
+        {{ nombreProyecto }}
+      </h2>
+      <p class="text-sm text-[var(--text-medium)]">
+        Visualiza los accesos directos a las secciones activas de cada
+        aplicación.
+      </p>
+    </div>
+
+    <!-- Barra de búsqueda y botón -->
+    <div class="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+      <input
+        [(ngModel)]="busqueda"
+        type="text"
+        placeholder="Buscar aplicación..."
+        class="w-full sm:w-80 px-5 py-3 text-xs border border-[var(--lines)] rounded-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)] bg-[var(--backgroundLight)] text-[var(--text-dark)] placeholder:text-slate-500"
+      />
+      <button
+        class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-between px-5 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primaryDark)] transition-colors duration-200"
+      >
+        <svg
+          class="mr-2"
+          width="20"
+          height="20"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Crear app
+      </button>
+    </div>
+  </div>
+
+  <!-- Tarjetas de aplicaciones -->
+  <div
+    *ngIf="appsFiltradas.length > 0"
+    class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
+  >
+    <div
+      *ngFor="let app of appsFiltradas"
+      class="p-6 rounded-lg shadow-md hover:shadow-xl transition border border-[var(--lines)] bg-[var(--backgroundLight)] flex flex-col gap-4"
+    >
+      <div class="flex justify-between items-center">
+        <h2 class="text-lg font-bold text-[var(--primary)]">
+          {{ app.nombre }}
+        </h2>
+        <!-- Estado (ficticio) -->
+        <span
+          class="text-xs px-2 py-1 rounded-full font-semibold capitalize"
+          [ngClass]="{
+            'bg-green-100 text-green-700': app.estado === 'activa',
+            'bg-yellow-100 text-yellow-700': app.estado === 'en desarrollo',
+            'bg-red-100 text-red-700': app.estado === 'mantenimiento'
+          }"
+        >
+          {{ app.estado }}
+        </span>
+      </div>
+
+      <p class="text-sm text-[var(--text-medium)]">
+        {{ app.descripcion }}
+      </p>
+
+      <!-- Datos adicionales (ficticios) -->
+      <div class="text-xs text-[var(--text-light)] flex flex-col gap-1">
+        <span
+          ><strong>Team:</strong>
+          <span>
+            {{ obtenerTeam(app) }}
+          </span></span
+        >
+        <span><strong>Version:</strong> {{ app.version || "1.0.0" }}</span>
+      </div>
+
+      <!-- Enlaces -->
+      <div class="inline-flex flex-wrap gap-2 mt-2">
+        <a
+          *ngFor="let item of app.enlaces"
+          [href]="item.url"
+          target="_blank"
+          class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-full bg-indigo-400 text-white hover:bg-[var(--primaryDark)] duration-150"
+        >
+          <svg
+            class="w-4 h-4 text-white"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M14 5l7 7m0 0l-7 7m7-7H3"
+            ></path>
+          </svg>
+
+          {{ item.nombre }}
+        </a>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mt-2 text-[10px]">
+        <span
+          class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
+        >
+          👥 Colaboradores: {{ getCantidadColaboradores(app) }}
+        </span>
+        <span
+          class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
+        >
+          🛠️ Timeboxes: {{ getCantidadTimeboxes(app) }}
+        </span>
+        <span
+          class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
+        >
+          📊 Progreso: {{ getProgreso(app) }}%
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

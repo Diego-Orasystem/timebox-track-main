@@ -17,8 +17,10 @@ import {
   Timebox,
 } from '../../../../shared/interfaces/timebox.interface';
 import { TimeboxService } from '../../services/timebox.service';
+import { formatDate } from '../../../../shared/helpers/date-formatter';
+import { RequestDetailsModalComponent } from './components/request-details-modal.component';
 
-interface FlattenedRequest {
+export interface FlattenedRequest {
   timeboxId: string;
   timeboxName: string;
   timeboxStatus: string;
@@ -30,7 +32,7 @@ interface FlattenedRequest {
 @Component({
   selector: 'app-timebox-requests',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RequestDetailsModalComponent],
   templateUrl: './timebox-requests.component.html',
 })
 export class TimeboxRequestsComponent implements OnInit {
@@ -141,8 +143,18 @@ export class TimeboxRequestsComponent implements OnInit {
 
   // --- Acciones del Team Leader (sin cambios) ---
 
+  // Propiedades para el modal
+  selectedRequest: FlattenedRequest | null = null;
+  showDetailsModal = false;
+
   viewRequestDetails(request: FlattenedRequest): void {
-    console.log('Detalles de la solicitud:', request);
+    this.selectedRequest = request;
+    this.showDetailsModal = true;
+  }
+
+  closeDetailsModal(): void {
+    this.selectedRequest = null;
+    this.showDetailsModal = false;
   }
 
   acceptRequest(request: FlattenedRequest): void {
@@ -226,5 +238,11 @@ export class TimeboxRequestsComponent implements OnInit {
 
   refreshRequests(): void {
     this.refreshTriggerSubject.next(true);
+  }
+
+  getFormattedDate(date: string | undefined): string {
+    if (date == undefined || date == '') return '';
+    const dateToDate = new Date(date);
+    return formatDate(dateToDate);
   }
 }

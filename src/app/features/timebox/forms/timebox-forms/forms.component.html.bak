@@ -1,0 +1,188 @@
+<form
+  [formGroup]="form"
+  class="px-3 pt-6 flex flex-col place-content-between h-fit"
+>
+  <ng-container [ngSwitch]="currentStepIndex">
+    <app-planning
+      formGroupName="planning"
+      #stepComponent
+      *ngSwitchCase="0"
+      (autoSaveRequest)="handleTimeboxSaveRequest($event)"
+    ></app-planning>
+    <app-kickoff
+      formGroupName="kickOff"
+      #stepComponent
+      *ngSwitchCase="1"
+      (autoSaveRequest)="handleTimeboxSaveRequest($event)"
+    ></app-kickoff>
+    <app-refinement
+      [timeboxData]="timeboxData"
+      formGroupName="refinement"
+      #stepComponent
+      *ngSwitchCase="2"
+    ></app-refinement>
+    <app-qa formGroupName="qa" #stepComponent *ngSwitchCase="3"></app-qa>
+    <app-close
+      formGroupName="close"
+      #stepComponent
+      *ngSwitchCase="4"
+    ></app-close>
+  </ng-container>
+
+  <!--Botones-->
+  <div class="buttons inline-flex items-end place-content-end space-x-4">
+    <button
+      (click)="handleCompletarPaso()"
+      type="button"
+      class="px-4 py-3 text-[12px] font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+      *ngIf="currentStepIndex < steps.length"
+    >
+      <ng-container [ngSwitch]="buttonText()">
+        <ng-container *ngSwitchCase="'Guardar Timebox'"
+          >Guardar Timebox</ng-container
+        >
+        <ng-container *ngSwitchCase="'Guardar y Publicar'"
+          >Guardar y Publicar</ng-container
+        >
+        <ng-container *ngSwitchCase="'Guardar Cambios'"
+          >Guardar Cambios</ng-container
+        >
+        <ng-container *ngSwitchCase="'Completar Fase'"
+          >Completar Fase</ng-container
+        >
+      </ng-container>
+    </button>
+  </div>
+</form>
+
+<!--Modal-->
+
+<div
+  *ngIf="showConfirmModal"
+  class="fixed inset-0 flex items-center justify-center z-50"
+>
+  <div
+    class="absolute inset-0 bg-black opacity-30 backdrop-blur-lg"
+    (click)="cancelConfirmation()"
+  ></div>
+
+  <div class="relative bg-white p-6 rounded-md shadow-xl max-w-sm w-full mx-4">
+    <div class="content-modal w-full px-2 py-2 flex flex-col gap-3">
+      <h3 class="text-md font-semibold">
+        <ng-container [ngSwitch]="phaseToConfirmName">
+          <ng-container *ngSwitchCase="'planning'"
+            >Guardar timebox</ng-container
+          >
+          <ng-container *ngSwitchCase="'kickoff-publish'"
+            >Confirmar Publicación</ng-container
+          >
+          <ng-container *ngSwitchDefault
+            >Confirmar Completar Etapa</ng-container
+          >
+        </ng-container>
+      </h3>
+
+      <p
+        *ngIf="phaseToConfirmName === 'planning'"
+        class="text-gray-700 mb-6 text-[13px]"
+      >
+        ¿Confirmas crear un nuevo timebox?
+      </p>
+
+      <div *ngIf="phaseToConfirmName === 'kickoff-publish'" class="mb-6">
+        <p class="text-gray-700 mb-1 text-sm">
+          Algunos roles del equipo no han sido asignados.
+          <span class="font-semibold"
+            >¿Estás seguro de que deseas publicar este Timebox?</span
+          >
+        </p>
+        <p class="text-gray-700 text-[11px]">
+          Una vez publicado, estará visible para que los colaboradores soliciten
+          roles disponibles.
+        </p>
+      </div>
+
+      <p
+        *ngIf="
+          phaseToConfirmName !== 'planning' &&
+          phaseToConfirmName !== 'kickoff-publish'
+        "
+        class="text-gray-700 mb-6 text-[13px]"
+      >
+        ¿Estás seguro de que deseas marcar la etapa "<span
+          class="font-semibold capitalize"
+          >{{ phaseToConfirmName }}</span
+        >" como completada? Una vez completada, los cambios serán guardados.
+      </p>
+
+      <div class="flex justify-end space-x-3">
+        <button
+          (click)="cancelConfirmation()"
+          class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-sm hover:bg-gray-300 focus:outline-none cursor-pointer"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmCompletion()"
+          class="px-4 py-2 text-sm font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer"
+        >
+          <ng-container [ngSwitch]="phaseToConfirmName">
+            <ng-container *ngSwitchCase="'planning'">Guardar</ng-container>
+            <ng-container *ngSwitchCase="'kickoff-publish'"
+              >Publicar</ng-container
+            >
+            <ng-container *ngSwitchDefault>Completar</ng-container>
+          </ng-container>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* From Uiverse.io by 00Kubi */
+  .card {
+    width: 350px;
+    height: 220px;
+    background-color: rgb(255, 255, 255);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 30px;
+    gap: 13px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 2px 2px 20px rgba(0, 0, 0, 0.062);
+  }
+
+  .titleHeading {
+    font-size: 1.2em;
+    font-weight: 800;
+    color: rgb(26, 26, 26);
+  }
+
+  .modalDescription {
+    text-align: center;
+    font-size: 0.7em;
+    font-weight: 600;
+    color: rgb(99, 99, 99);
+  }
+
+  .modalDescription a {
+    --tw-text-opacity: 1;
+    color: rgb(59 130 246);
+  }
+
+  .modalDescription a:hover {
+    -webkit-text-decoration-line: underline;
+    text-decoration-line: underline;
+  }
+
+  .buttonContainer {
+    display: flex;
+    gap: 20px;
+    flex-direction: row;
+  }
+</style>

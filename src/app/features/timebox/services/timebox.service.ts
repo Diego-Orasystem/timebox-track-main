@@ -140,13 +140,24 @@ export class TimeboxService {
   createTimebox(projectId: string, initialTimeboxData: Timebox): Timebox {
     const newTimebox: Timebox = {
       id: uuidv4(),
-      projectId: projectId, // Añade el projectId para poder filtrar más tarde
+      projectId: projectId,
+      appId: initialTimeboxData.appId || 'default-app',
       tipoTimebox: initialTimeboxData.tipoTimebox || 'default-type',
-      monto: initialTimeboxData.monto,
+      businessAnalyst: initialTimeboxData.businessAnalyst,
+      estado: initialTimeboxData.estado || 'En Definición',
       publicacionOferta: initialTimeboxData.publicacionOferta,
       fases: initialTimeboxData.fases || {},
       entrega: initialTimeboxData.entrega,
-    } as Timebox; // Asegúrate de que Timebox tiene una propiedad 'projectId'
+      compensacionEconomica: initialTimeboxData.compensacionEconomica || {
+        skills: [],
+        esfuerzoHH: 0,
+        entregaAnticipada: {
+          duracionEstimadaDias: 0,
+          valorBase: 0,
+          bonificaciones: []
+        }
+      }
+    };
 
     newTimebox.estado = this.determineTimeboxState(newTimebox); // Determinar estado inicial
     this.registerOrUpdateTimebox(newTimebox, 'add'); // Registrarlo en la colección global

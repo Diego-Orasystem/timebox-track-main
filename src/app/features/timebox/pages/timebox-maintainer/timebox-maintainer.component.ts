@@ -176,19 +176,19 @@ export class TimeboxMaintainerComponent {
     this.timeboxTypeForm.reset();
     this.clearFormArrays();
 
-    // Usar campos del backend si están disponibles, sino usar campos del frontend
-    const entregables = type.entregables_comunes || type.entregablesComunes || [];
-    const evidencias = type.evidencias_cierre || type.evidenciasCierre || [];
+    // Usar campos del frontend
+    const entregables = type.entregablesComunes || [];
+    const evidencias = type.evidenciasCierre || [];
 
     this.timeboxTypeForm.patchValue({
       ...type,
-      categoriaId: type.categoria_id || type.categoriaId
+      categoriaId: type.categoriaId
     });
 
-    entregables.forEach((item) =>
+    entregables.forEach((item: string) =>
       this.entregablesComunes.push(this.fb.control(item))
     );
-    evidencias.forEach((item) =>
+    evidencias.forEach((item: string) =>
       this.evidenciasCierre.push(this.fb.control(item))
     );
 

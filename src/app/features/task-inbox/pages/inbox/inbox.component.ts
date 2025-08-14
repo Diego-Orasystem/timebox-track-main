@@ -24,6 +24,7 @@ import { TimeboxTypeService } from '../../../timebox/pages/timebox-maintainer/se
 interface FileWithType {
   file: File;
   type: string;
+  fechaAdjunto: string;
 }
 @Component({
   selector: 'app-inbox',
@@ -42,7 +43,7 @@ export class InboxComponent implements OnInit {
 
   // Propiedades para manejar la postulación de roles
   rolesDisponibles: string[] = []; // Para almacenar los nombres de los roles
-  rolSeleccionadoParaPostular: string | null = null;
+  rolesSeleccionados: string[] = []; // Para almacenar los roles seleccionados por el usuario
 
   filterState: 'Disponible' | 'Solicitado' | 'Asignado' | 'Finalizado' =
     'Disponible';
@@ -82,9 +83,10 @@ export class InboxComponent implements OnInit {
 
   dateFileInput = '';
   showModalHorario = false;
-  modalModo: 'Revision' | 'Cierre' = 'Revision';
+  modalModo: 'Revision' | 'Entrega' | 'Cierre' = 'Revision';
   tbxaEntregar: Timebox | null = null;
   showModalConfirmacion = false;
+  operacion: 'Revision' | 'Entrega' | 'Cierre' = 'Entrega';
 
   constructor(
     private timeboxPublicoService: TimeboxService,
@@ -96,39 +98,88 @@ export class InboxComponent implements OnInit {
     this.loadTimeboxes();
   }
 
+  /**
+   * Formatea el monto del financiamiento o retorna 'No definido' si no existe
+   */
+  formatFinanciamientoMonto(timebox: Timebox): string {
+    const monto = timebox.fases?.kickOff?.financiamiento?.montoBase;
+    return monto ? this.formatCurrency(monto) : 'No definido';
+  }
+
+  /**
+   * Formatea el monto del financiamiento del timebox seleccionado o retorna 'No definido' si no existe
+   */
+  formatFinanciamientoMontoSeleccionado(): string {
+    if (!this.timeboxSeleccionado) return 'No definido';
+    const monto = this.timeboxSeleccionado.fases?.kickOff?.financiamiento?.montoBase;
+    return monto ? this.formatCurrency(monto) : 'No definido';
+  }
+
   // --- Timebox --- //
 
   /**Cargar todos los timeboxes */
   loadTimeboxes(): void {
     this.timeboxPublicoService.getPublishedTimeboxes().subscribe({
       next: (timeboxes) => {
+        console.log('DEBUG - Timeboxes cargados del backend:', timeboxes);
+        
+        // Debug: Buscar específicamente TEST1108
+        const test1108 = timeboxes.find(t => t.fases?.planning?.codigo === 'TEST1108');
+        if (test1108) {
+          console.log('DEBUG - TEST1108 encontrado en backend:', {
+            id: test1108.id,
+            codigo: test1108.fases?.planning?.codigo,
+            estado: test1108.estado,
+            publicacionOferta: test1108.publicacionOferta,
+            postulaciones: test1108.publicacionOferta?.postulaciones
+          });
+        }
+        
         this.timeboxes = timeboxes;
         this.applyFilters();
-        console.log('Timeboxes Publicados cargados:', this.timeboxes);
       },
       error: (error) => {
         console.error('Error cargando timeboxes:', error);
-        this.timeboxes = [];
-        this.applyFilters();
       }
     });
   }
 
   /** Aplicar filtros */
   applyFilters(): void {
+    console.log('DEBUG - Aplicando filtros. Filtro activo:', this.filterState);
+    
     let filtrados = [...this.timeboxes];
 
     switch (this.filterState) {
       case 'Disponible':
         filtrados = filtrados.filter(
-          (s) =>
-            s.estado === 'Disponible' &&
-            (!s.fases?.kickOff?.teamMovilization?.solutionDeveloper?.nombre ||
-              s.fases?.kickOff?.teamMovilization?.solutionDeveloper?.nombre ===
-                '') &&
-            !s.publicacionOferta?.postulaciones?.some(
-              (p) => p.desarrollador === this.usuario
-            )
+          (s) => {
+            const estadoOk = s.estado === 'Disponible';
+            
+            // Un timebox está disponible si:
+            // 1. Tiene estado "Disponible"
+            // 2. Y tiene roles disponibles para postular (no todos los roles están asignados)
+            
+            // Verificar si hay roles disponibles
+            const teamMovilization = s.fases?.kickOff?.teamMovilization;
+            const rolesDisponibles = this.getRolesDisponiblesParaTimebox(s);
+            const hayRolesDisponibles = rolesDisponibles.length > 0;
+            
+            // Debug: Log para el timebox TEST1108
+            if (s.fases?.planning?.codigo === 'TEST1108') {
+              console.log('DEBUG TEST1108:', {
+                codigo: s.fases.planning.codigo,
+                estado: s.estado,
+                estadoOk,
+                teamMovilization,
+                rolesDisponibles,
+                hayRolesDisponibles,
+                resultado: estadoOk && hayRolesDisponibles
+              });
+            }
+            
+            return estadoOk && hayRolesDisponibles;
+          }
         );
         break;
 
@@ -158,17 +209,14 @@ export class InboxComponent implements OnInit {
 
       case 'Finalizado':
         filtrados = filtrados.filter(
-          (s) =>
-            s.estado === 'Finalizado' &&
-            s.fases?.kickOff?.teamMovilization.solutionDeveloper?.nombre ===
-              this.usuario
+          (s) => s.estado === 'Finalizado' && this.isTimeboxAsignado(s)
         );
         break;
     }
 
     if (this.filterSkill) {
       filtrados = filtrados.filter((timebox) =>
-        timebox.fases.planning?.skills?.some(
+        timebox.fases.planning?.skills.some(
           (skill) => skill.nombre === this.filterSkill
         )
       );
@@ -205,8 +253,8 @@ export class InboxComponent implements OnInit {
     this.obtenerRolesDisponibles();
 
     // Si rolesDisponibles tiene elementos, selecciona el primero. Si no, ponlo a null.
-    this.rolSeleccionadoParaPostular =
-      this.rolesDisponibles.length > 0 ? this.rolesDisponibles[0] : null;
+    // this.rolSeleccionadoParaPostular =
+    //   this.rolesDisponibles.length > 0 ? this.rolesDisponibles[0] : null;
   }
 
   // --- Helpers --- //
@@ -235,7 +283,21 @@ export class InboxComponent implements OnInit {
 
   /**Obtener las revisiones de un timebox existente */
   getRevisiones(tbx: Timebox) {
-    return tbx.fases?.refinement?.revisiones;
+    return tbx.fases.refinement?.revisiones;
+  }
+
+  /**
+   * Formatea un valor numérico como moneda chilena (CLP).
+   * @param value El número a formatear.
+   * @returns El número formateado como string de moneda.
+   */
+  formatCurrency(value: number): string {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP',
+      minimumFractionDigits: 0, // No decimales para pesos chilenos
+      maximumFractionDigits: 0,
+    }).format(value);
   }
 
   /** Agrupar las skills por tipo conceptual */
@@ -258,7 +320,8 @@ export class InboxComponent implements OnInit {
 
   /** Formatear fecha con el formato "Vie 05 may. 2025 hhmm hrs" */
   getFormattedDate(date: string | undefined): string {
-    if (date == undefined) return '';
+    if (date == undefined || date == '') return '';
+
     const dateToDate = new Date(date);
     return formatDate(dateToDate);
   }
@@ -266,46 +329,19 @@ export class InboxComponent implements OnInit {
   /**Obtener roles disponibles para postulación */
   obtenerRolesDisponibles(): void {
     this.rolesDisponibles = []; // Resetear la lista
+    this.rolesSeleccionados = []; // Resetear roles seleccionados
 
     if (this.timeboxSeleccionado) {
       let teamMovilization: TeamMovilization = this.timeboxSeleccionado.fases
-        .kickOff?.teamMovilization as TeamMovilization;
+        ?.kickOff?.teamMovilization as TeamMovilization;
 
       if (!teamMovilization) {
         teamMovilization = {
-          businessAdvisor: {
-            nombre: '',
-          },
-          businessAmbassador: {
-            nombre: '',
-          },
-          solutionDeveloper: {
-            nombre: '',
-          },
-          solutionTester: {
-            nombre: '',
-          },
-          technicalAdvisor: {
-            nombre: '',
-          },
-        };
-      } else {
-        teamMovilization = {
-          businessAdvisor: {
-            nombre: '',
-          },
-          businessAmbassador: {
-            nombre: '',
-          },
-          solutionDeveloper: {
-            nombre: '',
-          },
-          solutionTester: {
-            nombre: '',
-          },
-          technicalAdvisor: {
-            nombre: '',
-          },
+          businessAdvisor: undefined,
+          businessAmbassador: undefined,
+          solutionDeveloper: undefined,
+          solutionTester: undefined,
+          technicalAdvisor: undefined,
         };
       }
 
@@ -321,7 +357,7 @@ export class InboxComponent implements OnInit {
       rolesKeys.forEach((roleKey) => {
         // Acceder a la propiedad usando un indexador de cadena
         const roleValue = (teamMovilization as any)[roleKey];
-        // Si el rol es `null` o una cadena vacía, significa que no está asignado.
+        // Si el rol es `null` o no tiene nombre, significa que no está asignado.
         // Y el usuario actual no se ha postulado ya a este rol en específico.
         const yaPostuladoARolEspecifico =
           this.timeboxSeleccionado?.publicacionOferta?.postulaciones?.some(
@@ -329,17 +365,122 @@ export class InboxComponent implements OnInit {
           );
 
         if (
-          (roleValue.nombre === null || roleValue.nombre === '') &&
+          (!roleValue || !roleValue.nombre || roleValue.nombre === '') &&
           !yaPostuladoARolEspecifico
         ) {
           this.rolesDisponibles.push(roleKey);
         }
       });
-
-      // Selecciona el primer rol disponible por defecto si hay alguno
-      this.rolSeleccionadoParaPostular =
-        this.rolesDisponibles.length > 0 ? this.rolesDisponibles[0] : null;
     }
+  }
+
+  /**
+   * Maneja la selección/deselección de un rol
+   */
+  toggleRolSeleccionado(rol: string): void {
+    const index = this.rolesSeleccionados.indexOf(rol);
+    if (index > -1) {
+      // Deseleccionar rol
+      this.rolesSeleccionados.splice(index, 1);
+    } else {
+      // Seleccionar rol
+      this.rolesSeleccionados.push(rol);
+    }
+  }
+
+  /**
+   * Verifica si un rol está seleccionado
+   */
+  isRolSeleccionado(rol: string): boolean {
+    return this.rolesSeleccionados.includes(rol);
+  }
+
+  /**
+   * Verifica si hay roles seleccionados
+   */
+  hayRolesSeleccionados(): boolean {
+    return this.rolesSeleccionados.length > 0;
+  }
+
+  /**
+   * Obtiene el nombre legible de un rol
+   */
+  getNombreLegibleRol(rol: string): string {
+    const nombresRoles: { [key: string]: string } = {
+      'businessAmbassador': 'Business Ambassador',
+      'solutionDeveloper': 'Solution Developer',
+      'solutionTester': 'Solution Tester',
+      'businessAdvisor': 'Business Advisor',
+      'technicalAdvisor': 'Technical Advisor'
+    };
+    return nombresRoles[rol] || rol;
+  }
+
+  /**
+   * Obtiene los roles disponibles para un timebox específico
+   * (método auxiliar para el filtro)
+   */
+  getRolesDisponiblesParaTimebox(timebox: Timebox): string[] {
+    const rolesDisponibles: string[] = [];
+    
+    if (!timebox) return rolesDisponibles;
+
+    let teamMovilization: TeamMovilization = timebox.fases
+      ?.kickOff?.teamMovilization as TeamMovilization;
+
+    if (!teamMovilization) {
+      teamMovilization = {
+        businessAdvisor: undefined,
+        businessAmbassador: undefined,
+        solutionDeveloper: undefined,
+        solutionTester: undefined,
+        technicalAdvisor: undefined,
+      };
+    }
+
+    // Debug: Log para el timebox TEST1108
+    if (timebox.fases?.planning?.codigo === 'TEST1108') {
+      console.log('DEBUG getRolesDisponiblesParaTimebox TEST1108:', {
+        teamMovilization,
+        rolesDisponibles: []
+      });
+    }
+
+    // Definimos los roles que son parte de teamMovilization
+    const rolesKeys = [
+      'businessAmbassador',
+      'solutionDeveloper',
+      'solutionTester',
+      'businessAdvisor',
+      'technicalAdvisor',
+    ];
+
+    rolesKeys.forEach((roleKey) => {
+      // Acceder a la propiedad usando un indexador de cadena
+      const roleValue = (teamMovilization as any)[roleKey];
+      
+      // Si el rol es `null` o no tiene nombre, significa que no está asignado
+      if (!roleValue || !roleValue.nombre || roleValue.nombre === '') {
+        rolesDisponibles.push(roleKey);
+        
+        // Debug: Log para el timebox TEST1108
+        if (timebox.fases?.planning?.codigo === 'TEST1108') {
+          console.log(`DEBUG TEST1108 - Rol ${roleKey} disponible:`, {
+            roleValue,
+            esNull: !roleValue,
+            noTieneNombre: !roleValue?.nombre,
+            nombreVacio: roleValue?.nombre === ''
+          });
+        }
+      }
+    });
+
+    // Debug: Log final para el timebox TEST1108
+    if (timebox.fases?.planning?.codigo === 'TEST1108') {
+      console.log('DEBUG TEST1108 - Roles disponibles finales:', rolesDisponibles);
+    }
+
+    return rolesDisponibles;
   }
 
   //Para obtener el rol postulado por el usuario actual
@@ -380,18 +521,28 @@ export class InboxComponent implements OnInit {
 
   /**Helper para determinar si se ha solicitado alguna vez  */
   getEstadoSolicitado(tbx: Timebox): boolean {
-    return tbx.publicacionOferta?.postulaciones?.some(
-      (p) => p.desarrollador === this.usuario
-    ) ?? false;
-  }
-
-  /**Determinar si un timebox fue asignado */
-  getTimeboxAsignado(tbx: Timebox): boolean {
+    // Debug: Log para el timebox TEST1108
+    if (tbx.fases?.planning?.codigo === 'TEST1108') {
+      console.log('DEBUG getEstadoSolicitado TEST1108:', {
+        postulaciones: tbx.publicacionOferta?.postulaciones,
+        usuario: this.usuario,
+        resultado: tbx.publicacionOferta?.postulaciones?.some(
+          (p) => p.desarrollador === this.usuario
+        )
+      });
+    }
+    
     return (
       tbx.publicacionOferta?.postulaciones?.some(
-        (p) => p.asignacion.asignado == true
+        (p) => p.desarrollador === this.usuario
       ) ?? false
     );
+  }
+
+  isTimeboxAsignado(tbx: Timebox): boolean {
+    // Un timebox está asignado solo cuando su estado es "En Ejecución"
+    // No cuando el usuario tiene postulaciones aprobadas
+    return tbx.estado === 'En Ejecución';
   }
 
   // --- Acciones --- //
@@ -410,60 +561,45 @@ export class InboxComponent implements OnInit {
       return;
     }
 
+    // Verificar que hay roles seleccionados
+    if (!this.hayRolesSeleccionados()) {
+      alert('Por favor, selecciona al menos un rol para postular.');
+      return;
+    }
+
     const tbx = this.timeboxSeleccionado;
     const formattedDate = new Date();
 
-    let rolAPostular: string;
-    let mensajeExito: string;
+    // Verificar si ya se postuló a este timebox
+    const yaPostuladoGeneralmente =
+      tbx.publicacionOferta?.postulaciones?.some(
+        (p) => p.desarrollador === this.usuario
+      );
 
-    // Si se ha seleccionado un rol en el dropdown
-    if (
-      this.rolSeleccionadoParaPostular &&
-      this.rolSeleccionadoParaPostular !== 'null'
-    ) {
-      // Asegurarse de que no sea null string
-      rolAPostular = this.rolSeleccionadoParaPostular;
-      mensajeExito = `¡Te has postulado con éxito al rol de ${rolAPostular} en este Timebox!`;
-
-      // Verificar si ya se postuló a este rol específico
-      const yaPostuladoARolEspecifico =
-        tbx.publicacionOferta?.postulaciones?.some(
-          (p) => p.desarrollador === this.usuario && p.rol === rolAPostular
-        );
-
-      if (yaPostuladoARolEspecifico) {
-        alert(`Ya te has postulado al rol de ${rolAPostular} en este Timebox.`);
-        return;
-      }
-    } else {
-      // Si no se seleccionó un rol (o no hay roles disponibles para seleccionar), es una postulación general
-      rolAPostular = 'Interesado General';
-
-      // Verificar si ya se postuló de forma general
-      const yaPostuladoGeneralmente =
-        tbx.publicacionOferta?.postulaciones?.some(
-          (p) =>
-            p.desarrollador === this.usuario && p.rol === 'Interesado General'
-        );
-
-      if (yaPostuladoGeneralmente) {
-        alert('Ya te has postulado a este Timebox de forma general.');
-        return;
-      }
+    if (yaPostuladoGeneralmente) {
+      alert('Ya te has postulado a este Timebox.');
+      return;
     }
 
-    // Crea la nueva postulación
-    const nuevaPostulacion: Postulacion = {
-      id: '1',
-      rol: rolAPostular,
+    // Postular solo a los roles seleccionados
+    const rolesParaPostular = this.rolesSeleccionados;
+    
+    if (rolesParaPostular.length === 0) {
+      alert('No hay roles seleccionados para postular en este Timebox.');
+      return;
+    }
+
+    // Crear postulaciones solo para los roles seleccionados
+    const nuevasPostulaciones: Postulacion[] = rolesParaPostular.map(rol => ({
+      id: Math.random().toString(36).substr(2, 9), // ID único temporal
+      rol: rol,
       desarrollador: this.usuario,
       fechaPostulacion: formattedDate.toISOString(),
       estadoSolicitud: 'Pendiente',
       asignacion: {
         asignado: false,
-        fechaAsignacion: undefined
       },
-    };
+    }));
 
     if (!tbx.publicacionOferta) {
       return;
@@ -474,8 +610,8 @@ export class InboxComponent implements OnInit {
       tbx.publicacionOferta.postulaciones = [];
     }
 
-    // Agrega la nueva postulación al timebox
-    tbx.publicacionOferta.postulaciones.push(nuevaPostulacion);
+    // Agregar solo las nuevas postulaciones de roles seleccionados al timebox
+    tbx.publicacionOferta.postulaciones.push(...nuevasPostulaciones);
 
     // Marcar 'solicitado' si es la primera postulación del usuario al timebox
     if (
@@ -487,14 +623,16 @@ export class InboxComponent implements OnInit {
 
     // Actualizar el timebox en el servicio de persistencia
     this.projectService.updateTimebox(tbx.projectId, tbx).subscribe({
-      next: (updatedTimebox: Timebox) => {
+      next: (updatedTimebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox }; // Actualizar el seleccionado para la UI
         this.loadTimeboxes(); // Recargar la lista para reflejar los cambios en los filtros
-        this.obtenerRolesDisponibles(); // Re-calcular los roles disponibles (para que el rol postulado desaparezca)
+        this.obtenerRolesDisponibles(); // Re-calcular los roles disponibles (para que los roles postulados desaparezcan)
+        
+        const mensajeExito = `¡Te has postulado con éxito a ${rolesParaPostular.length} rol(es) en este Timebox!`;
         alert(mensajeExito);
       },
-      error: (error: any) => {
-        console.error('Error al postular al Timebox:', error);
+      error: (error) => {
+        console.error('Error al actualizar timebox:', error);
         alert('Error al postular al Timebox. Inténtalo de nuevo.');
       }
     });
@@ -511,13 +649,21 @@ export class InboxComponent implements OnInit {
       this.solicitarRevision(timebox, disponibilidad);
     } else if (this.modalModo === 'Cierre') {
       this.solicitarCierre(timebox, disponibilidad);
+    } else if (this.modalModo === 'Entrega') {
+      this.entregarTimebox(timebox, disponibilidad);
     }
   }
 
   /**Método para realizar la entrega */
-  entregarTimebox(tbx: Timebox): void {
+  entregarTimebox(
+    tbx: Timebox | null,
+    disponibilidad: {
+      [key: string]: { start: string; end: string }[];
+    }
+  ): void {
+    if (!tbx) return;
     const filesToUpload = this.selectedFiles[tbx.id]; // Obtiene los archivos con tipo (FileWithType[])
-    const evidencesToUpload = this.selectedEvidences[tbx.id];
+
     if (!filesToUpload || filesToUpload.length === 0) {
       alert(
         'Debes adjuntar al menos un archivo para poder entregar el timebox.'
@@ -531,27 +677,48 @@ export class InboxComponent implements OnInit {
       type: fileWithType.type,
       nombre: fileWithType.file.name,
       url: URL.createObjectURL(fileWithType.file),
+      fechaAdjunto: formattedDate.toISOString(),
     }));
 
-    const evidencias: Adjuntos[] = evidencesToUpload.map((fileWithType) => ({
-      type: fileWithType.type,
-      nombre: fileWithType.file.name,
-      url: URL.createObjectURL(fileWithType.file),
-    }));
+    const horarioDisponibilidad: {
+      [dia: string]: { bloques: { start: string; end: string }[] };
+    } = {};
+
+    for (const dia in disponibilidad) {
+      const bloques = disponibilidad[dia];
+      if (bloques?.length) {
+        horarioDisponibilidad[dia] = {
+          bloques: bloques.map((bloque) => ({
+            start: bloque.start,
+            end: bloque.end,
+          })),
+        };
+      }
+    }
+
+    const solicitud: SolicitudRevision = {
+      tipo: 'Entrega',
+      fechaSolicitud: formattedDate.toISOString(),
+      horarioDisponibilidad: horarioDisponibilidad,
+      cierreSolicitud: {
+        completada: false,
+      },
+    };
 
     const entrega: Entrega = {
-      id: `${tbx.id}-${formattedDate}`,
+      id: `${tbx.id}-delivery`,
       fechaEntrega: formattedDate.toISOString(),
       adjuntosEntregables: entregables,
-      adjuntosEvidencias: evidencias,
       responsable: this.usuario,
+      solicitudRevision: solicitud,
+      completada: false,
     };
 
     this.projectService.updateTimebox(tbx.projectId, {
       ...tbx,
       entrega: entrega,
     }).subscribe({
-      next: (updatedTimebox: Timebox) => {
+      next: (updatedTimebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Entrega realizada:', updatedTimebox);
@@ -559,8 +726,9 @@ export class InboxComponent implements OnInit {
         // Limpiar los archivos después de la entrega exitosa
         this.selectedFiles[tbx.id] = [];
         this.selectedDeliverableType = null; // Resetear el tipo seleccionado
+        this.closeModalHorario();
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al entregar el Timebox. Inténtalo de nuevo.');
       }
@@ -606,8 +774,17 @@ export class InboxComponent implements OnInit {
       tipo: 'Cierre',
       fechaSolicitud: formattedDate.toISOString(),
       horarioDisponibilidad: horarioDisponibilidad,
-      completada: false,
+      cierreSolicitud: {
+        completada: false,
+      },
     };
+
+    const evidencias: Adjuntos[] = evidencesToUpload.map((fileWithType) => ({
+      type: fileWithType.type,
+      nombre: fileWithType.file.name,
+      url: URL.createObjectURL(fileWithType.file),
+      fechaAdjunto: formattedDate.toISOString(),
+    }));
 
     this.projectService.updateTimebox(tbx.projectId, {
       ...tbx,
@@ -617,6 +794,7 @@ export class InboxComponent implements OnInit {
           ...tbx.fases?.close,
           solicitudCierre: solicitud,
           cumplimiento: 'Parcial',
+          adjuntosEvidencias: evidencias,
           completada: false,
           aprobador: tbx.fases.close?.aprobador || '',
           evMadurezAplicativo: tbx.fases.close?.evMadurezAplicativo || '',
@@ -624,13 +802,13 @@ export class InboxComponent implements OnInit {
         } as any,
       },
     }).subscribe({
-      next: (updatedTimebox: Timebox) => {
+      next: (updatedTimebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Solicitud de cierre registrada:', updatedTimebox);
         alert('¡Solicitud de cierre registrada con éxito!');
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al solicitar el cierre del Timebox. Inténtalo de nuevo.');
       }
@@ -651,6 +829,7 @@ export class InboxComponent implements OnInit {
   /** Adjuntar un entregable */
   handleFileInput(event: Event, tbxId: string): void {
     const target = event.target as HTMLInputElement;
+    const formattedDate = new Date();
     if (target.files && target.files.length > 0) {
       if (!this.selectedDeliverableType) {
         alert(
@@ -666,6 +845,7 @@ export class InboxComponent implements OnInit {
       this.selectedFiles[tbxId].push({
         file: file,
         type: this.selectedDeliverableType,
+        fechaAdjunto: formattedDate.toISOString(),
       });
       target.value = ''; // Limpiar el input para la próxima carga
       this.selectedDeliverableType = null; // Resetear el tipo seleccionado
@@ -675,6 +855,8 @@ export class InboxComponent implements OnInit {
   /** Adjuntar una evidencia */
   handleEvidenceInput(event: Event, tbxId: string): void {
     const target = event.target as HTMLInputElement;
+    const formattedDate = new Date();
+
     if (target.files && target.files.length > 0) {
       if (!this.selectedEvidenceType) {
         alert(
@@ -690,6 +872,7 @@ export class InboxComponent implements OnInit {
       this.selectedEvidences[tbxId].push({
         file: file,
         type: this.selectedEvidenceType,
+        fechaAdjunto: formattedDate.toISOString(),
       });
       target.value = ''; // Limpiar el input para la próxima carga
       this.selectedEvidenceType = null; // Resetear el tipo seleccionado
@@ -764,7 +947,10 @@ export class InboxComponent implements OnInit {
       tipo: 'Revision',
       fechaSolicitud: formattedDate.toISOString(),
       horarioDisponibilidad: horarioDisponibilidad,
-      completada: false,
+      cierreSolicitud: {
+        completada: false,
+        fechaDeRealizacion: '',
+      },
     };
 
     const currentRevisions = tbx.fases.refinement?.revisiones
@@ -783,12 +969,12 @@ export class InboxComponent implements OnInit {
         },
       },
     }).subscribe({
-      next: (updatedTimebox: Timebox) => {
+      next: (updatedTimebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox };
         this.loadTimeboxes();
         console.log('Solicitud de revisión exitosa', updatedTimebox);
       },
-      error: (error: any) => {
+      error: (error) => {
         console.error('Error al actualizar el timebox:', error);
         alert('Error al solicitar revisión. Inténtalo de nuevo.');
       }
@@ -811,6 +997,15 @@ export class InboxComponent implements OnInit {
     }
   }
 
+  showInformation = false;
+  toggleTbxInformation() {
+    this.showInformation = !this.showInformation;
+  }
+
+  isInformationOpen(): boolean {
+    return this.showInformation ? true : false;
+  }
+
   isRevisionOpen(i: number): boolean {
     return this.openRevisiones.has(i);
   }
@@ -818,6 +1013,13 @@ export class InboxComponent implements OnInit {
   abrirModalRevision() {
     this.modalModo = 'Revision';
     this.showModalHorario = true;
+    this.cerrarModalConfirmacion();
+  }
+
+  //--- Entrega ---//
+  abrirModalEntrega() {
+    (this.modalModo = 'Entrega'), (this.showModalHorario = true);
+    this.cerrarModalConfirmacion();
   }
 
   // --- Cierre --- //
@@ -825,6 +1027,7 @@ export class InboxComponent implements OnInit {
   abrirModalCierre() {
     this.modalModo = 'Cierre';
     this.showModalHorario = true;
+    this.cerrarModalConfirmacion();
   }
 
   closeModalHorario() {
@@ -833,9 +1036,13 @@ export class InboxComponent implements OnInit {
     this.disponibilidadCierre = {};
   }
 
-  abrirModalConfirmacion(tbx: Timebox): void {
+  abrirModalConfirmacion(
+    tbx: Timebox,
+    modo: 'Revision' | 'Entrega' | 'Cierre'
+  ): void {
     this.tbxaEntregar = tbx;
     this.showModalConfirmacion = true;
+    this.operacion = modo;
   }
 
   cerrarModalConfirmacion(): void {
@@ -843,10 +1050,12 @@ export class InboxComponent implements OnInit {
     this.tbxaEntregar = null;
   }
 
-  confirmarEntregaTimebox(): void {
-    if (this.tbxaEntregar) {
-      this.entregarTimebox(this.tbxaEntregar);
-      this.cerrarModalConfirmacion();
-    }
+  showModalCobro = false;
+
+  abrirModalCobro() {
+    this.showModalCobro = true;
+  }
+  closeModalCobro() {
+    this.showModalCobro = false;
   }
 }

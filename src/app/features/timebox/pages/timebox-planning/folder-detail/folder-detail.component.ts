@@ -181,10 +181,25 @@ export class FolderDetailComponent implements OnInit {
     this.projectService.getProjects().subscribe({
       next: (projects: Project[]) => {
         for (const project of projects) {
-          const folder = this.findContentItemById(project.contenido, folderId);
-          if (folder && folder.tipo === 'Carpeta') {
-            this.currentFolderName = folder.nombre;
-            return;
+          // Verificar si el proyecto tiene contenido directo (nueva estructura)
+          if (project.contenido) {
+            const folder = this.findContentItemById(project.contenido, folderId);
+            if (folder && folder.tipo === 'Carpeta') {
+              this.currentFolderName = folder.nombre;
+              return;
+            }
+          }
+          // Verificar también la estructura antigua con apps
+          if (project.apps) {
+            for (const app of project.apps) {
+              if (app.contenido) {
+                const folder = this.findContentItemById(app.contenido, folderId);
+                if (folder && folder.tipo === 'Carpeta') {
+                  this.currentFolderName = folder.nombre;
+                  return;
+                }
+              }
+            }
           }
         }
         // Si no se encuentra en memoria, usar un nombre genérico
@@ -230,10 +245,11 @@ export class FolderDetailComponent implements OnInit {
     // Determinar si estamos cargando contenido de proyecto raíz o de una carpeta
     if (this.currentFolderId) {
       // Estamos dentro de una carpeta, cargar contenido de la carpeta
+      console.log('📁 Cargando contenido de carpeta:', idToLoad);
       this.projectService.getFolderContent(idToLoad).subscribe({
         next: (contents: ProjectContent[]) => {
-          this.folders = contents;
           console.log('📁 Contenido de carpeta cargado:', contents);
+          this.folders = contents;
         },
         error: (error: any) => {
           console.error('Error cargando contenido de carpeta:', error);
@@ -242,10 +258,11 @@ export class FolderDetailComponent implements OnInit {
       });
     } else if (this.currentProjectId && idToLoad === this.currentProjectId) {
       // Estamos a nivel raíz del proyecto, cargar contenido raíz
+      console.log('🏠 Cargando contenido raíz del proyecto:', idToLoad);
       this.projectService.getProjectRootContent(idToLoad).subscribe({
         next: (contents: ProjectContent[]) => {
-          this.folders = contents;
           console.log('🏠 Contenido raíz del proyecto cargado:', contents);
+          this.folders = contents;
         },
         error: (error: any) => {
           console.error('Error cargando contenido del proyecto:', error);

@@ -1,0 +1,371 @@
+<div class="min-h-screen bg-gray-50 p-6">
+  <!-- Header -->
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">Órdenes de Pago</h1>
+      <p class="mt-2 text-gray-600">Gestiona y aprueba las solicitudes de pago de los developers</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+      <div class="flex flex-wrap items-center gap-4">
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Estado:</label>
+          <select 
+            #estadoSel 
+            (change)="filtrar(estadoSel.value)"
+            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Todos los estados</option>
+            <option value="Pendiente">Pendiente</option>
+            <option value="Aprobada">Aprobada</option>
+            <option value="Pagada">Pagada</option>
+            <option value="Rechazada">Rechazada</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <label class="text-sm font-medium text-gray-700">Moneda:</label>
+          <select 
+            #monedaSel 
+            (change)="filtrarPorMoneda(monedaSel.value)"
+            class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option value="">Todas las monedas</option>
+            <option value="CLP">CLP</option>
+            <option value="USD">USD</option>
+            <option value="EUR">EUR</option>
+          </select>
+        </div>
+
+        <button 
+          (click)="cargar()"
+          class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          🔄 Actualizar
+        </button>
+      </div>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex justify-center items-center py-12">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && ordenesFiltradas.length === 0" class="text-center py-12">
+      <div class="text-gray-400 text-6xl mb-4">📄</div>
+      <h3 class="text-lg font-medium text-gray-900 mb-2">No hay órdenes de pago</h3>
+      <p class="text-gray-500">No se encontraron órdenes de pago con los filtros seleccionados.</p>
+    </div>
+
+    <!-- Tabla de Órdenes -->
+    <div *ngIf="!loading && ordenesFiltradas.length > 0" class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Developer
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Concepto
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Monto
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Fecha Emisión
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Estado
+              </th>
+              <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Acciones
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr *ngFor="let orden of ordenesFiltradas" class="hover:bg-gray-50">
+              <!-- Developer -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <span class="text-sm font-medium text-blue-600">
+                        {{ getInitials(orden.developer_id) }}
+                      </span>
+                    </div>
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">
+                      {{ orden.developer_id }}
+                    </div>
+                    <div class="text-sm text-gray-500">
+                      ID: {{ orden.id }}
+                    </div>
+                  </div>
+                </div>
+              </td>
+
+              <!-- Concepto -->
+              <td class="px-6 py-4">
+                <div class="text-sm text-gray-900 max-w-xs truncate" [title]="orden.concepto">
+                  {{ orden.concepto }}
+                </div>
+              </td>
+
+              <!-- Monto -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  {{ formatCurrency(orden.monto) }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ orden.moneda }}
+                </div>
+              </td>
+
+              <!-- Fecha Emisión -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm text-gray-900">
+                  {{ formatDate(orden.fecha_emision) }}
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ getTimeAgo(orden.created_at) }}
+                </div>
+              </td>
+
+              <!-- Estado -->
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span 
+                  class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
+                  [ngClass]="getEstadoClasses(orden.estado)"
+                >
+                  {{ orden.estado }}
+                </span>
+              </td>
+
+              <!-- Acciones -->
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <div class="flex items-center gap-2">
+                  <!-- Ver Detalle -->
+                  <button 
+                    (click)="verDetalle(orden)"
+                    class="text-blue-600 hover:text-blue-900 px-3 py-1 rounded-md hover:bg-blue-50"
+                  >
+                    👁️ Ver
+                  </button>
+
+                  <!-- Aprobar (solo si está pendiente) -->
+                  <button 
+                    *ngIf="orden.estado === 'Pendiente'"
+                    (click)="aprobarOrden(orden)"
+                    class="text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50"
+                  >
+                    ✅ Aprobar
+                  </button>
+
+                  <!-- Rechazar (solo si está pendiente) -->
+                  <button 
+                    *ngIf="orden.estado === 'Pendiente'"
+                    (click)="rechazarOrden(orden)"
+                    class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md hover:bg-red-50"
+                  >
+                    ❌ Rechazar
+                  </button>
+
+                  <!-- Marcar como Pagada (solo si está aprobada) -->
+                  <button 
+                    *ngIf="orden.estado === 'Aprobada'"
+                    (click)="marcarComoPagada(orden)"
+                    class="text-purple-600 hover:text-purple-900 px-3 py-1 rounded-md hover:bg-purple-50"
+                  >
+                    💰 Pagada
+                  </button>
+
+                  <!-- Adjuntar Comprobante (solo si está pagada) -->
+                  <button 
+                    *ngIf="orden.estado === 'Pagada'"
+                    (click)="adjuntarComprobante(orden)"
+                    class="text-indigo-600 hover:text-indigo-900 px-3 py-1 rounded-md hover:bg-indigo-50"
+                  >
+                    📎 Comprobante
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div *ngIf="!loading && ordenesFiltradas.length > 0" class="mt-6 flex items-center justify-between">
+      <div class="text-sm text-gray-700">
+        Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a {{ Math.min(paginaActual * itemsPorPagina, ordenesFiltradas.length) }} de {{ ordenesFiltradas.length }} resultados
+      </div>
+      <div class="flex items-center gap-2">
+        <button 
+          (click)="paginaAnterior()"
+          [disabled]="paginaActual === 1"
+          class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          ← Anterior
+        </button>
+        <span class="px-3 py-2 text-sm text-gray-700">
+          Página {{ paginaActual }} de {{ totalPaginas }}
+        </span>
+        <button 
+          (click)="paginaSiguiente()"
+          [disabled]="paginaActual === totalPaginas"
+          class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Siguiente →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Detalle -->
+  <div 
+    *ngIf="showModalDetalle" 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
+    <div class="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Detalle de la Orden de Pago</h3>
+          <button 
+            (click)="cerrarModalDetalle()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div *ngIf="ordenSeleccionada" class="space-y-4">
+          <!-- Información básica -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">ID de Orden</label>
+              <p class="mt-1 text-sm text-gray-900">{{ ordenSeleccionada.id }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Developer</label>
+              <p class="mt-1 text-sm text-gray-900">{{ ordenSeleccionada.developer_id }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Monto</label>
+              <p class="mt-1 text-sm text-gray-900">{{ formatCurrency(ordenSeleccionada.monto) }} {{ ordenSeleccionada.moneda }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Estado</label>
+              <p class="mt-1 text-sm text-gray-900">{{ ordenSeleccionada.estado }}</p>
+            </div>
+          </div>
+
+          <!-- Concepto -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Concepto</label>
+            <p class="mt-1 text-sm text-gray-900">{{ ordenSeleccionada.concepto }}</p>
+          </div>
+
+          <!-- Fechas -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha de Emisión</label>
+              <p class="mt-1 text-sm text-gray-900">{{ formatDate(ordenSeleccionada.fecha_emision) }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700">Fecha de Creación</label>
+              <p class="mt-1 text-sm text-gray-900">{{ formatDate(ordenSeleccionada.created_at) }}</p>
+            </div>
+          </div>
+
+          <!-- Historial de Pagos -->
+          <div *ngIf="ordenSeleccionada.pagos && ordenSeleccionada.pagos.length > 0">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Historial de Pagos</label>
+            <div class="space-y-2">
+              <div 
+                *ngFor="let pago of ordenSeleccionada.pagos" 
+                class="bg-gray-50 p-3 rounded-md"
+              >
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm font-medium text-gray-900">{{ formatCurrency(pago.monto) }} {{ pago.moneda }}</p>
+                    <p class="text-xs text-gray-500">{{ pago.metodo }} - {{ pago.referencia }}</p>
+                  </div>
+                  <div class="text-right">
+                    <p class="text-xs text-gray-500">{{ formatDate(pago.fecha_pago) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Comprobante -->
+  <div 
+    *ngIf="showModalComprobante" 
+    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+  >
+    <div class="bg-white rounded-lg max-w-md w-full">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-medium text-gray-900">Adjuntar Comprobante</h3>
+          <button 
+            (click)="cerrarModalComprobante()"
+            class="text-gray-400 hover:text-gray-600"
+          >
+            ✕
+          </button>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Archivo</label>
+            <input 
+              type="file" 
+              #fileInput
+              (change)="onFileSelected($event)"
+              accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            />
+            <p class="mt-1 text-xs text-gray-500">
+              Formatos permitidos: PDF, JPG, PNG, DOC, DOCX (máx. 10MB)
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Referencia del Pago</label>
+            <input 
+              type="text" 
+              [(ngModel)]="referenciaPago"
+              placeholder="Ej: Transferencia bancaria, cheque #12345"
+              class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            />
+          </div>
+
+          <div class="flex items-center justify-end gap-3 pt-4">
+            <button 
+              (click)="cerrarModalComprobante()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+            >
+              Cancelar
+            </button>
+            <button 
+              (click)="subirComprobante()"
+              [disabled]="!archivoSeleccionado"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Subir Comprobante
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

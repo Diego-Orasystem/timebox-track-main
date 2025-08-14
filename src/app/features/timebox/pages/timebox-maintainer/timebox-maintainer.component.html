@@ -130,20 +130,20 @@
             </td>
             <td>
               <span class="inline-flex text-[10px] font-semibold">
-                {{ type.categoria_nombre || 'Categoría Desconocida' }}
+                {{ 'Categoría Desconocida' }}
               </span>
             </td>
             <td>
               <span class="text-xs text-gray-700 line-clamp-2">{{
-                (type.entregables_comunes && type.entregables_comunes.length > 0) || (type.entregablesComunes && type.entregablesComunes.length > 0)
-                  ? (type.entregables_comunes || type.entregablesComunes || []).join(", ")
+                (type.entregablesComunes && type.entregablesComunes.length > 0)
+                  ? type.entregablesComunes.join(", ")
                   : "N/A"
               }}</span>
             </td>
             <td>
               <span class="text-xs text-gray-700 line-clamp-2">{{
-                (type.evidencias_cierre && type.evidencias_cierre.length > 0) || (type.evidenciasCierre && type.evidenciasCierre.length > 0)
-                  ? (type.evidencias_cierre || type.evidenciasCierre || []).join(", ")
+                (type.evidenciasCierre && type.evidenciasCierre.length > 0)
+                  ? type.evidenciasCierre.join(", ")
                   : "N/A"
               }}</span>
             </td>

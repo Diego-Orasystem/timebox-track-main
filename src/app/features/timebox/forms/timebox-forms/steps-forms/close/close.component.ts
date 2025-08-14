@@ -13,6 +13,7 @@ import { MejoraFormComponent } from './components/mejora-form.component';
 import { AdjuntosFormComponent } from '../../../../../../shared/components/modals/adjuntos-form.component';
 import { ChecklistFormComponent } from '../../../../../../shared/components/modals/checklist-form.component';
 import { PersonaSelectorComponent } from '../../../../../../shared/components/modals/persona-selector.component';
+import { formatDate } from '../../../../../../shared/helpers/date-formatter';
 
 @Component({
   selector: 'app-close',
@@ -201,5 +202,13 @@ export class CloseComponent implements OnInit {
 
   emitValue(option: string) {
     this.form.get('cumplimiento')?.setValue(option);
+  }
+
+  /** Formatear fecha con el formato "Vie 05 may. 2025 hhmm hrs" */
+  getFormattedDate(date: string | undefined): string {
+    if (date == undefined || date == '') return '';
+
+    const dateToDate = new Date(date);
+    return formatDate(dateToDate);
   }
 }

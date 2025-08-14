@@ -147,6 +147,9 @@ export class ModalCreateComponent implements OnChanges {
   }
 
   onFormSubmit(formData: Timebox): void {
+    console.log('🔄 ModalCreateComponent: onFormSubmit llamado con:', formData);
+    console.log('🔍 ModalCreateComponent: timeboxData original:', this.timeboxData);
+    
     const timeboxToSave: Timebox = {
       ...this.timeboxData,
       tipoTimebox: formData.tipoTimebox,
@@ -157,6 +160,9 @@ export class ModalCreateComponent implements OnChanges {
       publicacionOferta: formData.publicacionOferta,
     };
 
+    console.log('📤 ModalCreateComponent: Emitiendo timeboxOutput:', timeboxToSave);
+    console.log('🔍 ModalCreateComponent: timeboxToSave ID:', timeboxToSave.id);
     this.timeboxOutput.emit(timeboxToSave);
+    console.log('✅ ModalCreateComponent: timeboxOutput emitido');
   }
 }

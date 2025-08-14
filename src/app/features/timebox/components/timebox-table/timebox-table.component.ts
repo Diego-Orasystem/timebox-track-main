@@ -9,6 +9,7 @@ import {
 } from '@angular/core';
 import { Timebox } from '../../../../shared/interfaces/timebox.interface';
 import { formatDate } from '../../../../shared/helpers/date-formatter';
+import { SolicitudRevision } from '../../../../shared/interfaces/fases-timebox.interface';
 
 @Component({
   selector: 'timebox-table',
@@ -24,6 +25,7 @@ export class TimeboxTableComponent implements OnChanges {
     'Esfuerzo',
     'Fecha Inicio Planning',
     'Fecha Entrega',
+    'Solicitud Vigente',
     'Estado',
   ];
 
@@ -35,7 +37,6 @@ export class TimeboxTableComponent implements OnChanges {
   // Usamos ngOnChanges para reaccionar a los cambios en el input 'timeboxes'
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['timeboxes']) {
-      console.log('Timeboxes recibidos en tabla:', this.timeboxes);
     }
   }
 
@@ -45,13 +46,65 @@ export class TimeboxTableComponent implements OnChanges {
   }
 
   getFormattedDate(date: string | undefined): string {
-    console.log('ğŸ” getFormattedDate recibiÃ³:', date);
-    if (date == undefined || date == null || date === '') return '';
+    if (date == undefined || date == '') return '';
     const dateToDate = new Date(date);
-    const formatted = formatDate(dateToDate, false); // false para mostrar solo fecha sin horas
-    console.log('ğŸ” getFormattedDate retorna:', formatted);
-    return formatted;
+    return formatDate(dateToDate);
   }
 
+  revisionPendiente(tbx: Timebox): boolean {
+    const refinement = tbx.fases.refinement;
+    if (!refinement || !refinement.revisiones) {
+      return false;
+    }
 
+    return refinement?.revisiones?.some((solicitud: SolicitudRevision) => {
+      return (
+        solicitud.cierreSolicitud &&
+        solicitud.cierreSolicitud.completada === false
+      );
+    });
+  }
+
+  getTipoPendiente(
+    timebox: Timebox
+  ): 'Entrega' | 'Cierre' | 'Revision' | 'Ninguno' {
+    const refinement = timebox.fases?.refinement;
+    const close = timebox.fases?.close;
+    const entrega = timebox.entrega;
+
+    // Prioridad: 1. Cierre, 2. Revisión, 3. Entrega
+
+    // A) Solicitud de Cierre pendiente en la fase 'Close'
+    if (
+      close &&
+      close.solicitudCierre &&
+      close.solicitudCierre.cierreSolicitud &&
+      close.solicitudCierre.cierreSolicitud.completada === false
+    ) {
+      return 'Cierre';
+    }
+
+    // B) Revisión pendiente en la fase 'Refinement'
+    if (
+      refinement &&
+      refinement.revisiones &&
+      Array.isArray(refinement.revisiones)
+    ) {
+      const revisionPendiente = refinement.revisiones.some(
+        (solicitud) =>
+          solicitud.cierreSolicitud &&
+          solicitud.cierreSolicitud.completada === false
+      );
+      if (revisionPendiente) {
+        return 'Revision';
+      }
+    }
+
+    // C) Entrega pendiente (si existe el objeto entrega pero no tiene fecha)
+    if (entrega && !entrega.fechaEntrega) {
+      return 'Entrega';
+    }
+
+    return 'Ninguno'; // Si no se cumple ninguna de las condiciones anteriores
+  }
 }

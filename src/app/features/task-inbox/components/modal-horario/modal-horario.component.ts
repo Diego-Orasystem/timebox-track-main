@@ -28,11 +28,13 @@ interface Availability {
 
       <!-- Contenido del modal -->
       <div
-        class="relative bg-white rounded-sm shadow-lg w-[450px] max-h-[85vh] flex flex-col z-10 px-6 py-4"
+        class="relative bg-white rounded-sm shadow-lg w-[450px] max-h-[90vh] flex flex-col z-10 px-6 py-4"
       >
-        <div class="title-modal w-full gap-2 mb-8 sticky top-0 bg-white z-20 ">
-          <h1 class="font-bold text-xl">Indica tu disponibilidad horaria</h1>
-          <p class="text-sm">
+        <div class="title-modal w-full mb-4 sticky top-0 bg-white z-20 ">
+          <h1 class="font-bold text-lg mb-2">
+            Indica tu disponibilidad horaria
+          </h1>
+          <p class="text-xs">
             Selecciona los días y rangos horarios en los que estás disponible
             para una reunión.
           </p>
@@ -40,13 +42,13 @@ interface Availability {
         <div class="content-modal w-full flex flex-col gap-3 overflow-y-auto">
           <div
             *ngFor="let day of daysOfWeek"
-            class="border border-gray-200 rounded-md p-4 bg-white shadow-sm"
+            class="border border-gray-200 rounded-md p-4 bg-white"
           >
             <label class="flex items-center justify-between cursor-pointer">
               <span class="text-sm font-semibold text-gray-800">{{ day }}</span>
               <input
                 type="checkbox"
-                class="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 cursor-pointer"
+                class="h-5 w-5  cursor-pointer"
                 [checked]="
                   currentAvailability[day] &&
                   currentAvailability[day].length > 0
@@ -108,7 +110,7 @@ interface Availability {
               </div>
               <button
                 (click)="addTimeSlot(day)"
-                class="mt-3 w-full bg-indigo-50 px-4 py-2 text-indigo-700 rounded-sm hover:bg-indigo-100 transition-colors duration-200 flex items-center justify-center text-sm font-medium"
+                class="mt-3 w-full bg-indigo-50 px-4 py-2 text-indigo-700 rounded-sm hover:bg-indigo-100 transition-colors duration-200 flex items-center justify-center text-sm font-medium cursor-pointer"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -130,16 +132,16 @@ interface Availability {
           </div>
           <div class="inline-flex w-full justify-between items-center mt-4">
             <button
-              (click)="emitAvailabilityChange()"
-              class="w-40 text-[var(--lightText)] bg-[var(--primary)] hover:bg-[var(--primaryDark)] px-2 py-3 font-bold rounded-sm transition duration-200 ease-in-out text-sm cursor-pointer"
+              (click)="handleClose()"
+              class="px-4 py-3 text-[12px] w-40 font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
             >
-              Guardar
+              Cancelar Revisión
             </button>
             <button
-              (click)="handleClose()"
-              class="w-40 text-[var(--darkText)] bg-slate-200 hover:bg-slate-300 px-2 py-3 font-bold rounded-sm transition duration-200 ease-in-out text-sm cursor-pointer"
+              (click)="emitAvailabilityChange()"
+              class="px-4 py-3 text-[12px] w-40 font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
             >
-              Cancelar
+              Solicitar Revisión
             </button>
           </div>
         </div>
@@ -161,7 +163,7 @@ export class ModalHorarioComponent {
   currentAvailability: Availability = {};
 
   @Input() show = false;
-  @Input() modo: 'Revision' | 'Cierre' = 'Revision';
+  @Input() modo: 'Revision' | 'Entrega' | 'Cierre' = 'Revision';
   @Output() close = new EventEmitter<void>();
 
   @Output() onAvailabilityChange = new EventEmitter<Availability>();

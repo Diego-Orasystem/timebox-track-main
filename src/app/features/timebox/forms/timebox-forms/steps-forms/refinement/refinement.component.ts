@@ -94,6 +94,14 @@ export class RefinementComponent {
     return this.form.get('revisiones') as FormArray;
   }
 
+  get entrega(): FormGroup {
+    return this.rootFormGroup.control.get('entrega') as FormGroup;
+  }
+
+  get cierre(): FormGroup {
+    return this.rootFormGroup.control.get('close') as FormGroup;
+  }
+
   agregarRevision(): void {
     const formattedDate = new Date();
     const nuevaRevision = this.fb.group({
@@ -255,6 +263,23 @@ export class RefinementComponent {
     }
   }
 
+  getCierreSolicitudRevisionFormGroup(index: number): FormGroup {
+    const revisionGroup = this.revisiones.at(index) as FormGroup;
+    return revisionGroup.get('cierreSolicitud') as FormGroup;
+  }
+
+  getCierreSolicitudEntregaFormGroup(): FormGroup {
+    const solicitudRevisionEntrega = this.entrega.get(
+      'solicitudRevision'
+    ) as FormGroup;
+    return solicitudRevisionEntrega.get('cierreSolicitud') as FormGroup;
+  }
+
+  getCierreSolicitudCierreFormGroup(): FormGroup {
+    const solicitudCierre = this.cierre.get('solicitudCierre') as FormGroup;
+    return solicitudCierre.get('cierreSolicitud') as FormGroup;
+  }
+
   eliminarParticipante(revisionIndex: number, participanteIndex: number) {
     this.getParticipantesFormArray(revisionIndex).removeAt(participanteIndex);
   }
@@ -287,5 +312,13 @@ export class RefinementComponent {
 
   eliminarChecklist(revisionIndex: number, checklistIndex: number) {
     this.getListaAcuerdosFormArray(revisionIndex).removeAt(checklistIndex);
+  }
+
+  /** Formatear fecha con el formato "Vie 05 may. 2025 hhmm hrs" */
+  getFormattedDate(date: string | undefined): string {
+    if (date == undefined || date == '') return '';
+
+    const dateToDate = new Date(date);
+    return formatDate(dateToDate);
   }
 }

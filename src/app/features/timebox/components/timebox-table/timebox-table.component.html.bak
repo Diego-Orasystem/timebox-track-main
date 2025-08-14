@@ -1,0 +1,62 @@
+<div class="dashboard rounded-md">
+  <div class="table-container">
+    <table class="custom-table rounded-sm">
+      <thead>
+        <tr>
+          <th *ngFor="let label of tableLabels">{{ label }}</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let timebox of timeboxes"
+          (click)="onSelectTimebox(timebox)"
+          class="cursor-pointer hover:bg-[var(--backgroundMain)] duration-200"
+          [class.selected]="timebox.id === selectedTimebox.id"
+        >
+          <td>
+            {{ timebox.tipo_nombre || (timebox.fases && timebox.fases.planning && timebox.fases.planning.nombre) || "Sin nombre" }}
+          </td>
+          <td>
+            {{ timebox.tipo_nombre || timebox.tipoTimebox || "Sin tipo" }}
+          </td>
+          <td>
+            {{ (timebox.fases && timebox.fases.planning && timebox.fases.planning.esfuerzo) || "Sin definir" }}
+          </td>
+          <td>
+            {{
+              getFormattedDate(
+                (timebox.fases && timebox.fases.planning && timebox.fases.planning.fecha_inicio) || 
+                (timebox.fases && timebox.fases.planning && timebox.fases.planning.fechaInicio)
+              ) || "Sin definir"
+            }}
+          </td>
+          <td>
+            {{
+              getFormattedDate(timebox.entrega?.fechaEntrega) || "Sin definir"
+            }}
+          </td>
+          <td>
+            <div
+              class="flex items-center text-xs font-semibold py-1.5 px-3 rounded-full w-fit"
+              [ngClass]="{
+                'bg-yellow-100 text-yellow-700':
+                  timebox.estado === 'En Definición',
+                'bg-green-100 text-green-700': timebox.estado === 'Disponible',
+                'bg-indigo-100 text-indigo-700':
+                  timebox.estado === 'En Ejecución',
+                'bg-gray-100 text-gray-700': timebox.estado === 'Finalizado'
+              }"
+            >
+              {{ timebox.estado || 'Sin definir' }}
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="timeboxes.length === 0">
+          <td [attr.colspan]="tableLabels.length">
+            No hay Timeboxes disponibles para este proyecto.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

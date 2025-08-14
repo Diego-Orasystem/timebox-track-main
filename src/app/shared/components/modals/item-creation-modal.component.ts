@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UploadService } from '../../services/upload.service';
@@ -77,9 +77,10 @@ import { UploadService } from '../../services/upload.service';
           <label
             class="block flex-1 mb-4"
             *ngIf="
-                          selectedTypeItem === 'Documento' ||
-            selectedTypeItem === 'Video' ||
-            selectedTypeItem === 'Imagen'
+              selectedTypeItem === 'Documento' ||
+              selectedTypeItem === 'Video' ||
+              selectedTypeItem === 'Imagen' ||
+              selectedTypeItem === 'Imágen'
             "
           >
             <span class="sr-only">Choose file</span>
@@ -114,7 +115,7 @@ import { UploadService } from '../../services/upload.service';
     </div>
   `,
 })
-export class ItemCreationModalComponent implements OnInit {
+export class ItemCreationModalComponent implements OnInit, OnChanges {
   @Input() show: boolean = false;
   @Input() mode: 'create' | 'edit' = 'create';
   @Input() itemData: any; // Datos del elemento si estamos en modo 'edit'
@@ -145,6 +146,20 @@ export class ItemCreationModalComponent implements OnInit {
   constructor(private uploadService: UploadService) {}
 
   ngOnInit(): void {
+    this.initializeModal();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    // Reinicializar cuando cambien las propiedades de entrada importantes
+    if ((changes['show'] && changes['show'].currentValue) || 
+        changes['itemTypeContext'] || 
+        changes['parentId'] || 
+        changes['mode']) {
+      this.initializeModal();
+    }
+  }
+
+  private initializeModal(): void {
     // Si `itemTypeContext` está definido, significa que el modal se invoca para crear
     // un tipo específico de ítem (ej. solo 'Proyecto').
     // Si es null, se permite al usuario elegir entre los tipos de contenido.
@@ -187,7 +202,8 @@ export class ItemCreationModalComponent implements OnInit {
         this.itemData.adjunto &&
         (this.selectedTypeItem === 'Documento' ||
           this.selectedTypeItem === 'Video' ||
-          this.selectedTypeItem === 'Imagen')
+          this.selectedTypeItem === 'Imagen' ||
+          this.selectedTypeItem === 'Imágen')
       ) {
         // En un caso real, no tendrías el objeto File original al editar,
         // solo el nombre/URL. Aquí podrías simularlo o mostrar un placeholder.
@@ -213,16 +229,7 @@ export class ItemCreationModalComponent implements OnInit {
     this.itemName = '';
     this.itemDescription = '';
     this.selectedFile = null;
-    // Reiniciar al tipo inicial con la misma lógica que ngOnInit
-    if (this.itemTypeContext) {
-      this.selectedTypeItem = this.itemTypeContext;
-    } else if (this.parentId) {
-      this.selectedTypeItem = 'Carpeta';
-    } else if (this.availableTypes.length > 0) {
-      this.selectedTypeItem = this.availableTypes[0];
-    } else {
-      this.selectedTypeItem = '';
-    }
+    this.initializeModal();
   }
 
   handleFileSelected(event: Event): void {
@@ -241,19 +248,31 @@ export class ItemCreationModalComponent implements OnInit {
     }
 
     const newItem: any = {
-      tipo: this.selectedTypeItem, // Usamos el tipo seleccionado por el usuario
       nombre: this.itemName,
       descripcion: this.itemDescription,
-      parentId: this.parentId, // Incluir el parentId si existe
     };
 
+    // Si estamos creando un proyecto (no contenido dentro de un proyecto)
+    if (this.selectedTypeItem === 'Proyecto') {
+      // Para proyectos, no necesitamos tipo ni parentId
+      newItem.fechaCreacion = new Date().toISOString();
+      this.itemSaved.emit(newItem);
+      this.handleClose();
+      return;
+    }
 
+    // Para contenido dentro de proyectos, usar la estructura correcta
+    newItem.tipo = this.selectedTypeItem;
+    if (this.parentId) {
+      newItem.parentId = this.parentId;
+    }
 
     // Lógica para manejar adjuntos (documentos, videos, imágenes)
     if (
       this.selectedTypeItem === 'Documento' ||
       this.selectedTypeItem === 'Video' ||
-      this.selectedTypeItem === 'Imagen'
+      this.selectedTypeItem === 'Imagen' ||
+      this.selectedTypeItem === 'Imágen'
     ) {
       if (this.selectedFile) {
         try {
@@ -293,12 +312,6 @@ export class ItemCreationModalComponent implements OnInit {
       }
     } else if (this.selectedTypeItem === 'Carpeta') {
       newItem.contenido = []; // Una carpeta empieza vacía
-    } else if (this.selectedTypeItem === 'Proyecto') {
-      // Un proyecto también puede empezar sin contenido y sin timeboxes
-      const fechaCreacion = new Date();
-      newItem.contenido = [];
-      newItem.timeboxes = [];
-      newItem.fechaCreacion = fechaCreacion.toISOString();
     }
 
     // Solo emitir si no hay archivo (los archivos se manejan en el subscribe)

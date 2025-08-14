@@ -16,7 +16,21 @@ export class TimeboxApiService {
    */
   getAllTimeboxes(): Observable<Timebox[]> {
     return this.apiService.getData<{status: boolean, message: string, data: Timebox[]}>('/timeboxes')
-      .pipe(map(response => response.data));
+      .pipe(
+        map(response => response.data),
+        map(timeboxes => timeboxes.map(timebox => ({
+          ...timebox,
+          compensacionEconomica: timebox.compensacionEconomica || {
+            skills: [],
+            esfuerzoHH: 0,
+            entregaAnticipada: {
+              duracionEstimadaDias: 0,
+              valorBase: 0,
+              bonificaciones: []
+            }
+          }
+        })))
+      );
   }
 
   /**
@@ -24,7 +38,21 @@ export class TimeboxApiService {
    */
   getTimeboxById(id: string): Observable<Timebox> {
     return this.apiService.getData<{status: boolean, message: string, data: Timebox}>(`/timeboxes/${id}`)
-      .pipe(map(response => response.data));
+      .pipe(
+        map(response => response.data),
+        map(timebox => ({
+          ...timebox,
+          compensacionEconomica: timebox.compensacionEconomica || {
+            skills: [],
+            esfuerzoHH: 0,
+            entregaAnticipada: {
+              duracionEstimadaDias: 0,
+              valorBase: 0,
+              bonificaciones: []
+            }
+          }
+        }))
+      );
   }
 
   /**
@@ -144,7 +172,21 @@ export class TimeboxApiService {
    */
   getPublishedTimeboxes(): Observable<Timebox[]> {
     return this.apiService.getData<{status: boolean, message: string, data: Timebox[]}>('/timeboxes/published')
-      .pipe(map(response => response.data));
+      .pipe(
+        map(response => response.data),
+        map(timeboxes => timeboxes.map(timebox => ({
+          ...timebox,
+          compensacionEconomica: timebox.compensacionEconomica || {
+            skills: [],
+            esfuerzoHH: 0,
+            entregaAnticipada: {
+              duracionEstimadaDias: 0,
+              valorBase: 0,
+              bonificaciones: []
+            }
+          }
+        })))
+      );
   }
 
   /**
@@ -152,7 +194,21 @@ export class TimeboxApiService {
    */
   getAllTimeboxesWithPostulations(): Observable<Timebox[]> {
     return this.apiService.getData<{status: boolean, message: string, data: Timebox[]}>('/timeboxes/with-postulations')
-      .pipe(map(response => response.data));
+      .pipe(
+        map(response => response.data),
+        map(timeboxes => timeboxes.map(timebox => ({
+          ...timebox,
+          compensacionEconomica: timebox.compensacionEconomica || {
+            skills: [],
+            esfuerzoHH: 0,
+            entregaAnticipada: {
+              duracionEstimadaDias: 0,
+              valorBase: 0,
+              bonificaciones: []
+            }
+          }
+        })))
+      );
   }
 
   /**

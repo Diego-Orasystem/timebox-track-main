@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
@@ -19,6 +19,7 @@ import { ChecklistFormComponent } from '../../../../../../shared/components/moda
 import { SelectTimeboxTypeComponent } from './components/select-type.component';
 import { TimeboxTypeService } from '../../../../pages/timebox-maintainer/services/timebox-maintainer.service';
 import { Persona } from '../../../../../../shared/interfaces/fases-timebox.interface';
+import { Timebox } from '../../../../../../shared/interfaces/timebox.interface';
 import { debounceTime, Subject, takeUntil } from 'rxjs';
 import { TimeboxApiService } from '../../../../services/timebox-api.service';
 import { formatDate } from '../../../../../../shared/helpers/date-formatter';
@@ -51,6 +52,8 @@ export class PlanningComponent implements OnInit, OnDestroy {
   // Este FormControl solo maneja el TEXTO que el usuario escribe en el input.
   teamLeaderSearchControl = new FormControl<string | null>('');
   private destroy$ = new Subject<void>(); // Para desuscribirse de observables y evitar fugas de memoria
+  
+  @Output() autoSaveRequest = new EventEmitter<Timebox>();
 
   constructor(
     private fb: FormBuilder,
@@ -69,6 +72,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
         this.teamLeaders = personas.filter(
           (persona) => persona.rol === 'Team Leader'
         );
+        console.log('🔍 PlanningComponent - TeamLeaders cargados:', this.teamLeaders);
       },
       error: (error) => {
         console.error('Error cargando personas:', error);
@@ -76,17 +80,44 @@ export class PlanningComponent implements OnInit, OnDestroy {
       }
     });
 
+    // Log del estado inicial del formulario
+    console.log('🔍 PlanningComponent ngOnInit - Form state:', {
+      teamLeader: this.form.get('teamLeader')?.value,
+      skills: this.form.get('skills')?.value,
+      completada: this.form.get('completada')?.value
+    });
+
     const currentTeamLeader: Persona | null =
       this.form.get('teamLeader')?.value;
+    console.log('🔍 PlanningComponent ngOnInit - currentTeamLeader:', currentTeamLeader);
+    
     if (
       currentTeamLeader &&
       typeof currentTeamLeader === 'object' &&
       currentTeamLeader.nombre
     ) {
+      console.log('🔍 Setting teamLeader in search control:', currentTeamLeader.nombre);
       this.teamLeaderSearchControl.setValue(currentTeamLeader.nombre);
     } else {
-      this.form.get('teamLeader')?.setValue(null);
+      console.log('🔍 No hay teamLeader inicial o está mal formateado');
     }
+
+    // Suscribirse a cambios en el grupo planning completo para refrescar UI
+    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
+      console.log('🔍 Form value changed:', value);
+      this.updateUIFromForm();
+    });
+
+    // Suscripción específica al control teamLeader para reflejar cambios programáticos del padre
+    const teamLeaderCtrl = this.form.get('teamLeader');
+    teamLeaderCtrl?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((leader) => {
+      if (leader && typeof leader === 'object' && leader.nombre) {
+        this.teamLeaderSearchControl.setValue(leader.nombre, { emitEvent: false });
+      }
+    });
+
+    // Forzar una sincronización inicial asincrónica por si el patch del padre ocurre después
+    setTimeout(() => this.updateUIFromForm());
 
     this.teamLeaderSearchControl.valueChanges
       .pipe(debounceTime(300), takeUntil(this.destroy$))
@@ -115,6 +146,26 @@ export class PlanningComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  // Método para actualizar la UI cuando cambie el formulario
+  private updateUIFromForm(): void {
+    const teamLeader = this.form.get('teamLeader')?.value;
+    const skills = this.form.get('skills')?.value;
+    const completada = this.form.get('completada')?.value;
+    
+    console.log('🔍 Updating UI from form:', { teamLeader, skills, completada });
+    console.log('🔍 TeamLeader type:', typeof teamLeader);
+    console.log('🔍 TeamLeader value:', teamLeader);
+    
+    // Actualizar Team Leader en el input de búsqueda
+    if (teamLeader && typeof teamLeader === 'object' && teamLeader.nombre) {
+      console.log('🔍 Setting teamLeader in search control:', teamLeader.nombre);
+      this.teamLeaderSearchControl.setValue(teamLeader.nombre, { emitEvent: false });
+    } else {
+      console.log('🔍 Clearing teamLeader search control - no valid teamLeader found');
+      this.teamLeaderSearchControl.setValue('', { emitEvent: false });
+    }
   }
 
   get teamLeaderFormControl(): FormControl {
@@ -161,29 +212,20 @@ export class PlanningComponent implements OnInit, OnDestroy {
       const selectedValue = this.form.get('teamLeader')?.value;
       const searchText = this.teamLeaderSearchControl.value;
 
-      if (
-        !selectedValue ||
-        typeof selectedValue !== 'object' ||
-        !selectedValue.id
-      ) {
-        // Si no hay un objeto Persona válido en el FormGroup 'teamLeader'
-        // Y el input de búsqueda no está vacío y no coincide con ninguna persona
-        if (typeof searchText === 'string' && searchText !== '') {
+      // Si hay un Team Leader válido en el formulario, priorizar mostrarlo SIEMPRE
+      if (selectedValue && typeof selectedValue === 'object' && selectedValue.nombre) {
+        this.teamLeaderSearchControl.setValue(selectedValue.nombre, { emitEvent: false });
+      } else {
+        // Solo limpiar si el usuario escribió algo que no coincide con ninguna persona
+        if (typeof searchText === 'string' && searchText.trim() !== '') {
           const found = this.teamLeaders.find(
             (p) => p.nombre.toLowerCase() === searchText.toLowerCase()
           );
           if (!found) {
-            this.teamLeaderSearchControl.setValue(null, { emitEvent: false }); // Limpia el input de búsqueda
+            this.teamLeaderSearchControl.setValue('', { emitEvent: false });
+            this.form.get('teamLeader')?.setValue(null);
           }
-        } else if (searchText === '') {
-          // Si el input está vacío, asegurarse de que el form esté a null
-          this.form.get('teamLeader')?.setValue(null);
         }
-      } else {
-        // Si hay un objeto Persona válido en el FormGroup, asegurarse de que el input muestre su nombre
-        this.teamLeaderSearchControl.setValue(selectedValue.nombre, {
-          emitEvent: false,
-        });
       }
       this.showTeamLeaderDropdown = false;
     }, 150);
@@ -231,28 +273,34 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   getEntregablesTimebox(): string[] {
     const typeId = this.rootFormGroup.control.get('tipoTimebox')?.value;
+    
+    if (!typeId) return [];
 
-    const currentOptions =
-      this.timeboxTypeService.timeboxTypesSubject.getValue();
+    const currentOptions = this.timeboxTypeService.timeboxTypesSubject.getValue();
+    
+    if (!currentOptions || currentOptions.length === 0) return [];
 
     const selectedType = currentOptions.find((opt) => opt.id === typeId);
+    
+    if (!selectedType || !selectedType.entregablesComunes) return [];
 
-    if (selectedType?.entregablesComunes?.length === 0) return [];
-
-    return selectedType?.entregablesComunes as string[];
+    return selectedType.entregablesComunes;
   }
 
   getEvidenciasTimebox(): string[] {
     const typeId = this.rootFormGroup.control.get('tipoTimebox')?.value;
+    
+    if (!typeId) return [];
 
-    const currentOptions =
-      this.timeboxTypeService.timeboxTypesSubject.getValue();
+    const currentOptions = this.timeboxTypeService.timeboxTypesSubject.getValue();
+    
+    if (!currentOptions || currentOptions.length === 0) return [];
 
     const selectedType = currentOptions.find((opt) => opt.id === typeId);
+    
+    if (!selectedType || !selectedType.evidenciasCierre) return [];
 
-    if (selectedType?.evidenciasCierre?.length === 0) return [];
-
-    return selectedType?.evidenciasCierre as string[];
+    return selectedType.evidenciasCierre;
   }
 
   //Eje y aplicativo
@@ -283,7 +331,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
   getFormattedDate(date: string | undefined): string {
     if (!date) return '';
     const dateToDate = new Date(date);
-    return formatDate(dateToDate, false); // false para mostrar solo fecha sin horas
+    return formatDate(dateToDate, false);
   }
 
   onAlcanceChange(alcance: string) {
@@ -337,6 +385,9 @@ export class PlanningComponent implements OnInit, OnDestroy {
             adjuntoId: uploadResult.data.id
           });
           console.log('Archivo subido exitosamente:', uploadResult);
+          
+          // Guardar automáticamente el timebox para persistir los adjuntos
+          this.saveTimeboxAutomatically();
         },
         error: (error) => {
           console.error('Error al subir archivo:', error);
@@ -351,6 +402,28 @@ export class PlanningComponent implements OnInit, OnDestroy {
     });
     
     this.closeModalAdjuntos();
+  }
+
+  // Método para guardar automáticamente el timebox
+  private saveTimeboxAutomatically() {
+    // Obtener el formulario padre para construir el timebox completo
+    const parentForm = this.rootFormGroup.control;
+    const formValues = parentForm.getRawValue();
+    
+    // Crear un objeto Timebox básico con los datos del formulario
+    const timeboxToSave: Timebox = {
+      ...formValues,
+      fases: {
+        ...formValues.fases,
+        planning: {
+          ...formValues.planning,
+          adjuntos: this.getAdjuntosFormArray().value
+        }
+      }
+    };
+    
+    console.log('Guardando timebox automáticamente para persistir adjuntos...', timeboxToSave);
+    this.autoSaveRequest.emit(timeboxToSave);
   }
 
   downloadFile(adjuntoControl: AbstractControl) {
@@ -518,4 +591,5 @@ export class PlanningComponent implements OnInit, OnDestroy {
   eliminarChecklist(index: number) {
     this.cumplimiento.removeAt(index);
   }
+
 }

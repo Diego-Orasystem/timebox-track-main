@@ -39,7 +39,7 @@
       <div *ngIf="form.get('completada')?.value">
         <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
         <span class="text-[12px] text-[var(--secondary)] font-semibold">
-          {{ form.get("fechaFase")?.value }}
+          {{ form.get("fechaCompletado")?.value }}
         </span>
       </div>
     </div>
@@ -134,6 +134,7 @@
                     Participantes
                   </h1>
                   <div
+                    *ngIf="getParticipantesFormArray(i)"
                     formArrayName="participantes"
                     class="flex flex-col items-start text-sm"
                   >
@@ -176,7 +177,7 @@
                     Lista de acuerdos
                   </h1>
                   <div
-                    *ngIf="getListaAcuerdosFormArray(i).length > 0"
+                    *ngIf="getListaAcuerdosFormArray(i)"
                     formArrayName="listaAcuerdos"
                     class="flex flex-col items-start text-sm gap-3 bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)]"
                   >
@@ -227,6 +228,7 @@
                     Adjuntos
                   </h1>
                   <div
+                    *ngIf="getAdjuntosFormArray(i)"
                     formArrayName="adjuntos"
                     class="flex flex-col items-start text-sm"
                   >
@@ -264,7 +266,10 @@
                 </div>
               </div>
 
-              <div class="flex items-center place-content-end gap-2 mb-3 mt-4">
+              <div
+                [formGroup]="getCierreSolicitudRevisionFormGroup(i)"
+                class="flex items-center place-content-end gap-2 mb-3 mt-4"
+              >
                 <input
                   type="checkbox"
                   id="revisionCompleted-{{ i }}"
@@ -361,7 +366,7 @@
                 Fecha de Entrega
               </p>
               <p class="text-sm font-semibold text-[var(--darkText)]">
-                {{ timeboxData.entrega?.fechaEntrega }}
+                {{ getFormattedDate(timeboxData.entrega?.fechaEntrega) }}
               </p>
             </div>
 
@@ -377,36 +382,8 @@
             </div>
 
             <div
-              *ngIf="timeboxData.entrega?.participantes"
-              class="detail-item col-span-full"
-            >
-              <p
-                class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
-              >
-                Participantes
-              </p>
-              <ul
-                class="list-disc list-inside text-sm text-[var(--darkText)] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1"
-              >
-                <li
-                  *ngFor="
-                    let participante of timeboxData.entrega?.participantes
-                  "
-                  class="flex items-center gap-1"
-                >
-                  <span class="font-medium">{{ participante.nombre }}</span>
-                  <span
-                    *ngIf="participante.rol"
-                    class="text-xs text-[var(--disabled)]"
-                    >({{ participante.rol }})</span
-                  >
-                </li>
-              </ul>
-            </div>
-
-            <div
               *ngIf="timeboxData.entrega?.adjuntosEntregables"
-              class="file-list detail-item"
+              class="file-list detail-item col-span-2"
             >
               <p
                 class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
@@ -453,9 +430,140 @@
               </ul>
             </div>
 
+            <div class="detail-item col-span-2">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Horario disponibilidad colaborador
+              </p>
+
+              <div
+                *ngFor="
+                  let item of timeboxData.entrega?.solicitudRevision
+                    ?.horarioDisponibilidad | keyvalue
+                "
+                class="mb-3"
+              >
+                <p class="block mb-1 text-[var(--darkText)] text-xs">
+                  {{ item.key }}:
+                </p>
+                <ul
+                  class="list-disc list-inside space-y-1 text-[var(--darkText)] text-xs"
+                >
+                  <li *ngFor="let bloque of item.value.bloques">
+                    {{ bloque.start }} - {{ bloque.end }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
             <div
-              *ngIf="timeboxData.entrega?.adjuntosEvidencias"
-              class="file-list detail-item"
+              [formGroup]="getCierreSolicitudEntregaFormGroup()"
+              class="flex items-center place-content-end col-span-2 gap-2 mb-3 mt-4"
+            >
+              <input
+                type="checkbox"
+                id="entregaCompleted"
+                formControlName="completada"
+                class="form-checkbox h-4 w-4 text-[var(--primaryDark)] rounded focus:ring-[var(--primaryDark)]"
+              />
+              <label
+                for="entregaCompleted"
+                class="text-sm text-[var(--darkText)]"
+                >Entrega Completada</label
+              >
+            </div>
+          </div>
+        </div>
+
+        <ng-template #noEntrega>
+          <div
+            class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
+          >
+            <p>No hay información de entrega disponible para mostrar.</p>
+            <p class="mt-2 text-xs">
+              Para ver los detalles de la entrega la fase debe ser completada
+              por el responsable.
+            </p>
+          </div>
+        </ng-template>
+      </div>
+    </section>
+
+    <section class="solicitud-cierre mb-4">
+      <div class="flex items-center gap-3 mb-4">
+        <svg
+          width="18px"
+          height="18px"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          stroke="#4f46e5"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title>Entrega</title>
+            <path
+              d="M18,22H6a2,2,0,0,1-2-2V4A2,2,0,0,1,6,2h7.1a2,2,0,0,1,1.5.6l4.9,5.2A2,2,0,0,1,20,9.2V20A2,2,0,0,1,18,22Z"
+              fill="none"
+              id="File"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+            ></path>
+            <line
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              x1="12"
+              x2="12"
+              y1="17"
+              y2="11"
+            ></line>
+            <line
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              x1="9"
+              x2="15"
+              y1="14"
+              y2="14"
+            ></line>
+          </g>
+        </svg>
+        <label for="" class="font-semibold">Solicitud de Cierre</label>
+      </div>
+      <div
+        class="entrega-section p-4 bg-[var(--backgroundLight)] rounded-md border border-[var(--lines)]"
+      >
+        <div *ngIf="timeboxData?.fases?.close?.solicitudCierre; else noCierre">
+          <div
+            class="detail-item inline-flex items-center gap-2 justify-start mb-3"
+          >
+            <span class="text-xs font-medium text-[var(--disabled)] uppercase">
+              Fecha Solicitud
+            </span>
+            <span class="text-sm font-semibold text-[var(--darkText)]">
+              {{
+                getFormattedDate(
+                  timeboxData.fases.close?.solicitudCierre?.fechaSolicitud
+                )
+              }}
+            </span>
+          </div>
+          <div
+            class="entrega-details-grid grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4"
+          >
+            <div
+              *ngIf="timeboxData.fases.close?.adjuntosEvidencias"
+              class="file-list detail-item col-span-2"
             >
               <p
                 class="text-xs font-medium text-[var(--disabled)] uppercase mb-2"
@@ -465,7 +573,7 @@
               <ul class="space-y-1">
                 <li
                   *ngFor="
-                    let evidencia of timeboxData.entrega?.adjuntosEvidencias
+                    let evidencia of timeboxData.fases.close?.adjuntosEvidencias
                   "
                   class="flex items-center gap-2 text-sm text-[var(--darkText)]"
                 >
@@ -501,17 +609,58 @@
                 </li>
               </ul>
             </div>
+            <div class="detail-item col-span-2">
+              <p
+                class="text-xs font-medium text-[var(--disabled)] uppercase mb-1"
+              >
+                Horario disponibilidad colaborador
+              </p>
+
+              <div
+                *ngFor="
+                  let item of timeboxData.fases.close?.solicitudCierre
+                    ?.horarioDisponibilidad | keyvalue
+                "
+                class="mb-3"
+              >
+                <p class="block mb-1 text-[var(--darkText)] text-xs">
+                  {{ item.key }}:
+                </p>
+                <ul
+                  class="list-disc list-inside space-y-1 text-[var(--darkText)] text-xs"
+                >
+                  <li *ngFor="let bloque of item.value.bloques">
+                    {{ bloque.start }} - {{ bloque.end }}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div
+              [formGroup]="getCierreSolicitudCierreFormGroup()"
+              class="flex items-center place-content-end col-span-2 gap-2 mb-3 mt-4"
+            >
+              <input
+                type="checkbox"
+                id="closeCompleted"
+                formControlName="completada"
+                class="form-checkbox h-4 w-4 text-[var(--primaryDark)] rounded focus:ring-[var(--primaryDark)]"
+              />
+              <label for="closeCompleted" class="text-sm text-[var(--darkText)]"
+                >Cierre Completado</label
+              >
+            </div>
           </div>
         </div>
 
-        <ng-template #noEntrega>
+        <ng-template #noCierre>
           <div
             class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
           >
-            <p>No hay información de entrega disponible para mostrar.</p>
+            <p>No hay solicitud de cierre disponible para mostrar.</p>
             <p class="mt-2 text-xs">
-              Para ver los detalles de la entrega la fase debe ser completada
-              por el responsable.
+              El responsable debe adjuntar las evidencias de cierre y luego
+              realizar una solicitud de cierre.
             </p>
           </div>
         </ng-template>

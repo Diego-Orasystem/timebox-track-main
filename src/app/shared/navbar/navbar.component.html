@@ -1,12 +1,43 @@
 <nav
-  class="h-[90px] bg-[var(--backgroundLight)] flex items-center place-content-between px-8 text-[var(--darkText)] border-b border-[var(--lines)]"
+  class="h-[90px] bg-[var(--backgroundLight)] flex items-center place-content-between px-8 text-[var(--darkText)] border-b border-[var(--lines)] relative"
 >
   <app-breadcrumb></app-breadcrumb>
-  <div class="inline-flex items-center justify-end gap-4">
-    <!-- Aquí va el contenido del navbar -->
-    <h1 class="text-sm font-semibold">👋🏻 Hola, user!</h1>
+
+  <div class="inline-flex items-center justify-end gap-4 relative">
+    <h1 class="text-sm font-semibold">👋🏻 Hola, {{ persona.nombre }}!</h1>
+
+    <!-- Avatar (Botón) -->
+    <button
+      class="profile w-10 h-10 bg-[var(--backgroundActive)] rounded-full flex items-center justify-center text-white font-semibold cursor-pointer"
+      (click)="toggleMenu()"
+    >
+      {{ persona.nombre.charAt(0) }}
+    </button>
+
+    <!-- Menú desplegable -->
     <div
-      class="profile w-10 h-10 bg-[var(--backgroundActive)] rounded-full"
-    ></div>
+      *ngIf="isMenuOpen"
+      class="absolute top-16 right-0 z-50 w-72 bg-white shadow-xl rounded-lg border border-[var(--lines)] p-4 animate-fade-in"
+    >
+      <h2 class="text-base font-semibold text-[var(--primaryDark)]">
+        {{ persona.nombre }}
+      </h2>
+      <p class="text-sm text-[var(--text-medium)] mb-1">{{ persona.rol }}</p>
+      <p class="text-xs text-[var(--text-light)] mb-4">{{ persona.email }}</p>
+
+      <div *ngIf="persona.habilidades?.length ?? 0 > 0">
+        <h3 class="text-xs font-medium text-[var(--text-light)] mb-2">
+          Habilidades Validadas
+        </h3>
+        <ul class="flex flex-wrap gap-2">
+          <li
+            *ngFor="let habilidad of persona.habilidades"
+            class="text-[10px] bg-indigo-100 text-[var(--darkText)] px-3 py-1 rounded-full"
+          >
+            {{ habilidad }}
+          </li>
+        </ul>
+      </div>
+    </div>
   </div>
 </nav>

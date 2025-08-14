@@ -1,0 +1,12 @@
+<nav
+  class="h-[90px] bg-[var(--backgroundLight)] flex items-center place-content-between px-8 text-[var(--darkText)] border-b border-[var(--lines)]"
+>
+  <app-breadcrumb></app-breadcrumb>
+  <div class="inline-flex items-center justify-end gap-4">
+    <!-- Aquí va el contenido del navbar -->
+    <h1 class="text-sm font-semibold">👋🏻 Hola, user!</h1>
+    <div
+      class="profile w-10 h-10 bg-[var(--backgroundActive)] rounded-full"
+    ></div>
+  </div>
+</nav>

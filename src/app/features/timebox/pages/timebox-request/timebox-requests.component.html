@@ -25,7 +25,7 @@
       class="w-full flex flex-col sm:flex-row items-center justify-end gap-4 sm:gap-0"
     >
       <div
-        class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto"
+        class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto px-3"
       >
         <div class="relative w-full sm:w-auto min-w-[280px]">
           <input
@@ -33,7 +33,7 @@
             [(ngModel)]="searchTerm"
             (ngModelChange)="onSearchTermChange($event)"
             placeholder="Buscar por Timebox, Postulante o Rol"
-            class="block w-full px-4 py-2 pl-10 placeholder:text-[var(--disabled)] rounded-sm text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200"
+            class="block w-full px-4 py-2 pl-10 placeholder:text-slate-500 rounded-sm text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200"
           />
           <div
             class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"
@@ -123,20 +123,22 @@
             {{ request.postulacion.rol }}
           </p>
           <div class="flex items-center text-xs mt-2">
-            <span class="font-medium text-[var(--darkText)]"
+            <span class="font-semibold text-[var(--primary)]"
               >Fecha Postulación:</span
             >
             <span class="text-gray-700 ml-1 font-medium">{{
-              request.postulacion.fechaPostulacion
+              getFormattedDate(request.postulacion.fechaPostulacion)
             }}</span>
           </div>
           <div
             *ngIf="request.requestStatus === 'approved'"
             class="flex items-center text-xs mt-2"
           >
-            <span class="font-medium">Fecha Asignación:</span>
-            <span class="text-[var(--primary)] ml-1 font-semibold">{{
-              request.postulacion.asignacion.fechaAsignacion
+            <span class="font-semibold text-[var(--primary)]"
+              >Fecha Asignación:</span
+            >
+            <span class="text-gray-700 ml-1 font-medium">{{
+              getFormattedDate(request.postulacion.asignacion.fechaAsignacion)
             }}</span>
           </div>
 
@@ -244,3 +246,12 @@
     </ul>
   </div>
 </div>
+
+<app-request-details-modal
+  *ngIf="selectedRequest"
+  [show]="showDetailsModal"
+  [request]="selectedRequest"
+  (close)="closeDetailsModal()"
+  (accept)="acceptRequest($event)"
+  (reject)="rejectRequest($event)"
+></app-request-details-modal>

@@ -1,0 +1,1735 @@
+<div class="p-10 flex flex-col gap-4 font-inter bg-gray-50">
+  <div
+    class="header flex flex-col md:flex-row items-start md:items-center justify-between w-full"
+  >
+    <div class="flex flex-col select-none mb-4 md:mb-0">
+      <h1 class="text-md font-extrabold text-[var(--darkText)]">
+        Timeboxes {{ filterState }}s
+      </h1>
+      <p class="text-sm text-[var(--text-medium)] mt-1">
+        Explora, solicita y gestiona tus asignaciones de timebox.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!--Filtros-->
+<div class="w-full inline-flex gap-4 px-10 pt-0 pb-4">
+  <div class="w-full inline-flex justify-end gap-3 items-center">
+    <div class="relative w-full md:w-44">
+      <label for="skillFilter" class="sr-only">Filtrar por Skill</label>
+      <select
+        id="skillFilter"
+        [(ngModel)]="filterSkill"
+        (change)="applyFilters()"
+        class="block w-full min-w-[140px] py-2 px-3 border border-gray-200 bg-white rounded-sm text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200 ease-in-out appearance-none cursor-pointer"
+      >
+        <option value="">Todas las Skills</option>
+        <option *ngFor="let skill of conceptualSkills" [value]="skill">
+          {{ skill }}
+        </option>
+      </select>
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+      >
+        <svg
+          class="fill-current h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <div class="relative w-full md:w-44">
+      <label for="effortFilter" class="sr-only">Filtrar por Esfuerzo</label>
+      <select
+        id="effortFilter"
+        [(ngModel)]="filterEffort"
+        (change)="applyFilters()"
+        class="block w-full min-w-[140px] py-2 px-3 border border-gray-200 bg-white rounded-sm text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200 ease-in-out appearance-none cursor-pointer"
+      >
+        <option value="">Cualquier Esfuerzo</option>
+        <option value="1 sem">1 semana</option>
+        <option value="2 sem">2 semanas</option>
+        <option value="3 sem">3 semanas</option>
+      </select>
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+      >
+        <svg
+          class="fill-current h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+          />
+        </svg>
+      </div>
+    </div>
+
+    <div class="relative w-full md:w-72">
+      <label for="sortOrder" class="sr-only">Ordenar por Fecha</label>
+      <select
+        id="sortOrder"
+        [(ngModel)]="sortOrder"
+        (change)="applyFilters()"
+        class="block w-full min-w-[140px] py-2 px-3 border border-gray-200 bg-white rounded-sm text-xs text-gray-700 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200 ease-in-out appearance-none cursor-pointer"
+      >
+        <option value="desc">Fecha de Publicación (Más reciente)</option>
+        <option value="asc">Fecha de Publicación (Más antigua)</option>
+      </select>
+      <div
+        class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700"
+      >
+        <svg
+          class="fill-current h-4 w-4"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 20 20"
+        >
+          <path
+            d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"
+          />
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="w-full flex justify-end">
+    <div
+      class="inline-flex flex-wrap gap-1 bg-white p-1 rounded-sm border border-[var(--lines)]"
+    >
+      <label
+        class="flex-1 text-sm text-center cursor-pointer px-3 py-1.5 rounded-xs transition-all duration-200 ease-in-out"
+        [ngClass]="{
+          'bg-[var(--primary)] text-white font-semibold shadow-xs':
+            filterState === 'Disponible',
+          'text-[var(--text-medium)] hover:bg-gray-50':
+            filterState !== 'Disponible'
+        }"
+      >
+        <input
+          type="radio"
+          name="filterState"
+          value="Disponible"
+          [(ngModel)]="filterState"
+          (change)="applyFilters()"
+          class="hidden"
+        />
+        <span>Disponibles</span>
+      </label>
+      <label
+        class="flex-1 text-sm text-center cursor-pointer px-3 py-1.5 rounded-xs transition-all duration-200 ease-in-out"
+        [ngClass]="{
+          'bg-[var(--primary)] text-white font-semibold shadow-xs':
+            filterState === 'Solicitado',
+          'text-[var(--text-medium)] hover:bg-gray-50':
+            filterState !== 'Solicitado'
+        }"
+      >
+        <input
+          type="radio"
+          name="filterState"
+          value="Solicitado"
+          [(ngModel)]="filterState"
+          (change)="applyFilters()"
+          class="hidden"
+        />
+        <span>Solicitados</span>
+      </label>
+      <label
+        class="flex-1 text-sm text-center cursor-pointer px-3 py-1.5 rounded-xs transition-all duration-200 ease-in-out"
+        [ngClass]="{
+          'bg-[var(--primary)] text-white font-semibold shadow-xs':
+            filterState === 'Asignado',
+          'text-[var(--text-medium)] hover:bg-gray-50':
+            filterState !== 'Asignado'
+        }"
+      >
+        <input
+          type="radio"
+          name="filterState"
+          value="Asignado"
+          [(ngModel)]="filterState"
+          (change)="applyFilters()"
+          class="hidden"
+        />
+        <span>Asignados</span>
+      </label>
+      <label
+        class="flex-1 text-sm text-center cursor-pointer px-3 py-1.5 rounded-xs transition-all duration-200 ease-in-out"
+        [ngClass]="{
+          'bg-[var(--primary)] text-white font-semibold shadow-xs':
+            filterState === 'Finalizado',
+          'text-[var(--text-medium)] hover:bg-gray-50':
+            filterState !== 'Finalizado'
+        }"
+      >
+        <input
+          type="radio"
+          name="filterState"
+          value="Finalizado"
+          [(ngModel)]="filterState"
+          (change)="applyFilters()"
+          class="hidden"
+        />
+        <span>Finalizados</span>
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Main Dashboard Layout -->
+<div
+  class="dashboard px-10 w-full flex flex-col lg:flex-row justify-between items-start space-y-2 lg:space-y-0 lg:space-x-4 flex-grow relative"
+>
+  <!-- Left Column: Timebox Offers List -->
+  <div
+    class="w-full lg:w-1/3 flex flex-col gap-4 pr-2 pb-6 rounded-sm overflow-y-auto custom-scroll absolute inset-y-0 left-0 lg:static"
+  >
+    <div
+      *ngIf="timeboxesFiltrados.length === 0"
+      class="flex items-center justify-center p-8 bg-[var(--backgroundLight)] rounded-sm text-[var(--text-medium)] h-40"
+    >
+      <p class="text-xs font-medium text-gray-500">
+        No hay timeboxes disponibles para esta categoría.
+      </p>
+    </div>
+    <div
+      *ngFor="let item of timeboxesFiltrados"
+      (click)="onSelectTimebox(item)"
+      [ngClass]="{
+        'border-1 border-[var(--primaryLight)] bg-indigo-50 text-[var(--darkText)] shadow-lg':
+          item.id === timeboxSeleccionado?.id,
+        'border border-transparent text-[var(--textDark)] hover:border-[var(--primaryLight)] shadow-md':
+          item.id !== timeboxSeleccionado?.id
+      }"
+      class="flex flex-col gap-3 w-full bg-[var(--backgroundLight)] p-5 rounded-sm duration-200 cursor-pointer transition-all"
+    >
+      <!-- Timebox Header Card -->
+      <div class="flex justify-between items-center w-full">
+        <h1 class="text-md font-bold text-[var(--darkText)]">
+          {{ item.fases.planning?.nombre || item.tipo_nombre || 'Sin nombre' }}
+        </h1>
+        <div
+          class="flex items-center text-xs font-semibold py-1.5 px-3 rounded-full w-fit"
+          [ngClass]="{
+            'bg-yellow-100 text-yellow-700':
+              getEstadoSolicitado(item) && !getTimeboxAsignado(item),
+            'bg-green-100 text-green-700':
+              !getEstadoSolicitado(item) && item.estado === 'Disponible',
+            'bg-indigo-100 text-indigo-700': getTimeboxAsignado(item),
+            'bg-gray-100 text-gray-700': item.estado == 'Finalizado'
+          }"
+        >
+          <ng-container
+            *ngIf="getEstadoSolicitado(item) && !getTimeboxAsignado(item)"
+            >Solicitado</ng-container
+          >
+          <ng-container
+            *ngIf="!getEstadoSolicitado(item) && item.estado === 'Disponible'"
+            >Disponible</ng-container
+          >
+          <ng-container *ngIf="getTimeboxAsignado(item)">Asignado</ng-container>
+          <ng-container *ngIf="item.estado == 'Finalizado'"
+            >Finalizado</ng-container
+          >
+        </div>
+      </div>
+
+      <!-- Conceptual Skills & Alcance/Esfuerzo -->
+      <div class="flex flex-wrap gap-2 mt-2">
+        <ng-container *ngIf="item.fases.planning?.skills">
+          <span
+            *ngFor="
+              let skill of getConceptualSkills(item.fases.planning?.skills || [])
+            "
+            class="text-[10px] px-3 py-1 rounded-full font-medium"
+            [ngClass]="{
+              'bg-[var(--primaryDark)] text-white':
+                item.id === timeboxSeleccionado?.id,
+              'text-[var(--darkText)] bg-gray-100 ':
+                item.id !== timeboxSeleccionado?.id
+            }"
+          >
+            {{ skill.nombre | uppercase }}
+          </span>
+        </ng-container>
+
+        <span
+          class="text-[10px] px-3 py-1 rounded-full font-medium"
+          [ngClass]="{
+            'bg-[var(--primaryDark)] text-white':
+              item.id === timeboxSeleccionado?.id,
+            'text-[var(--darkText)] bg-gray-100':
+              item.id !== timeboxSeleccionado?.id
+          }"
+        >
+          {{ item.fases.planning?.alcance | uppercase }}
+        </span>
+        <span
+          class="text-[10px] px-3 py-1 rounded-full font-medium"
+          [ngClass]="{
+            'bg-[var(--primaryDark)] text-white':
+              item.id === timeboxSeleccionado?.id,
+            'text-[var(--darkText)] bg-gray-100':
+              item.id !== timeboxSeleccionado?.id
+          }"
+        >
+          {{ item.fases.planning?.esfuerzo | uppercase }}
+        </span>
+      </div>
+
+      <!-- Technological Skills -->
+      <div class="flex flex-wrap gap-2 mt-2">
+        <ng-container *ngIf="item.fases.planning?.skills">
+          <span
+            *ngFor="
+              let skill of getTecnologicaSkills(item.fases.planning?.skills || [])
+            "
+            class="text-[10px] px-3 py-1 rounded-full border"
+            [ngClass]="{
+              'bg-white text-[var(--primary)] border-[var(--primary)]':
+                item.id === timeboxSeleccionado?.id,
+              'bg-indigo-50 text-[var(--primary)] border-[var(--primary)]':
+                item.id !== timeboxSeleccionado?.id
+            }"
+          >
+            {{ skill.nombre }}
+          </span>
+        </ng-container>
+      </div>
+
+      <!-- Postulations Count -->
+
+      <!-- Timebox Type and Proposed Amount -->
+      <div
+        class="flex items-center justify-between text-[10px] text-[var(--text-light)]"
+      >
+        <p>
+          Publicado:
+          <span class="text-[var(--text-light)]"
+            >{{ getFormattedDate(item.publicacionOferta?.fechaPublicacion) }}
+          </span>
+        </p>
+        <div
+          class="flex items-center gap-2 text-sm text-[var(--text-light)] mt-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1.5"
+            stroke="currentColor"
+            class="w-3 h-3 text-[var(--text-medium)]"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
+            />
+          </svg>
+          <span class="text-[var(--text-medium)] text-[10px]">
+            {{
+              (item.publicacionOferta?.postulaciones?.length || 0) === 1
+                ? "1 postulación"
+                : (item.publicacionOferta?.postulaciones?.length || 0) + " postulaciones"
+            }}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Timebox Details -->
+  <div
+    *ngIf="timeboxSeleccionado; else noSelection"
+    class="w-full lg:w-2/3 flex flex-col gap-6 p-8 bg-[var(--backgroundLight)] rounded-sm shadow-md overflow-y-auto custom-scroll absolute inset-y-0 right-0 lg:static"
+  >
+    <!-- Header and Status -->
+    <div
+      class="flex flex-col sm:flex-row w-full justify-between items-start sm:items-center"
+    >
+      <span class="text-[var(--text-light)] mb-2 sm:mb-0 text-xs"
+        >Publicado:
+        <span class="font-semibold text-[var(--text-medium)] text-xs"
+          >{{
+            getFormattedDate(
+              timeboxSeleccionado.publicacionOferta?.fechaPublicacion
+            )
+          }}
+        </span>
+      </span>
+      <div
+        class="flex items-center text-xs font-semibold py-1.5 px-3 rounded-full w-fit"
+        [ngClass]="{
+          'bg-yellow-100 text-yellow-700':
+            getEstadoSolicitado(timeboxSeleccionado) &&
+            !getTimeboxAsignado(timeboxSeleccionado),
+          'bg-green-100 text-green-700':
+            !getEstadoSolicitado(timeboxSeleccionado) &&
+            timeboxSeleccionado.estado === 'Disponible',
+          'bg-indigo-100 text-indigo-700':
+            getTimeboxAsignado(timeboxSeleccionado),
+          'bg-gray-100 text-gray-700':
+            timeboxSeleccionado.estado == 'Finalizado'
+        }"
+      >
+        <ng-container
+          *ngIf="
+            getEstadoSolicitado(timeboxSeleccionado) &&
+            !getTimeboxAsignado(timeboxSeleccionado)
+          "
+          >Solicitado</ng-container
+        >
+        <ng-container
+          *ngIf="
+            !getEstadoSolicitado(timeboxSeleccionado) &&
+            timeboxSeleccionado.estado === 'Disponible'
+          "
+          >Disponible</ng-container
+        >
+        <ng-container *ngIf="getTimeboxAsignado(timeboxSeleccionado)"
+          >Asignado</ng-container
+        >
+        <ng-container *ngIf="timeboxSeleccionado.estado == 'Finalizado'"
+          >Finalizado</ng-container
+        >
+      </div>
+    </div>
+
+    <!-- Timebox Title and Key Features -->
+    <div class="flex flex-col gap-3">
+      <p class="text-xs font-mono text-[var(--text-light)]">
+        ID:
+        <span class="font-semibold text-[var(--text-medium)]">{{
+          timeboxSeleccionado.id
+        }}</span>
+      </p>
+      <h1 class="text-xl font-extrabold text-[var(--darkText)]">
+        {{ timeboxSeleccionado.fases.planning?.nombre }}
+      </h1>
+      <div class="flex flex-wrap gap-2 text-xs text-[var(--text-medium)]">
+        <ng-container
+          *ngIf="
+            timeboxSeleccionado.fases.planning &&
+            timeboxSeleccionado.fases.planning.skills
+          "
+        >
+          <span
+            *ngFor="
+              let skill of getConceptualSkills(
+                timeboxSeleccionado.fases.planning.skills
+              )
+            "
+            class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium"
+          >
+            {{ skill.nombre | uppercase }}
+          </span>
+        </ng-container>
+
+        <span
+          class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium"
+        >
+          {{ timeboxSeleccionado.fases.planning?.alcance | uppercase }}
+        </span>
+        <span
+          class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium"
+        >
+          {{ timeboxSeleccionado.fases.planning?.esfuerzo | uppercase }}
+        </span>
+      </div>
+    </div>
+
+    <hr class="border-t border-[var(--lines)] my-2 w-full" />
+
+    <!-- Detailed Description -->
+    <section class="mb-2">
+      <h2
+        class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+      >
+        Descripción del Timebox
+      </h2>
+
+      <p
+        *ngIf="
+          timeboxSeleccionado.fases.planning?.descripcion;
+          else noDescription
+        "
+        class="text-[var(--text-medium)] leading-relaxed text-xs"
+      >
+        {{ timeboxSeleccionado.fases.planning?.descripcion }}
+      </p>
+      <ng-template #noDescription>
+        <p class="text-sm text-gray-500 italic">
+          No hay descripción detallada.
+        </p>
+      </ng-template>
+    </section>
+
+    <hr class="border-t border-[var(--lines)] my-2 w-full" />
+
+    <!-- Postulaciones Section -->
+    <section class="mb-4" *ngIf="timeboxSeleccionado.publicacionOferta && timeboxSeleccionado.publicacionOferta.postulaciones && timeboxSeleccionado.publicacionOferta.postulaciones.length > 0">
+      <div class="mb-4">
+        <h2 class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2">
+          Postulaciones ({{ (timeboxSeleccionado.publicacionOferta && timeboxSeleccionado.publicacionOferta.postulaciones) ? timeboxSeleccionado.publicacionOferta.postulaciones.length : 0 }})
+        </h2>
+        <p class="text-xs">Desarrolladores que se han postulado a este timebox</p>
+      </div>
+
+      <div class="space-y-3">
+        <div 
+          *ngFor="let postulacion of timeboxSeleccionado.publicacionOferta?.postulaciones || []; let i = index"
+          class="p-4 border border-gray-200 rounded-lg bg-white"
+        >
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <h3 class="text-sm font-semibold text-[var(--darkText)]">
+                {{ postulacion?.desarrollador || 'Sin nombre' }}
+              </h3>
+              <p class="text-xs text-[var(--text-medium)]">
+                Rol: <span class="font-medium">{{ postulacion?.rol || 'Sin rol' }}</span>
+              </p>
+            </div>
+            <div class="flex items-center gap-2">
+              <span 
+                class="px-2 py-1 text-xs rounded-full"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700': postulacion?.estadoSolicitud === 'Pendiente',
+                  'bg-green-100 text-green-700': postulacion?.estadoSolicitud === 'Aprobado',
+                  'bg-red-100 text-red-700': postulacion?.estadoSolicitud === 'Rechazado'
+                }"
+              >
+                {{ postulacion?.estadoSolicitud || 'Sin estado' }}
+              </span>
+              <span 
+                *ngIf="postulacion?.asignacion?.asignado"
+                class="px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full"
+              >
+                Asignado
+              </span>
+            </div>
+          </div>
+          <div class="text-xs text-[var(--text-light)]">
+            <p>Fecha de postulación: {{ getFormattedDate(postulacion?.fechaPostulacion) }}</p>
+            <p *ngIf="postulacion?.asignacion?.fechaAsignacion">
+              Fecha de asignación: {{ getFormattedDate(postulacion?.asignacion?.fechaAsignacion) }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <hr class="border-t border-[var(--lines)] my-2 w-full" />
+
+    <!-- Additional Planning Details (Eje, Aplicativo, Fecha Inicio, Monto) -->
+    <section class="mb-4">
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Detalles de Planificación
+        </h2>
+        <p class="text-xs">Aspectos del planning del timebox</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3">
+        <div class="detail-item">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Alcance</label
+          >
+          <p
+            *ngIf="timeboxSeleccionado.fases.planning?.alcance; else noInfo"
+            class="text-xs text-[var(--darkText)]"
+          >
+            {{ timeboxSeleccionado.fases.planning?.alcance || "N/A" }}
+          </p>
+        </div>
+
+        <div class="detail-item">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Fecha de inicio</label
+          >
+          <p
+            *ngIf="timeboxSeleccionado.fases.planning?.alcance; else noInfo"
+            class="text-xs text-[var(--darkText)]"
+          >
+            {{
+              getFormattedDate(timeboxSeleccionado.fases.planning?.fechaInicio)
+            }}
+          </p>
+        </div>
+
+        <div class="detail-item">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Esfuerzo</label
+          >
+          <p
+            *ngIf="timeboxSeleccionado.fases.planning?.esfuerzo; else noInfo"
+            class="text-xs text-[var(--darkText)]"
+          >
+            {{ timeboxSeleccionado.fases.planning?.esfuerzo }}
+          </p>
+        </div>
+
+        <div class="detail-item col-span-full">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Eje</label
+          >
+          <div
+            *ngIf="timeboxSeleccionado.fases.planning?.eje; else noInfo"
+            class="text-xs text-[var(--darkText)] leading-relaxed prose prose-sm max-w-none"
+          >
+            {{ timeboxSeleccionado.fases.planning?.eje }}
+          </div>
+        </div>
+
+        <div class="detail-item col-span-full">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Aplicativo</label
+          >
+          <div
+            *ngIf="timeboxSeleccionado.fases.planning?.aplicativo; else noInfo"
+            class="text-xs text-[var(--darkText)] leading-relaxed prose prose-sm max-w-none"
+          >
+            {{ timeboxSeleccionado.fases.planning?.aplicativo }}
+          </div>
+        </div>
+
+        <ng-template #noInfo>
+          <p class="text-[12px] text-gray-500 mt-2">No hay información.</p>
+        </ng-template>
+      </div>
+    </section>
+
+    <hr class="border-t border-[var(--lines)] my-2 w-full" />
+
+    <!--Skills-->
+    <section class="mb-4">
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Skills Requeridas
+        </h2>
+        <p class="text-xs">Habilidades técnicas requeridas para el Timebox</p>
+      </div>
+      <div
+        *ngIf="timeboxSeleccionado.fases.planning; else noSkills"
+        class="flex flex-wrap gap-2"
+      >
+        <span
+          *ngFor="
+            let skill of getTecnologicaSkills(
+              timeboxSeleccionado.fases.planning.skills
+            )
+          "
+          class="text-xs px-4 py-2 rounded-full border border-[var(--primary)] bg-white text-[var(--primary)] hover:bg-[var(--primary)] hover:text-white duration-200 cursor-default"
+        >
+          {{ skill.nombre }}
+        </span>
+      </div>
+      <ng-template #noSkills>
+        <p class="text-sm text-gray-500 italic">
+          No hay skills tecnológicas detalladas.
+        </p>
+      </ng-template>
+    </section>
+
+    <hr
+      *ngIf="timeboxSeleccionado.fases.kickOff"
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!-- KickOff Details (Only if timebox is not in 'Disponible' state) -->
+    <section
+      *ngIf="
+        timeboxSeleccionado.fases.kickOff &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="mb-4"
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Kick Off
+        </h2>
+        <p class="text-xs">Team, participantes y acuerdos del kick off</p>
+      </div>
+
+      <div
+        class="text-xs text-[var(--text-medium)] grid grid-cols-1 md:grid-cols-2 gap-y-6 gap-x-6"
+      >
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <span class="font-semibold text-[var(--darkText)]">
+              Business Ambassador:</span
+            >
+            {{
+              timeboxSeleccionado.fases.kickOff.teamMovilization
+                .businessAmbassador?.nombre || "Sin asignar"
+            }}
+          </div>
+          <div>
+            <span class="font-semibold text-[var(--darkText)]">
+              Business Advisor:</span
+            >
+            {{
+              timeboxSeleccionado.fases.kickOff.teamMovilization.businessAdvisor
+                ?.nombre || "Sin asignar"
+            }}
+          </div>
+          <div>
+            <span class="font-semibold text-[var(--darkText)]">
+              Technical Advisor:
+            </span>
+            {{
+              timeboxSeleccionado.fases.kickOff.teamMovilization
+                .technicalAdvisor?.nombre || "Sin asignar"
+            }}
+          </div>
+          <div>
+            <span class="font-semibold text-[var(--darkText)]"
+              >Solution Developer:</span
+            >
+            {{
+              timeboxSeleccionado.fases.kickOff.teamMovilization
+                .solutionDeveloper?.nombre || "Sin asignar"
+            }}
+          </div>
+          <div>
+            <span class="font-semibold text-[var(--darkText)]"
+              >Solution Tester:</span
+            >
+            {{
+              timeboxSeleccionado.fases.kickOff.teamMovilization.solutionTester
+                ?.nombre || "Sin asignar"
+            }}
+          </div>
+        </div>
+
+        <p *ngIf="timeboxSeleccionado.fases.kickOff?.participantes?.length">
+          <span class="font-semibold text-[var(--darkText)]"
+            >Participantes</span
+          >
+          <li>
+            {{
+              getParticipantNames(
+                timeboxSeleccionado.fases.kickOff.participantes
+              )
+            }}
+          </li>
+        </p>
+        <p *ngIf="timeboxSeleccionado.fases.kickOff?.listaAcuerdos?.length">
+          <span class="font-semibold text-[var(--darkText)]">Acuerdos</span>
+          <li
+            *ngFor="
+              let acuerdo of timeboxSeleccionado.fases.kickOff.listaAcuerdos
+            "
+          >
+            {{ acuerdo.label }}
+          </li>
+        </p>
+      </div>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.fases.kickOff &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!-- Adjuntos de Fases 
+      <section
+        class="mb-6"
+        *ngIf="
+          (timeboxSeleccionado.fases.planning?.adjuntos?.length ||
+            timeboxSeleccionado.fases.kickOff?.adjuntos?.length ||
+            timeboxSeleccionado.fases.qa?.adjuntosQA?.length) &&
+          timeboxSeleccionado.estado !== 'Disponible'
+        "
+      >
+        <h2
+          class="text-md font-semibold text-[var(--darkText)] mb-3 flex items-center gap-2"
+        >
+          Documentos Adjuntos por Fase
+        </h2>
+        <div class="flex flex-col items-start text-sm gap-4">
+          <div *ngIf="timeboxSeleccionado.fases.planning?.adjuntos?.length">
+            <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2">
+              Planning:
+            </h3>
+            <div
+              *ngFor="let file of timeboxSeleccionado.fases.planning?.adjuntos"
+              class="inline-flex items-center w-full md:w-80 justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+            >
+              <span
+                (click)="downloadFile(file.url, file.nombre)"
+                class="flex-grow cursor-pointer text-xs text-[var(--primary)] hover:underline"
+                >{{ file.nombre }}</span
+              >
+            </div>
+          </div>
+          <div *ngIf="timeboxSeleccionado.fases.kickOff?.adjuntos?.length">
+            <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2 mt-2">
+              Kick-Off:
+            </h3>
+            <div
+              *ngFor="let file of timeboxSeleccionado.fases.kickOff?.adjuntos"
+              class="inline-flex items-center w-full md:w-80 justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+            >
+              <span
+                (click)="downloadFile(file.url, file.nombre)"
+                class="flex-grow cursor-pointer text-xs text-[var(--primary)] hover:underline"
+                >{{ file.nombre }}</span
+              >
+            </div>
+          </div>
+          <div *ngIf="timeboxSeleccionado.fases.refinement?.revisiones">
+            <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2 mt-2">
+              Refinement:
+            </h3>
+            <div
+              *ngFor="
+                let revision of timeboxSeleccionado.fases.refinement?.revisiones
+              "
+              class="inline-flex items-center w-full md:w-80 justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+            >
+              <div *ngFor="let file of revision.adjuntos">
+                <span
+                  (click)="downloadFile(file.url, file.nombre)"
+                  class="flex-grow cursor-pointer text-xs text-[var(--primary)] hover:underline"
+                  >{{ file.nombre }}</span
+                >
+              </div>
+            </div>
+          </div>
+          <div *ngIf="timeboxSeleccionado.fases.qa?.adjuntosQA?.length">
+            <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2 mt-2">
+              Calidad (QA):
+            </h3>
+            <div
+              *ngFor="let file of timeboxSeleccionado.fases.qa?.adjuntosQA"
+              class="inline-flex items-center w-full md:w-80 justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+            >
+              <span
+                (click)="downloadFile(file.url, file.nombre)"
+                class="flex-grow cursor-pointer text-xs text-[var(--primary)] hover:underline"
+                >{{ file.nombre }}</span
+              >
+            </div>
+          </div>
+          <div *ngIf="timeboxSeleccionado.fases.close?.adjuntos">
+            <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2 mt-2">
+              Close:
+            </h3>
+            <div
+              *ngFor="let file of timeboxSeleccionado.fases.close?.adjuntos"
+              class="inline-flex items-center w-full md:w-80 justify-between bg-[var(--backgroundLight)] px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)] cursor-pointer"
+            >
+              <span
+                (click)="downloadFile(file.url, file.nombre)"
+                class="flex-grow cursor-pointer text-xs text-[var(--primary)] hover:underline"
+                >{{ file.nombre }}</span
+              >
+            </div>
+          </div>
+        </div>
+        <ng-template #noAdjuntos>
+          <p class="text-sm text-gray-500 italic">
+            No hay adjuntos en esta fase.
+          </p>
+        </ng-template>
+      </section>-->
+    <!--Entregables y evidencias esperadas del timebox-->
+    <section class="mb-6" *ngIf="timeboxSeleccionado.estado !== 'Disponible'">
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Entregables y Evidencias
+        </h2>
+        <p class="text-xs">
+          Entregables comunes y Evidencias esperadas del Timebox
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2">
+        <div class="detail-item">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Entregables comunes</label
+          >
+          <div
+            *ngIf="
+              timeboxSeleccionado?.tipoTimebox &&
+                getEntregablesTimebox().length > 0;
+              else noEntregables
+            "
+            class="flex flex-wrap gap-2"
+          >
+            <span
+              *ngFor="let entregable of getEntregablesTimebox()"
+              class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium text-xs"
+            >
+              {{ entregable }}
+            </span>
+          </div>
+          <ng-template #noEntregables>
+            <p class="text-xs text-gray-500 italic">
+              No hay entregables comunes definidos.
+            </p>
+          </ng-template>
+        </div>
+        <div class="detail-item">
+          <label
+            class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
+            >Evidencias de Cierre</label
+          >
+          <div
+            *ngIf="
+              timeboxSeleccionado?.tipoTimebox &&
+                getEvidenciasTimebox().length > 0;
+              else noEvidencias
+            "
+            class="flex flex-wrap gap-2"
+          >
+            <span
+              *ngFor="let evidencia of getEvidenciasTimebox()"
+              class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium text-xs"
+            >
+              {{ evidencia }}
+            </span>
+          </div>
+          <ng-template #noEvidencias>
+            <p class="text-xs text-gray-500 italic">
+              No hay evidencias de cierre definidas.
+            </p>
+          </ng-template>
+        </div>
+      </div>
+      <ng-template #noInfo>
+        <p class="text-[12px] text-gray-500 mt-2">No hay información.</p>
+      </ng-template>
+    </section>
+
+    <hr
+      *ngIf="
+        (timeboxSeleccionado.fases.planning?.adjuntos?.length ||
+          timeboxSeleccionado.fases.kickOff?.adjuntos?.length ||
+          timeboxSeleccionado.fases.qa?.adjuntosQA?.length) &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!--Revisiones-->
+    <section
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+    >
+      <h2
+        class="text-md font-semibold text-[var(--darkText)] mb-4 pb-2 flex items-center gap-2"
+      ></h2>
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Revisiones Solicitadas
+        </h2>
+        <p class="text-xs">Visualiza las revisiones solicitadas</p>
+      </div>
+
+      <div
+        *ngIf="
+          timeboxSeleccionado.fases.refinement?.revisiones?.length;
+          else noRevisiones
+        "
+        class="flex flex-col gap-4 w-full"
+      >
+        <div
+          *ngFor="
+            let revision of getRevisiones(timeboxSeleccionado);
+            let i = index
+          "
+          class="w-full rounded-sm border border-[var(--lines)] bg-[var(--backgroundLight)] overflow-hidden"
+        >
+          <!-- Header (clickeable para expandir) -->
+          <button
+            (click)="toggleRevision(i)"
+            class="w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-[var(--primary)] transition-colors duration-200 cursor-pointer"
+            [attr.aria-expanded]="isRevisionOpen(i)"
+          >
+            <h3 class="font-semibold text-sm text-[var(--darkText)]">
+              Revisión {{ i + 1 }}
+            </h3>
+            <div class="flex items-center gap-3">
+              <span
+                class="text-xs px-2 py-1 rounded-full font-semibold"
+                [ngClass]="{
+                  'bg-green-100 text-green-700': revision.completada,
+                  'bg-yellow-100 text-yellow-700': !revision.completada
+                }"
+              >
+                {{ revision.completada ? "Completada" : "Pendiente" }}
+              </span>
+              <svg
+                class="w-5 h-5 text-[var(--darkText)] transition-transform duration-300"
+                [class.rotate-90]="isRevisionOpen(i)"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 5l7 7-7 7"
+                ></path>
+              </svg>
+            </div>
+          </button>
+
+          <!-- Contenido desplegable -->
+          <div
+            [id]="'revision-content-' + i"
+            class="px-6 py-4 text-xs text-[var(--darkText)] bg-[var(--backgroundLight)] border-t border-[var(--text-light)] overflow-hidden transition-all duration-300 ease-in-out"
+            [style.maxHeight]="isRevisionOpen(i) ? '1000px' : '0'"
+            [style.padding]="isRevisionOpen(i) ? '1rem 1.5rem' : '0 1.5rem'"
+            [style.opacity]="isRevisionOpen(i) ? '1' : '0'"
+          >
+            <p class="mb-3 text-xs font-medium">
+              Solicitado el:
+              <time class="text-[var(--primaryDark)] text-xs">{{
+                getFormattedDate(revision.fechaSolicitud)
+              }}</time>
+            </p>
+
+            <div class="horarios">
+              <h4 class="font-semibold mb-2 text-xs">
+                Disponibilidad horaria:
+              </h4>
+              <div
+                *ngFor="let item of revision.horarioDisponibilidad | keyvalue"
+                class="mb-3"
+              >
+                <strong class="block mb-1 text-[var(--darkText)] text-xs"
+                  >{{ item.key }}:</strong
+                >
+                <ul
+                  class="list-disc list-inside space-y-1 text-[var(--darkText)] text-xs"
+                >
+                  <li *ngFor="let bloque of item.value.bloques">
+                    {{ bloque.start }} - {{ bloque.end }}
+                  </li>
+                </ul>
+              </div>
+              <button
+                *ngIf="!revision.completada"
+                (click)="
+                  modificarHorarioRevision(revision.horarioDisponibilidad)
+                "
+                class="px-4 py-3 text-[12px] font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+              >
+                Modificar Horario
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noRevisiones>
+        <p class="text-sm text-gray-500 italic">
+          No hay revisiones solicitadas para este timebox.
+        </p>
+      </ng-template>
+
+      <div class="flex justify-end gap-3 w-full mt-4">
+        <button
+          (click)="abrirModalRevision()"
+          class="px-4 py-3 text-[12px] font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+        >
+          Solicitar Revisión
+        </button>
+      </div>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!-- Sección de Entregables -->
+    <section
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Entregables
+        </h2>
+        <p class="text-xs">Adjunta los entregables del timebox</p>
+      </div>
+
+      <!-- Container for File Input and Type Selector -->
+      <div class="flex flex-col md:flex-row items-end gap-3 mb-4">
+        <!-- Deliverable Type Selector -->
+        <div class="flex-1 min-w-[150px]">
+          <label for="deliverableType" class="text-xs font-semibold"
+            >Tipo de Entregable</label
+          >
+          <select
+            [disabled]="timeboxSeleccionado.estado === 'Finalizado'"
+            id="deliverableType"
+            [(ngModel)]="selectedDeliverableType"
+            class="block w-full py-2 px-3 border border-[var(--lines)] bg-white rounded-sm focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] text-xs text-gray-700"
+          >
+            <option [ngValue]="null" disabled selected>
+              Selecciona un tipo
+            </option>
+            <option
+              *ngFor="let type of getEntregablesTimebox()"
+              [ngValue]="type"
+            >
+              {{ type }}
+            </option>
+          </select>
+        </div>
+
+        <!-- File Input -->
+        <label class="block flex-1">
+          <span class="sr-only">Choose file</span>
+          <input
+            [disabled]="timeboxSeleccionado.estado === 'Finalizado'"
+            type="file"
+            (change)="handleFileInput($event, timeboxSeleccionado.id)"
+            class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-[var(--primary)] hover:file:bg-indigo-100 cursor-pointer"
+          />
+        </label>
+      </div>
+
+      <!-- Lista de entregables -->
+      <div
+        *ngIf="
+          (selectedFiles[timeboxSeleccionado.id]?.length ?? 0 > 0) ||
+          timeboxSeleccionado.entrega?.adjuntosEntregables
+        "
+        class="mt-4 space-y-2 text-sm"
+      >
+        <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2">
+          Entregables Adjuntos:
+        </h3>
+        <div
+          *ngFor="
+            let fileItem of selectedFiles[timeboxSeleccionado.id];
+            let i = index
+          "
+          class="inline-flex flex-col sm:flex-row items-start sm:items-center w-full justify-between bg-white px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+        >
+          <span class="flex-grow text-[var(--primary)] text-xs mb-1 sm:mb-0"
+            >{{ fileItem.file.name }}
+            <span class="text-xs text-gray-500 ml-2"
+              >({{ fileItem.type }})</span
+            >
+          </span>
+          <button
+            *ngIf="!timeboxSeleccionado.fases.close?.solicitudCierre"
+            (click)="removeFile(i, timeboxSeleccionado.id)"
+            class="text-red-600 hover:text-red-800 text-base sm:ml-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+        <div
+          *ngFor="
+            let fileItem of timeboxSeleccionado.entrega?.adjuntosEntregables;
+            let i = index
+          "
+          class="inline-flex flex-col sm:flex-row items-start sm:items-center w-full justify-between bg-white px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+        >
+          <span class="flex-grow text-[var(--primary)] text-xs mb-1 sm:mb-0"
+            >{{ fileItem.nombre }}
+            <span class="text-xs text-gray-500 ml-2"
+              >({{ fileItem.type }})</span
+            >
+          </span>
+        </div>
+      </div>
+      <p class="mt-3 font-medium text-xs text-[var(--text-medium)]">
+        Fecha de entrega:
+        <time class="text-[var(--primaryDark)] text-xs font-semibold">{{
+          getFormattedDate(timeboxSeleccionado.entrega?.fechaEntrega) ||
+            "No se han realizado entrega aún."
+        }}</time>
+      </p>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!--Sección de evidencias-->
+    <section
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Evidencias de Cierre
+        </h2>
+        <p class="text-xs">Adjunta las evidencias de cierre</p>
+      </div>
+
+      <!-- Container for File Input and Type Selector -->
+      <div class="flex flex-col md:flex-row items-end gap-3 mb-4">
+        <!-- Evidence Type Selector -->
+        <div class="flex-1 min-w-[150px]">
+          <label for="evidenceType" class="text-xs font-semibold"
+            >Tipo de Evidencia</label
+          >
+          <select
+            id="evidenceType"
+            [disabled]="timeboxSeleccionado.estado === 'Finalizado'"
+            [(ngModel)]="selectedEvidenceType"
+            class="block w-full py-2 px-3 border border-[var(--lines)] bg-white rounded-sm focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] text-xs text-gray-700"
+          >
+            <option [ngValue]="null" disabled selected>
+              Selecciona un tipo
+            </option>
+            <option
+              *ngFor="let type of getEvidenciasTimebox()"
+              [ngValue]="type"
+            >
+              {{ type }}
+            </option>
+          </select>
+        </div>
+
+        <!-- File Input -->
+        <label class="block flex-1">
+          <span class="sr-only">Choose file</span>
+          <input
+            [disabled]="timeboxSeleccionado.estado === 'Finalizado'"
+            type="file"
+            (change)="handleEvidenceInput($event, timeboxSeleccionado.id)"
+            class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-sm file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-[var(--primary)] hover:file:bg-indigo-100 cursor-pointer"
+          />
+        </label>
+      </div>
+
+      <!-- List of currently selected files for evidences -->
+      <div
+        *ngIf="selectedEvidences[timeboxSeleccionado.id]?.length ?? 0 > 0"
+        class="mt-4 space-y-2 text-sm"
+      >
+        <h3 class="text-sm font-semibold text-[var(--darkText)] mb-2">
+          Evidencias Adjuntas:
+        </h3>
+        <div
+          *ngFor="
+            let fileItem of selectedEvidences[timeboxSeleccionado.id];
+            let i = index
+          "
+          class="inline-flex flex-col sm:flex-row items-start sm:items-center w-full justify-between bg-white px-4 py-3 rounded-sm border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+        >
+          <span class="flex-grow text-[var(--primary)] text-xs mb-1 sm:mb-0"
+            >{{ fileItem.file.name }}
+            <span class="text-xs text-gray-500 ml-2"
+              >({{ fileItem.type }})</span
+            >
+          </span>
+          <button
+            *ngIf="!timeboxSeleccionado.fases.close?.solicitudCierre"
+            (click)="removeEvidence(i, timeboxSeleccionado.id)"
+            class="text-red-600 hover:text-red-800 text-base sm:ml-4"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="w-5 h-5"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M6 18 18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <p class="mt-3 font-medium text-xs text-[var(--text-medium)]">
+        Fecha de cierre:
+        <time class="text-[var(--primaryDark)] text-xs font-semibold">{{
+          getFormattedDate(timeboxSeleccionado.fases.close?.fechaFase) ||
+            "Aún no se ha realizado el cierre."
+        }}</time>
+      </p>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.fases.qa &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!-- Qa Details -->
+    <section
+      *ngIf="
+        timeboxSeleccionado.fases.qa &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="mb-4"
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Calidad (QA)
+        </h2>
+        <p class="text-xs">Visualiza el informe de QA</p>
+      </div>
+
+      <div
+        class="text-xs text-[var(--text-medium)] grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4"
+      >
+        <p>
+          <span class="font-semibold text-[var(--darkText)]"
+            >Resultado QA:
+          </span>
+        </p>
+        <p>
+          <span class="font-semibold text-[var(--darkText)]">Fecha:</span>
+          {{
+            getFormattedDate(timeboxSeleccionado.fases.qa.fechaFase) || "N/A"
+          }}
+        </p>
+        <p>
+          <span class="font-semibold text-[var(--darkText)]"
+            >Checklist mejoras:</span
+          >
+        </p>
+      </div>
+      <div class="flex justify-end gap-3 w-full mt-4">
+        <button
+          class="px-4 py-3 text-[12px] w-full font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+        >
+          Rechazar
+        </button>
+        <button
+          class="px-4 py-3 text-[12px] w-full font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Aprobar
+        </button>
+      </div>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.fases.qa &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!--Solicitud de cierre-->
+    <section
+      *ngIf="
+        timeboxSeleccionado.estado === 'En Ejecución' ||
+        timeboxSeleccionado.estado === 'Finalizado'
+      "
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Solicitud de Cierre
+        </h2>
+        <p class="text-xs">Realiza la solicitud de cierre del Timebox.</p>
+      </div>
+
+      <div
+        *ngIf="
+          timeboxSeleccionado.fases.close?.solicitudCierre?.tipo === 'Cierre';
+          else noCierre
+        "
+        class="flex flex-col gap-4 w-full"
+      >
+        <div
+          class="w-full rounded-sm border border-[var(--lines)] bg-[var(--backgroundLight)] overflow-hidden p-4"
+        >
+          <p class="mb-3 font-medium text-xs text-[var(--text-medium)]">
+            Solicitado el:
+            <time class="text-[var(--primaryDark)] text-xs font-semibold">{{
+              getFormattedDate(
+                timeboxSeleccionado.fases.close?.solicitudCierre?.fechaSolicitud
+              )
+            }}</time>
+          </p>
+
+          <div class="horarios">
+            <h4 class="font-semibold mb-2 text-[var(--text-medium)] text-xs">
+              Disponibilidad horaria:
+            </h4>
+            <div
+              *ngFor="
+                let item of timeboxSeleccionado.fases.close?.solicitudCierre
+                  ?.horarioDisponibilidad | keyvalue
+              "
+              class="mb-3"
+            >
+              <strong class="block mb-1 text-[var(--darkText)] text-xs"
+                >{{ item.key }}:</strong
+              >
+              <ul
+                class="list-disc list-inside space-y-1 text-[var(--darkText)] text-xs"
+              >
+                <li *ngFor="let bloque of item.value.bloques">
+                  {{ bloque.start }} - {{ bloque.end }}
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noCierre>
+        <p class="text-xs text-gray-500">
+          No hay solicitudes de cierre para este timebox.
+        </p>
+      </ng-template>
+    </section>
+
+    <hr
+      *ngIf="
+        timeboxSeleccionado.fases.qa &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="border-t border-[var(--lines)] my-2 w-full"
+    />
+
+    <!-- Aprobación o rechazo timebox -->
+    <section
+      *ngIf="
+        timeboxSeleccionado.fases.close &&
+        timeboxSeleccionado.estado !== 'Disponible'
+      "
+      class="mb-4"
+    >
+      <div class="mb-4">
+        <h2
+          class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
+        >
+          Conclusión Timebox
+        </h2>
+        <p class="text-xs">Conclusiones respecto al cierre del timebox</p>
+      </div>
+
+      <div
+        class="text-xs text-[var(--text-medium)] grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4"
+      ></div>
+      <p class="text-sm text-[var(--text-medium)] mt-3">
+        <span class="font-semibold text-[var(--darkText)]">Resultado:</span>
+      </p>
+      <p class="text-sm text-[var(--text-medium)] mt-3">
+        <span class="font-semibold text-[var(--darkText)]">Fecha:</span>
+      </p>
+      <p class="text-sm text-[var(--text-medium)] mt-3">
+        <span class="font-semibold text-[var(--darkText)]"
+          >Evidencias de Rechazo (En caso de existir):</span
+        >
+      </p>
+      <p class="text-sm text-[var(--text-medium)] mt-3">
+        <span class="font-semibold text-[var(--darkText)]"
+          >Observaciones generales:</span
+        >
+      </p>
+    </section>
+
+    <!-- Call to Action Button -->
+    <div class="w-full pt-6">
+      <!-- Solicitar timebox -->
+      <div
+        *ngIf="
+          timeboxSeleccionado && timeboxSeleccionado.estado === 'Disponible'
+        "
+        class="flex flex-col gap-3"
+      >
+        <div
+          *ngIf="
+            rolesDisponibles.length > 0 &&
+            !getEstadoSolicitado(timeboxSeleccionado)
+          "
+          class="p-4 border border-gray-300 rounded-md bg-gray-50 flex flex-col gap-3"
+        >
+          <h4 class="text-sm font-semibold text-gray-800">
+            Postularme a un Rol Específico
+          </h4>
+
+          <label for="rolSelect" class="text-xs font-medium text-gray-600"
+            >Selecciona un rol disponible:</label
+          >
+          <select
+            id="rolSelect"
+            [(ngModel)]="rolSeleccionadoParaPostular"
+            name="rolSeleccionadoParaPostular"
+            class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm"
+          >
+            <option [value]="null" disabled selected>Selecciona un rol</option>
+            <option *ngFor="let rol of rolesDisponibles" [value]="rol">
+              {{ rol }}
+            </option>
+          </select>
+        </div>
+
+        <div
+          *ngIf="
+            timeboxSeleccionado && getEstadoSolicitado(timeboxSeleccionado)
+          "
+          class="p-4 border border-[var(--primaryLight)] bg-indigo-50 text-[var(--primary)] rounded-md text-sm text-center font-medium"
+        >
+          <ng-container
+            *ngIf="
+              getRolPostuladoPorUsuario(timeboxSeleccionado) as rolPostulado
+            "
+          >
+            <div class="flex flex-col">
+              <div>
+                Ya realizaste una postulación al rol:
+                <span class="font-bold">{{ rolPostulado }}</span>
+              </div>
+              <span class="text-xs"
+                >Por favor, espera la respuesta a esta solicitud.</span
+              >
+            </div>
+          </ng-container>
+          <ng-container *ngIf="!getRolPostuladoPorUsuario(timeboxSeleccionado)">
+            Ya has postulado a este Timebox de forma general.
+          </ng-container>
+        </div>
+
+        <button
+          (click)="postularATimebox()"
+          [disabled]="
+            !timeboxSeleccionado ||
+            !puedePostularATimebox(timeboxSeleccionado) ||
+            (timeboxSeleccionado && getEstadoSolicitado(timeboxSeleccionado)) ||
+            (rolesDisponibles.length > 0 && !rolSeleccionadoParaPostular)
+          "
+          [ngClass]="{
+            'text-white bg-[var(--primary)] hover:bg-[var(--primaryDark)]':
+              timeboxSeleccionado &&
+              puedePostularATimebox(timeboxSeleccionado) &&
+              !getEstadoSolicitado(timeboxSeleccionado),
+            'text-[var(--darkText)] bg-gray-200 cursor-not-allowed opacity-70':
+              !timeboxSeleccionado ||
+              !puedePostularATimebox(timeboxSeleccionado) ||
+              getEstadoSolicitado(timeboxSeleccionado)
+          }"
+          class="px-4 py-3 text-[12px] font-medium rounded-sm focus:outline-none cursor-pointer duration-300"
+        >
+          <ng-container
+            *ngIf="
+              timeboxSeleccionado && getEstadoSolicitado(timeboxSeleccionado)
+            "
+          >
+            Timebox Solicitado
+          </ng-container>
+          <ng-container
+            *ngIf="
+              timeboxSeleccionado && !getEstadoSolicitado(timeboxSeleccionado)
+            "
+          >
+            <ng-container
+              *ngIf="
+                rolesDisponibles.length > 0 && !rolSeleccionadoParaPostular
+              "
+            >
+              Selecciona un Rol para Postular
+            </ng-container>
+            <ng-container
+              *ngIf="
+                !rolesDisponibles.length ||
+                (rolesDisponibles.length > 0 && rolSeleccionadoParaPostular)
+              "
+            >
+              Postular a este Timebox
+            </ng-container>
+          </ng-container>
+        </button>
+      </div>
+      <!-- Botones solo si el estado es En Ejecución -->
+      <div
+        class="inline-flex flex-col justify-end sm:flex-row gap-3 w-full"
+        *ngIf="timeboxSeleccionado.estado === 'En Ejecución'"
+      >
+        <!-- Entregar timebox -->
+        <button
+          (click)="abrirModalConfirmacion(timeboxSeleccionado)"
+          class="px-4 py-3 text-[12px] font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Entregar Timebox
+        </button>
+
+        <!-- Solicitar Cierre -->
+        <button
+          (click)="abrirModalCierre()"
+          class="px-4 py-3 text-[12px] font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Solicitar Cierre
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Selection Message -->
+  <ng-template #noSelection>
+    <div
+      class="w-full lg:w-2/3 h-[calc(100vh-280px)] flex items-center shadow-md justify-center bg-[var(--backgroundLight)] rounded-sm text-[var(--text-medium)] text-center p-6"
+    >
+      <div class="flex flex-col items-center">
+        <svg
+          width="60px"
+          height="60px"
+          viewBox="0 0 24 24"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="#000000"
+        >
+          <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+          <g
+            id="SVGRepo_tracerCarrier"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></g>
+          <g id="SVGRepo_iconCarrier">
+            <title></title>
+            <g id="Complete">
+              <g id="navigation-nw">
+                <polyline
+                  fill="none"
+                  points="2.5 2.5 10.2 21.5 14.4 14.4 21.5 10.2 2.5 2.5"
+                  stroke="#6366f1"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                ></polyline>
+              </g>
+            </g>
+          </g>
+        </svg>
+        <p class="text-xl font-semibold mb-2 mt-4">Selecciona un Timebox</p>
+        <p class="text-sm text-gray-600">
+          Haz clic en una oferta de la izquierda para ver sus detalles aquí.
+        </p>
+      </div>
+    </div>
+  </ng-template>
+</div>
+
+<dev-modal-horario
+  [show]="showModalHorario"
+  [modo]="modalModo"
+  (close)="closeModalHorario()"
+  (onAvailabilityChange)="handleAvailabilityChange(timeboxSeleccionado, $event)"
+></dev-modal-horario>
+
+<!-- Modal de Confirmación -->
+<div
+  *ngIf="showModalConfirmacion"
+  class="fixed inset-0 flex items-center justify-center z-[9999]"
+>
+  <!-- Fondo oscuro -->
+  <div
+    class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"
+    (click)="cerrarModalConfirmacion()"
+  ></div>
+
+  <!-- Contenido del modal -->
+  <div
+    class="relative bg-white rounded-lg shadow-2xl w-[90%] max-w-sm p-6 z-10 flex flex-col items-center justify-center text-center gap-4"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-12 h-12 text-yellow-500"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M12 9v3.75m-9.303 3.376c-.866 1.5.38 3.375 2.07 3.375h14.006c1.69 0 2.936-1.875 2.069-3.376L12.72 5.063c-.44-.761-1.54-.761-1.98 0L3.753 16.501Z"
+      />
+    </svg>
+    <h2 class="text-xl font-bold text-[var(--darkText)]">
+      ¿Confirmar entrega del timebox?
+    </h2>
+    <p class="text-sm text-gray-600">
+      Esta acción enviará el timebox a revisión y no podrás editarlo.
+    </p>
+    <div class="flex justify-end gap-3 w-full mt-4">
+      <button
+        (click)="cerrarModalConfirmacion()"
+        class="flex-1 px-4 py-2 font-semibold text-sm rounded-sm bg-gray-200 text-gray-800 hover:bg-gray-300 transition cursor-pointer"
+      >
+        Cancelar
+      </button>
+      <button
+        (click)="confirmarEntregaTimebox()"
+        class="flex-1 px-4 py-2 font-semibold text-sm rounded-sm text-white bg-[var(--primary)] hover:bg-[var(--primaryDark)] transition cursor-pointer"
+      >
+        Confirmar
+      </button>
+    </div>
+  </div>
+</div>

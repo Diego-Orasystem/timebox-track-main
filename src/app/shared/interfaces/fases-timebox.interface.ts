@@ -1,4 +1,5 @@
 export interface Planning {
+  fechaCompletado: string;
   nombre: string;
   codigo: string;
   descripcion: string;
@@ -16,11 +17,14 @@ export interface Planning {
   // Campos adicionales del backend
   fecha_inicio?: string;
   team_leader_nombre?: string;
+  team_leader_id?: string;
+  team_leader_json?: string | any;
 }
 
 export interface KickOff {
-  fechaFase: string;
+  fechaCompletado: string;
   teamMovilization: TeamMovilization;
+  financiamiento?: Financiamiento;
   adjuntos?: Adjuntos[];
   participantes?: Persona[];
   listaAcuerdos?: Checklist[];
@@ -30,11 +34,11 @@ export interface KickOff {
 export interface Refinement {
   revisiones?: SolicitudRevision[];
   completada?: boolean;
-  fechaFase?: string;
+  fechaCompletado?: string;
 }
 
 export interface QaData {
-  fechaFase?: string;
+  fechaCompletado?: string;
   estadoConsolidacion?: string; // 'Pendiente', 'En Progreso', 'Completado', 'Bloqueado'
   progresoConsolidacion?: number; // Ej. 75
 
@@ -68,17 +72,18 @@ export interface Entrega {
   id?: string;
   fechaEntrega?: string;
   responsable?: string;
-  participantes?: Persona[];
   adjuntosEntregables?: Adjuntos[];
-  adjuntosEvidencias?: Adjuntos[];
+  solicitudRevision?: SolicitudRevision;
   observaciones?: string;
+  completada: boolean;
 }
 
 export interface Close {
-  fechaFase: string;
+  fechaCompletado: string;
   solicitudCierre?: SolicitudRevision;
   checklist?: Checklist[];
   adjuntos?: Adjuntos[];
+  adjuntosEvidencias?: Adjuntos[];
   cumplimiento: 'Total' | 'Parcial';
   observaciones?: string;
   aprobador: Persona['nombre'];
@@ -96,6 +101,7 @@ export interface TeamMovilization {
 }
 
 export interface Persona {
+  id?: string;
   nombre: string;
   rol?: string;
   email?: string;
@@ -111,6 +117,7 @@ export interface Adjuntos {
   type: string;
   nombre: string;
   url: string;
+  fechaAdjunto: string;
 }
 
 export interface Skill {
@@ -124,13 +131,16 @@ export interface Mejora {
 }
 
 export interface SolicitudRevision {
-  tipo: 'Revision' | 'Cierre';
+  tipo: 'Revision' | 'Entrega' | 'Cierre';
   fechaSolicitud: string;
   horarioDisponibilidad: DisponibilidadPorDia;
   participantes?: Persona[];
   adjuntos?: Adjuntos[];
   listaAcuerdos?: Checklist[];
-  completada: boolean;
+  cierreSolicitud: {
+    completada: boolean;
+    fechaDeRealizacion?: string;
+  };
 }
 
 export interface BloqueHorario {
@@ -142,4 +152,11 @@ export interface DisponibilidadPorDia {
   [dia: string]: {
     bloques: BloqueHorario[];
   };
+}
+
+export interface Financiamiento {
+  moneda: string;
+  montoBase: number;
+  porcentajeAnticipado: number;
+  observaciones?: string;
 }

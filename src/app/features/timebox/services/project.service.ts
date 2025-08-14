@@ -17,16 +17,40 @@ export class ProjectService {
   }
 
   /**
-   * Transforma un timebox del backend al formato esperado por el frontend
+   * Transforma un timebox del formato del backend al formato del frontend
    */
   private transformTimeboxFromBackend(timebox: any): Timebox {
+    console.log('🔍 transformTimeboxFromBackend - timebox recibido:', timebox);
+    console.log('🔍 transformTimeboxFromBackend - planning recibido:', timebox.fases?.planning);
+    console.log('🔍 transformTimeboxFromBackend - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
+    
     return {
       ...timebox,
       // Mapear campos del backend al frontend
       tipoTimebox: timebox.tipo_timebox_id || timebox.tipoTimebox,
       projectId: timebox.project_id || timebox.projectId,
-      // Asegurar que fases existe con estructura básica
-      fases: timebox.fases || {
+      // Asegurar que fases existe con estructura básica y mapear correctamente
+      fases: timebox.fases ? {
+        planning: timebox.fases.planning ? {
+          ...timebox.fases.planning,
+          // Mapear campos específicos del backend
+          fechaInicio: timebox.fases.planning.fecha_inicio || timebox.fases.planning.fechaInicio || '',
+          // El teamLeader ya viene correctamente formateado desde la API
+          teamLeader: timebox.fases.planning.teamLeader || undefined,
+          // Los skills ya vienen correctamente formateados desde la API
+          skills: timebox.fases.planning.skills || [],
+          // El cumplimiento ya viene correctamente formateado desde la API
+          cumplimiento: timebox.fases.planning.cumplimiento || []
+        } : undefined,
+        kickOff: timebox.fases.kickOff ? {
+          ...timebox.fases.kickOff,
+          // Mapear campos específicos del backend si es necesario
+          fechaFase: timebox.fases.kickOff.fecha_fase || timebox.fases.kickOff.fechaFase || ''
+        } : undefined,
+        refinement: timebox.fases.refinement,
+        qa: timebox.fases.qa,
+        close: timebox.fases.close
+      } : {
         planning: undefined,
         kickOff: undefined,
         refinement: undefined,
@@ -164,8 +188,7 @@ export class ProjectService {
     // Mapear los campos del frontend al formato esperado por el backend
     const timeboxData = {
       tipoTimeboxId: timebox.tipoTimebox, // Mapear tipoTimebox a tipoTimeboxId
-      businessAnalystId: timebox.business_analyst_id || null,
-      monto: timebox.monto || null,
+      businessAnalystId: timebox.businessAnalyst?.nombre || null,
       estado: timebox.estado,
       // Enviar las fases completas
       fases: timebox.fases || {},
@@ -173,9 +196,22 @@ export class ProjectService {
       publicacionOferta: timebox.publicacionOferta || null
     };
 
+    // Debug: verificar qué se está enviando al backend
+    console.log('🔍 ProjectService.updateTimebox - timebox original:', timebox);
+    console.log('🔍 ProjectService.updateTimebox - timeboxData enviado al backend:', timeboxData);
+    console.log('🔍 ProjectService.updateTimebox - fases enviadas:', timeboxData.fases);
+    console.log('🔍 ProjectService.updateTimebox - planning enviado:', timeboxData.fases.planning);
+    console.log('🔍 ProjectService.updateTimebox - teamLeader enviado:', timeboxData.fases.planning?.teamLeader);
+
     return this.apiService.put<{status: boolean, message: string, data: Timebox}>(`/project/${projectId}/timeboxes/${timebox.id}`, timeboxData)
       .pipe(
-        map(response => this.transformTimeboxFromBackend(response.data)),
+        map(response => {
+          console.log('🔍 ProjectService.updateTimebox - respuesta del backend:', response);
+          const transformedTimebox = this.transformTimeboxFromBackend(response.data);
+          console.log('🔍 ProjectService.updateTimebox - timebox transformado:', transformedTimebox);
+          console.log('🔍 ProjectService.updateTimebox - teamLeader después de transformar:', transformedTimebox.fases?.planning?.teamLeader);
+          return transformedTimebox;
+        }),
         catchError(error => {
           console.error(`Error actualizando timebox ${timebox.id} en proyecto ${projectId}:`, error);
           return throwError(() => new Error(`Error al actualizar timebox con ID ${timebox.id}`));
@@ -191,8 +227,7 @@ export class ProjectService {
     const timeboxData = {
       tipoTimeboxId: timebox.tipoTimebox, // Mapear tipoTimebox a tipoTimeboxId
       projectId: projectId,
-      businessAnalystId: timebox.business_analyst_id || null,
-      monto: timebox.monto || null,
+      businessAnalystId: timebox.businessAnalyst?.nombre || null,
       estado: timebox.estado || 'En Definición',
       // Enviar las fases completas
       fases: timebox.fases || {},
@@ -214,13 +249,17 @@ export class ProjectService {
    * Obtiene el contenido raíz de un proyecto específico
    */
   getProjectRootContent(projectId: string): Observable<ProjectContent[]> {
+    console.log('🔍 getProjectRootContent llamado con projectId:', projectId);
     return this.apiService.getData<{status: boolean, message: string, data: Project}>(`/project/${projectId}/content`)
       .pipe(
         map(response => {
-          // Filtrar solo el contenido que está a nivel raíz (parent_id = null)
+          console.log('📦 Respuesta completa del API:', response);
+          // La nueva estructura del backend devuelve el contenido directamente en response.data.contenido
           if (response.data && response.data.contenido) {
-            return response.data.contenido.filter(content => !content.parent_id);
+            console.log('✅ Contenido encontrado:', response.data.contenido);
+            return response.data.contenido;
           }
+          console.log('❌ No se encontró contenido en la respuesta');
           return [];
         }),
         catchError(error => {
@@ -237,6 +276,7 @@ export class ProjectService {
     return this.apiService.getData<{status: boolean, message: string, data: any}>(`/project/content/${contentId}`)
       .pipe(
         map(response => {
+          // La nueva estructura del backend devuelve el contenido directamente en response.data.contenido
           if (response.data && response.data.contenido) {
             return response.data.contenido;
           }
@@ -260,9 +300,19 @@ export class ProjectService {
       map(projects => {
         const allContents: ProjectContent[] = [];
         for (const project of projects) {
+          // Verificar si el proyecto tiene contenido directo (nueva estructura)
           if (project.contenido) {
             const contents = this.findContentsByParent(project.contenido, parentId);
             allContents.push(...contents);
+          }
+          // Verificar también la estructura antigua con apps
+          if (project.apps) {
+            for (const app of project.apps) {
+              if (app.contenido) {
+                const contents = this.findContentsByParent(app.contenido, parentId);
+                allContents.push(...contents);
+              }
+            }
           }
         }
         return allContents;

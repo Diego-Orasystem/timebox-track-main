@@ -1,5 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { TimeboxApiService } from '../../../features/timebox/services/timebox-api.service';
+import { Persona } from '../../../shared/interfaces/fases-timebox.interface';
 
 @Component({
   selector: 'app-persona-selector',
@@ -88,7 +90,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
     </div>
   `,
 })
-export class PersonaSelectorComponent {
+export class PersonaSelectorComponent implements OnInit {
   @Input() show = false;
   @Input() tipo: 'responsable' | 'participantes' = 'responsable';
 
@@ -99,8 +101,26 @@ export class PersonaSelectorComponent {
   }>();
 
   personaSeleccionada = '';
-  opciones = ['Persona 1', 'Persona 2', 'Persona 3'];
+  opciones: string[] = [];
   isDropdownOpen = false;
+  personas: Persona[] = [];
+
+  constructor(private timeboxApiService: TimeboxApiService) {}
+
+  ngOnInit(): void {
+    // Cargar personas desde la API
+    this.timeboxApiService.getPersonas().subscribe({
+      next: (personas) => {
+        this.personas = personas;
+        // Convertir personas a opciones de texto
+        this.opciones = personas.map(persona => `${persona.nombre} (${persona.email})`);
+      },
+      error: (error) => {
+        console.error('Error cargando personas:', error);
+        this.opciones = [];
+      }
+    });
+  }
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
@@ -113,9 +133,13 @@ export class PersonaSelectorComponent {
 
   addPerson() {
     if (!this.personaSeleccionada) return;
+    
+    // Extraer solo el nombre de la persona (sin el email)
+    const personaNombre = this.personaSeleccionada.split(' (')[0];
+    
     this.personaSeleccionadaChange.emit({
       tipo: this.tipo,
-      persona: this.personaSeleccionada,
+      persona: personaNombre,
     });
     this.personaSeleccionada = ''; // opcional: limpiar selección
     this.handleClose(); // opcional: cerrar modal tras añadir

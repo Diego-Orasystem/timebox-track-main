@@ -112,7 +112,7 @@ import { ItemCreationModalComponent } from '../../../../../shared/components/mod
     <app-item-creation-modal
       [show]="showModal"
       [mode]="modalMode"
-      itemType="Proyecto"
+      [itemTypeContext]="'Proyecto'"
       (close)="closeModal()"
       (itemSaved)="handleProjectCreated($event)"
     ></app-item-creation-modal>
@@ -155,7 +155,8 @@ export class ProjectListComponent implements OnInit {
   }
 
   handleProjectCreated(newItem: any): void {
-    if (newItem.tipo === 'Proyecto') {
+    // Si no hay tipo, significa que es un proyecto (según la lógica del modal)
+    if (!newItem.tipo || newItem.tipo === 'Proyecto') {
       this.projectService.createProject(
         newItem.nombre,
         newItem.descripcion

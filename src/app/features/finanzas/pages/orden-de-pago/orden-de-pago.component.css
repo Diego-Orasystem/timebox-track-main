@@ -1,0 +1,402 @@
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  height: 672px;
+  align-items: end;
+  justify-content: space-between;
+  padding: 20px 20px;
+  background-color: var(--backgroundLight);
+  border: 1px solid var(--lines);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  overflow: hidden; 
+}
+
+.table-container {
+  width: 100%; 
+  overflow-x: auto;
+  flex-grow: 1;
+}
+
+.custom-table {
+  width: 100%;
+  min-width: 1044px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.custom-table thead {
+  background-color: var(--backgroundMain);
+  overflow: hidden; 
+}
+
+.custom-table th {
+  padding: 18px 15px; 
+  text-align: left;
+  font-size: 12px; 
+  font-weight: 600;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--lines); 
+}
+
+.custom-table th:first-child {
+  border-top-left-radius: 10px;
+}
+
+.custom-table th:last-child {
+  border-top-right-radius: 10px;
+}
+
+.custom-table td {
+  padding: 15px 15px;
+  font-size: 11px;
+  border-bottom: 1px solid var(--lines);
+  font-weight: 400;
+  vertical-align: middle;
+  box-sizing: border-box; 
+}
+
+
+.custom-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.cell-content-wrapper {
+  display: flex; 
+  align-items: center; 
+  height: 100%;
+  gap: 10px;
+}
+
+.picture {
+  min-width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(
+    0deg,
+    rgba(169, 207, 224, 0.15) 0%,
+    rgba(169, 207, 224, 0.15) 100%
+  );
+  border: 1px solid rgba(169, 207, 224, 0.3);
+  flex-shrink: 0;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  border-radius: 5px;
+  text-align: center;
+  white-space: nowrap;
+  min-width: 70px;
+  color: white;
+}
+
+/* --- Paginación --- */
+.pagination-nav {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.pagination-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.pagination-item:hover {
+  background-color: var(--backgroundMain);
+
+}
+
+.pagination-item.active {
+  background-color: var(--backgroundMain);
+
+  font-weight: 600;
+}
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px; /* Ancho del scrollbar */
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Color del track */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--primary); /* Color del "pulgar" del scrollbar */
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--primaryDark); /* Color al pasar el ratón */
+}
+
+/* Estilos específicos para el componente de órdenes de pago */
+
+/* Animaciones para los modales */
+.modal-enter {
+  animation: modalEnter 0.3s ease-out;
+}
+
+.modal-exit {
+  animation: modalExit 0.3s ease-in;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes modalExit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.9) translateY(-20px);
+  }
+}
+
+/* Estilos para los badges de estado */
+.estado-badge {
+  transition: all 0.2s ease-in-out;
+}
+
+.estado-badge:hover {
+  transform: scale(1.05);
+}
+
+/* Estilos para los botones de acción */
+.btn-accion {
+  transition: all 0.2s ease-in-out;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.btn-accion:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Estilos para la tabla */
+.table-row {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.table-row:hover {
+  background-color: #f9fafb;
+}
+
+/* Estilos para los filtros */
+.filter-select {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.filter-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estilos para la paginación */
+.pagination-btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background-color: #f3f4f6;
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Estilos para el modal de comprobante */
+.file-input-wrapper {
+  position: relative;
+  overflow: hidden;
+  display: inline-block;
+}
+
+.file-input-wrapper input[type=file] {
+  font-size: 100px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+}
+
+/* Estilos para el loading spinner */
+.spinner {
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid #3b82f6;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Estilos para los mensajes de estado */
+.message-success {
+  background-color: #d1fae5;
+  border: 1px solid #10b981;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+.message-error {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+}
+
+/* Estilos para el avatar del developer */
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: uppercase;
+}
+
+/* Estilos para el modal de detalle */
+.modal-detail {
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-detail::-webkit-scrollbar {
+  width: 6px;
+}
+
+.modal-detail::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.modal-detail::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.modal-detail::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Estilos para los campos del formulario */
+.form-field {
+  margin-bottom: 16px;
+}
+
+.form-field label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-field input,
+.form-field select,
+.form-field textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.form-field input:focus,
+.form-field select:focus,
+.form-field textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estilos para los botones del modal */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #e5e7eb;
+  margin-top: 16px;
+}
+
+/* Estilos para el historial de pagos */
+.payment-history {
+  background-color: #f9fafb;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.payment-history-item {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.payment-history-item:last-child {
+  margin-bottom: 0;
+}
+
+/* Estilos para el estado vacío */
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.empty-state-icon {
+  font-size: 64px;
+  color: #9ca3af;
+  margin-bottom: 16px;
+}
+
+.empty-state-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.empty-state-description {
+  color: #6b7280;
+  font-size: 14px;
+}

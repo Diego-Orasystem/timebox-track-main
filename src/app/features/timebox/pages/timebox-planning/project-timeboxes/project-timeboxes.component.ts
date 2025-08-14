@@ -139,24 +139,24 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
 
   // Método llamado desde la tabla/lista para editar un timebox
   onTimeboxSelected(timebox: Timebox): void {
+    console.log('🔍 onTimeboxSelected - timebox original:', timebox);
+    console.log('🔍 onTimeboxSelected - timebox ID:', timebox.id);
+    console.log('🔍 onTimeboxSelected - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
+    
     // Mapear los datos del backend al formato que espera el frontend
     this.selectedTimebox = {
       ...timebox,
       // Mapear campos del backend a campos del frontend
-      tipoTimebox: timebox.tipo_timebox_id || timebox.tipoTimebox,
-      businessAnalyst: timebox.business_analyst_id ? {
-        nombre: timebox.business_analyst_nombre || ''
-      } : undefined,
+      tipoTimebox: timebox.tipoTimebox,
+      businessAnalyst: timebox.businessAnalyst,
       // Asegurar que las fases estén inicializadas y mapear campos específicos
       fases: timebox.fases ? {
         planning: timebox.fases.planning ? {
           ...timebox.fases.planning,
           // Mapear fecha_inicio del backend a fechaInicio del frontend
           fechaInicio: timebox.fases.planning.fecha_inicio || timebox.fases.planning.fechaInicio || '',
-          // Mapear otros campos si es necesario
-          teamLeader: timebox.fases.planning.team_leader_nombre ? {
-            nombre: timebox.fases.planning.team_leader_nombre
-          } : undefined
+          // El teamLeader ya viene correctamente formateado desde la API
+          teamLeader: timebox.fases.planning.teamLeader || undefined
         } : undefined,
         kickOff: timebox.fases.kickOff,
         refinement: timebox.fases.refinement,
@@ -171,6 +171,8 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
       }
     };
     console.log('🔍 Timebox seleccionado para editar:', this.selectedTimebox);
+    console.log('🔍 selectedTimebox ID:', this.selectedTimebox.id);
+    console.log('🔍 selectedTimebox teamLeader:', this.selectedTimebox.fases?.planning?.teamLeader);
     this.modalMode = 'edit';
     this.showModal = true;
   }
@@ -183,7 +185,8 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
   }
 
   handleTimeboxSave(timeboxFromModal: Timebox): void {
-    console.log('🔄 handleTimeboxSave llamado con:', timeboxFromModal);
+    console.log('🔄 ProjectTimeboxesComponent: handleTimeboxSave llamado con:', timeboxFromModal);
+    console.log('🔍 timeboxFromModal ID:', timeboxFromModal.id);
     
     if (!this.projectId) {
       console.error('❌ No hay projectId');
@@ -208,12 +211,14 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
         }
       });
     } else {
+      console.log('🔄 Creando nuevo timebox...');
       // Crear nuevo timebox
       this.projectService.createTimebox(
         this.projectId,
         timeboxFromModal
       ).subscribe({
         next: (resultTimebox: Timebox) => {
+          console.log('✅ Timebox creado exitosamente:', resultTimebox);
           this.selectedTimebox = { ...resultTimebox };
           this.loadProjectTimeboxes();
         },

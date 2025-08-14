@@ -1,0 +1,398 @@
+<div
+  *ngIf="show"
+  class="fixed inset-0 flex items-center justify-center z-50 p-4"
+>
+  <div
+    class="absolute inset-0 bg-black opacity-30"
+    (click)="handleClose()"
+  ></div>
+
+  <div
+    class="relative bg-[var(--backgroundLight)] rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-auto my-8 flex flex-col gap-6"
+    *ngIf="pago; else noPago"
+  >
+    <div>
+      <h2 class="text-[var(--darkText)] font-extrabold text-2xl mb-2">
+        Orden de Pago
+      </h2>
+      <p class="text-[var(--text-medium)] text-sm">
+        Revisa el detalle de los montos asociados al Timebox. Visualiza
+        documentos y adjunta comprobantes de pago.
+      </p>
+    </div>
+
+    <div class="flex flex-col gap-6 overflow-y-auto h-fit pr-2">
+      <div class="grid grid-cols-1 gap-6">
+        <!-- Columna 1: Resumen -->
+        <div class="flex flex-col gap-4">
+          <div
+            class="bg-[var(--backgroundMain)] rounded-lg p-6 space-y-4 text-[var(--darkText)]"
+          >
+            <div class="flex justify-between items-start">
+              <div class="flex flex-col gap-1">
+                <span class="text-xs text-[var(--text-medium)] font-mono">{{
+                  pago.dataTimebox.idTimebox
+                }}</span>
+                <a
+                  href="#"
+                  class="text-sm text-[var(--primary)] font-medium underline"
+                >
+                  {{ pago.dataTimebox.nombreTimebox }}
+                </a>
+              </div>
+              <div
+                class="px-3 py-1 text-xs font-semibold rounded-full w-fit"
+                [ngClass]="{
+                  'bg-yellow-100 text-yellow-700': pago.estado === 'Solicitado',
+                  'bg-green-100 text-green-700': pago.estado === 'Pagado',
+                  'bg-indigo-100 text-indigo-700': pago.estado === 'Aprobado',
+                  'bg-gray-100 text-gray-700': pago.estado === 'Rechazado'
+                }"
+              >
+                {{ pago.estado }}
+              </div>
+            </div>
+
+            <hr class="border-[var(--lines)]" />
+
+            <span class="font-semibold text-base text-[var(--darkText)]"
+              >Detalle montos por Colaborador</span
+            >
+            <div class="flex justify-between text-sm">
+              <span class="text-[var(--text-medium)]">Total Colaboradores</span>
+              <span class="font-medium">{{ pago.ordenDePago.length }}</span>
+            </div>
+
+            <div class="space-y-4 max-h-[55vh] overflow-auto">
+              <div
+                *ngFor="let item of pago.ordenDePago; let i = index"
+                class="border border-[var(--lines)] rounded-md p-4 space-y-1 bg-[var(--backgroundLight)] transition-colors duration-200"
+              >
+                <div
+                  class="flex justify-between items-start transition-colors duration-200"
+                  (click)="estadoAcordeon[i] = !estadoAcordeon[i]"
+                >
+                  <div>
+                    <p class="text-sm font-semibold">
+                      {{ item.colaborador.nombre }}
+                    </p>
+                    <p class="text-xs text-[var(--text-medium)]">
+                      {{ item.colaborador.rol || "Sin rol definido" }}
+                    </p>
+                  </div>
+                  <div class="inline-flex justify-end items-center gap-3">
+                    <span
+                      class="text-xs font-semibold px-2 py-1 rounded-full"
+                      [ngClass]="{
+                        'bg-yellow-100 text-yellow-700':
+                          item.estado === 'Solicitado',
+                        'bg-green-100 text-green-700': item.estado === 'Pagado',
+                        'bg-indigo-100 text-indigo-700':
+                          item.estado === 'Aprobado',
+                        'bg-gray-100 text-gray-700': item.estado === 'Rechazado'
+                      }"
+                    >
+                      {{ item.estado }}
+                    </span>
+                    <svg
+                      class="w-4 h-4 text-[var(--primary)] transform transition-transform duration-200"
+                      [ngClass]="{ 'rotate-180': estadoAcordeon[i] }"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+                <div
+                  class="overflow-hidden transition-all duration-300 ease-in-out"
+                  [ngClass]="{
+                    'max-h-0': !estadoAcordeon[i],
+                    'max-h-[1000px] mt-4': estadoAcordeon[i]
+                  }"
+                >
+                  <div class="flex justify-between text-sm space-y-2">
+                    <span class="text-[var(--text-medium)]">Monto Base</span>
+                    <span class="font-medium">{{
+                      formatCurrency(item.montoBase)
+                    }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm space-y-2">
+                    <span class="text-[var(--text-medium)]"
+                      >Porcentaje Entrega Anticipada</span
+                    >
+                    <span class="font-medium">{{
+                      formatPercentage(item.porcentajeEntregaAnt)
+                    }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm space-y-2">
+                    <span class="text-[var(--text-medium)]">Monto Total</span>
+                    <span class="font-bold">{{
+                      formatCurrency(
+                        calcularMontoTotal(
+                          item.montoBase,
+                          item.porcentajeEntregaAnt
+                        )
+                      )
+                    }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm space-y-2">
+                    <span class="text-[var(--text-medium)]"
+                      >Retención SII (14,5%)</span
+                    >
+                    <span class="font-medium">{{
+                      formatCurrency(
+                        calcularMontoSII(
+                          calcularMontoTotal(
+                            item.montoBase,
+                            item.porcentajeEntregaAnt
+                          )
+                        )
+                      )
+                    }}</span>
+                  </div>
+                  <hr class="border-[var(--lines)] my-3" />
+
+                  <!--Boleta-->
+                  <div class="flex flex-col justify-between text-sm">
+                    <span class="text-[var(--text-medium)] font-semibold"
+                      >Documento facturación</span
+                    >
+                    <div
+                      class="flex w-full flex-col sm:flex-row items-start sm:items-center justify-between bg-[var(--backgroundLight)] hover:bg-[var(--backgroundMain)] px-4 py-3 rounded-lg border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+                    >
+                      <span
+                        class="flex-grow text-[var(--primary)] text-sm mb-1 sm:mb-0 cursor-pointer"
+                      >
+                        {{ item.documentoFacturacion?.nombre }}
+                      </span>
+                      <div
+                        class="flex items-center text-xs text-[var(--text-medium)] gap-2 sm:ml-2"
+                      >
+                        <span class="text-[var(--text-medium)]"
+                          >Fecha Adjunto:
+                        </span>
+                        <span class="font-medium">{{
+                          getFormattedDate(
+                            item.documentoFacturacion?.fechaAdjunto
+                          )
+                        }}</span>
+                        <!-- Icono de Descarga -->
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-download ml-2 text-[var(--primary)] cursor-pointer hover:text-[var(--primaryDark)]"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                  <!--Comprobante de Pago-->
+                  <div
+                    *ngIf="
+                      !item.pago?.comprobantePago && item.estado == 'Aprobado'
+                    "
+                    class="flex flex-col justify-between text-sm"
+                  >
+                    <span class="text-[var(--text-medium)] font-semibold"
+                      >Comprobante de Pago</span
+                    >
+                    <!-- Área de Subida de Archivo (si no hay documento de facturación) -->
+                    <div
+                      class="file-upload-container border-2 border-dashed border-[var(--lines)] rounded-lg p-6 text-center cursor-pointer transition-colors duration-200 hover:border-[var(--primary)]"
+                      (click)="fileName ? null : fileInput.click()"
+                    >
+                      <input
+                        type="file"
+                        #fileInput
+                        (change)="onFileSelected($event)"
+                        class="hidden"
+                        accept=".pdf,.doc,.docx,.jpg,.png"
+                      />
+                      <ng-container *ngIf="!fileName; else fileInfo">
+                        <div
+                          class="flex flex-col items-center justify-center text-[var(--text-medium)]"
+                        >
+                          <!-- Icono de Nube -->
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-cloud-upload"
+                          >
+                            <path
+                              d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"
+                            />
+                            <path d="M12 12v9" />
+                            <path d="m16 16-4-4-4 4" />
+                          </svg>
+                          <p class="mt-2 text-sm font-medium">
+                            Haz click para
+                            <span class="text-[var(--primary)] font-semibold"
+                              >seleccionar un archivo.</span
+                            >
+                          </p>
+                          <p class="text-xs text-[var(--text-light)] mt-1">
+                            PDF, DOC, DOCX, JPG, PNG
+                          </p>
+                        </div>
+                      </ng-container>
+
+                      <!-- Información del archivo seleccionado -->
+                      <ng-template #fileInfo>
+                        <div
+                          class="flex items-center justify-center gap-3 text-sm font-medium text-[var(--darkText)]"
+                        >
+                          <!-- Icono de Archivo -->
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="lucide lucide-file text-[var(--primaryDark)]"
+                          >
+                            <path
+                              d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+                            />
+                            <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+                          </svg>
+                          <span class="truncate max-w-[calc(100%-60px)]">{{
+                            fileName
+                          }}</span>
+                          <button
+                            (click)="removeFile($event)"
+                            class="text-[var(--gray)] hover:text-[var(--accent)] transition-colors duration-200 text-xl leading-none p-1 rounded-full"
+                            title="Eliminar archivo"
+                          >
+                            &times;
+                          </button>
+                        </div>
+                      </ng-template>
+                    </div>
+                    <div
+                      *ngIf="item.pago?.comprobantePago"
+                      class="flex w-full flex-col sm:flex-row items-start sm:items-center justify-between bg-[var(--backgroundLight)] hover:bg-[var(--backgroundMain)] px-4 py-3 rounded-lg border border-[var(--lines)] transition-colors duration-200 ease-in-out hover:border-[var(--primary)]"
+                    >
+                      <span
+                        class="flex-grow text-[var(--primary)] text-sm mb-1 sm:mb-0 cursor-pointer"
+                      >
+                        {{ item.pago?.comprobantePago?.nombre }}
+                      </span>
+                      <div
+                        class="flex items-center text-xs text-[var(--text-medium)] gap-2 sm:ml-2"
+                      >
+                        <span class="text-[var(--text-medium)]"
+                          >Fecha Pago:
+                        </span>
+                        <span class="font-medium">{{
+                          getFormattedDate(item.pago?.fechaPago)
+                        }}</span>
+                        <!-- Icono de Descarga -->
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="18"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="lucide lucide-download ml-2 text-[var(--primary)] cursor-pointer hover:text-[var(--primaryDark)]"
+                        >
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                          <polyline points="7 10 12 15 17 10" />
+                          <line x1="12" x2="12" y1="15" y2="3" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones -->
+      <div
+        class="buttonContainer inline-flex justify-between items-center gap-4"
+      >
+        <button
+          *ngIf="pago.estado == 'Solicitado'"
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+        >
+          Rechazar
+        </button>
+
+        <button
+          *ngIf="pago.estado == 'Solicitado'"
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Aprobar
+        </button>
+        <button
+          *ngIf="pago.estado == 'Aprobado'"
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-[var(--darkText)] bg-slate-200 rounded-sm hover:bg-slate-300 focus:outline-none cursor-pointer duration-300"
+        >
+          Cerrar
+        </button>
+        <button
+          *ngIf="pago.estado == 'Aprobado'"
+          (click)="handleClose()"
+          class="px-4 py-3 text-[12px] w-full font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+        >
+          Guardar Cambios
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noPago>
+    <div
+      class="relative bg-[var(--backgroundLight)] rounded-xl shadow-2xl p-8 max-w-sm w-full text-center text-[var(--darkText)]"
+    >
+      <p class="text-lg font-semibold">No se encontró el pago asociado.</p>
+      <p class="text-[var(--text-medium)] text-sm mt-2">
+        Por favor, verifica la información e intenta de nuevo.
+      </p>
+      <button
+        (click)="handleClose()"
+        class="mt-6 px-6 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-lg font-semibold hover:bg-[var(--primaryDark)] transition-colors duration-200"
+      >
+        Cerrar
+      </button>
+    </div>
+  </ng-template>
+</div>

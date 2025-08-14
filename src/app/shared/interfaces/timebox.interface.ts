@@ -6,6 +6,7 @@ import {
   Planning,
   QaData,
   Refinement,
+  Skill,
 } from './fases-timebox.interface';
 
 export interface Timebox {
@@ -27,18 +28,26 @@ export interface Timebox {
     postulaciones?: Postulacion[];
   };
   projectId: string;
-  monto?: number;
+  appId: string;
+  compensacionEconomica: CompensacionEconomica;
   estado: 'En Definición' | 'Disponible' | 'En Ejecución' | 'Finalizado';
-  
-  // Propiedades adicionales que vienen del backend
-  tipo_timebox_id?: string;
-  business_analyst_id?: string;
-  tipo_nombre?: string;
-  tipo_definicion?: string;
-  categoria_nombre?: string;
-  business_analyst_nombre?: string;
-  created_at?: string;
-  updated_at?: string;
+}
+
+export interface CompensacionEconomica {
+  skills: Skill[];
+  esfuerzoHH: number;
+  entregaAnticipada: EntregaAnticipada;
+}
+
+export interface EntregaAnticipada {
+  duracionEstimadaDias: number; // Ej: 14 días corridos
+  valorBase: number; // Ej: $320
+  bonificaciones?: BonificacionEntrega[];
+}
+
+export interface BonificacionEntrega {
+  diasMaximos: number; // Ej: 5, 7, 10
+  valorBonificado: number; // Ej: $450, $400, $360
 }
 
 export interface Postulacion {
@@ -62,11 +71,7 @@ export interface TimeboxType {
   id: string;
   nombre: string;
   definicion?: string;
-  categoriaId?: string; // Para compatibilidad con frontend
-  categoria_id?: string; // Campo que viene del backend
-  categoria_nombre?: string; // Nombre de la categoría que viene del backend
-  entregablesComunes?: string[]; // Para compatibilidad con frontend
-  evidenciasCierre?: string[]; // Para compatibilidad con frontend
-  entregables_comunes?: string[]; // Campo que viene del backend
-  evidencias_cierre?: string[]; // Campo que viene del backend
+  categoriaId: string;
+  entregablesComunes?: string[]; // Ej. ["Funcionalidades completas", "código fuente versionado"]
+  evidenciasCierre?: string[]; // Ej. ["Capturas de pantalla", "video de demo"]
 }

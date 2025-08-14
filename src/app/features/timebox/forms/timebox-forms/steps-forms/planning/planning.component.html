@@ -227,7 +227,10 @@
           <div class="text-xs text-gray-500 font-medium">Creado</div>
 
           <div class="text-[var(--secondary)] font-semibold">
-            {{ form.get("fechaFase")?.value }}
+            {{
+              getFormattedDate(form.get("fechaCompletado")?.value) ||
+                "Sin definir"
+            }}
           </div>
         </div>
       </div>
@@ -452,23 +455,52 @@
             >Entregables comunes</label
           >
           <div
-            *ngIf="rootFormGroup.control.get('tipoTimebox')?.value; else noInfo"
-            class="text-xs text-[var(--darkText)] leading-relaxed prose prose-sm max-w-none space-x-2"
+            *ngIf="
+              rootFormGroup.control.get('tipoTimebox')?.value &&
+                getEntregablesTimebox().length > 0;
+              else noEntregables
+            "
+            class="flex flex-wrap gap-2"
           >
-            <span>{{ getEntregablesTimebox() }}</span>
+            <span
+              *ngFor="let entregable of getEntregablesTimebox()"
+              class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium text-xs"
+            >
+              {{ entregable }}
+            </span>
           </div>
+          <ng-template #noEntregables>
+            <p class="text-xs text-gray-500 italic">
+              No hay entregables comunes definidos.
+            </p>
+          </ng-template>
         </div>
         <div class="detail-item">
           <label
             class="text-xs font-medium text-[var(--disabled)] uppercase mb-2 block"
             >Evidencias de Cierre</label
           >
+
           <div
-            *ngIf="rootFormGroup.control.get('tipoTimebox')?.value; else noInfo"
-            class="text-xs text-[var(--darkText)] leading-relaxed prose prose-sm max-w-none space-x-2"
+            *ngIf="
+              rootFormGroup.control.get('tipoTimebox')?.value &&
+                getEvidenciasTimebox().length > 0;
+              else noEvidencias
+            "
+            class="flex flex-wrap gap-2"
           >
-            <span>{{ getEvidenciasTimebox() }}</span>
+            <span
+              *ngFor="let evidencia of getEvidenciasTimebox()"
+              class="px-3 py-1 bg-gray-100 rounded-full text-[var(--darkText)] font-medium text-xs"
+            >
+              {{ evidencia }}
+            </span>
           </div>
+          <ng-template #noEvidencias>
+            <p class="text-xs text-gray-500 italic">
+              No hay evidencias de cierre definidas.
+            </p>
+          </ng-template>
         </div>
       </div>
     </section>
@@ -500,7 +532,7 @@
           *ngIf="form.get('fechaInicio')?.value; else noInfo"
           class="text-xs text-[var(--darkText)]"
         >
-          {{ getFormattedDate(form.get("fechaInicio")?.value) }}
+          {{ form.get("fechaInicio")?.value }}
         </p>
       </div>
 
@@ -713,11 +745,6 @@
           class="inline-flex items-center w-full justify-between"
         >
           <label class="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              formControlName="checked"
-              class="accent-[var(--primary)]"
-            />
             <span class="text-xs">{{ item.get("label")?.value }}</span>
           </label>
           <button
