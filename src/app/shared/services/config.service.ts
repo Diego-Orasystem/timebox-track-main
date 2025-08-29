@@ -15,8 +15,10 @@ export class ConfigService {
   }
   
   get environmentInfo(): string {
-    if (environment.apiUrl.includes('10.90.0.190')) {
-      return 'Docker/Producción';
+    if (environment.apiUrl === '/api') {
+      return 'Docker/Producción (Mismo servidor)';
+    } else if (environment.apiUrl.includes('10.90.0.190')) {
+      return 'Docker/Producción (Servidor remoto)';
     } else if (environment.apiUrl.includes('localhost')) {
       return 'Desarrollo Local';
     } else {

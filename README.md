@@ -67,9 +67,9 @@ docker run -p 4200:4200 -v $(pwd):/app -v /app/node_modules timebox-track-dev
 
 ### 🌐 URLs de Acceso
 
-#### Docker (Backend Productivo)
-- **Producción**: http://localhost:4000 → Backend: http://10.90.0.190:3000
-- **Desarrollo**: http://localhost:4200 → Backend: http://10.90.0.190:3000
+#### Docker (Backend en el mismo servidor)
+- **Producción**: http://localhost:4000 → Backend: /api (mismo servidor)
+- **Desarrollo**: http://localhost:4200 → Backend: /api (mismo servidor)
 
 #### Desarrollo Local (ng serve)
 - **Frontend**: http://localhost:4200 → Backend: http://localhost:3000
@@ -80,8 +80,8 @@ La aplicación está configurada para usar diferentes backends automáticamente:
 
 | Entorno | Frontend | Backend | Comando |
 |---------|----------|---------|---------|
-| **Docker Producción** | localhost:4000 | 10.90.0.190:3000 | `docker-run.bat prod` |
-| **Docker Desarrollo** | localhost:4200 | 10.90.0.190:3000 | `docker-run.bat dev` |
+| **Docker Producción** | localhost:4000 | /api (mismo servidor) | `docker-run.bat prod` |
+| **Docker Desarrollo** | localhost:4200 | /api (mismo servidor) | `docker-run.bat dev` |
 | **Local Desarrollo** | localhost:4200 | localhost:3000 | `ng serve` |
 
 Los archivos de configuración están en:
