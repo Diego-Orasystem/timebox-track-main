@@ -258,6 +258,24 @@ export class PlanningComponent implements OnInit, OnDestroy {
     return this.form.value;
   }
 
+  // Método para marcar todos los campos como touched para mostrar errores
+  markAllFieldsAsTouched(): void {
+    Object.keys(this.form.controls).forEach(key => {
+      const control = this.form.get(key);
+      if (control) {
+        control.markAsTouched();
+        if (control instanceof FormGroup) {
+          Object.keys(control.controls).forEach(subKey => {
+            const subControl = control.get(subKey);
+            if (subControl) {
+              subControl.markAsTouched();
+            }
+          });
+        }
+      }
+    });
+  }
+
   getTipoTimebox(): string {
     const typeId = this.rootFormGroup.control.get('tipoTimebox')?.value;
 

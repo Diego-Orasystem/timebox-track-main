@@ -21,6 +21,7 @@ import { ProjectService } from '../../../timebox/services/project.service';
 import { formatDate } from '../../../../shared/helpers/date-formatter';
 import { TimeboxService } from '../../../timebox/services/timebox.service';
 import { TimeboxTypeService } from '../../../timebox/pages/timebox-maintainer/services/timebox-maintainer.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 interface FileWithType {
   file: File;
   type: string;
@@ -35,7 +36,7 @@ interface FileWithType {
 })
 export class InboxComponent implements OnInit {
   rootForm!: FormGroup;
-  usuario = 'Juan Pérez';
+  usuario = '';
 
   timeboxes: Timebox[] = [];
   timeboxesFiltrados: Timebox[] = [];
@@ -45,8 +46,8 @@ export class InboxComponent implements OnInit {
   rolesDisponibles: string[] = []; // Para almacenar los nombres de los roles
   rolesSeleccionados: string[] = []; // Para almacenar los roles seleccionados por el usuario
 
-  filterState: 'Disponible' | 'Solicitado' | 'Asignado' | 'Finalizado' =
-    'Disponible';
+  filterState: 'Todos' | 'Disponible' | 'Solicitado' | 'Asignado' | 'Finalizado' =
+    'Todos';
   filterSkill: string = '';
   conceptualSkills: string[] = [
     'Frontend',
@@ -91,29 +92,51 @@ export class InboxComponent implements OnInit {
   constructor(
     private timeboxPublicoService: TimeboxService,
     private projectService: ProjectService,
-    private timeboxTypeService: TimeboxTypeService
+    private timeboxTypeService: TimeboxTypeService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.obtenerUsuarioAutenticado();
     this.loadTimeboxes();
+  }
+
+  private obtenerUsuarioAutenticado(): void {
+    try {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        // Construir el nombre completo del usuario
+        const nombreCompleto = `${currentUser.first_name} ${currentUser.last_name}`.trim();
+        this.usuario = nombreCompleto || currentUser.email || 'Usuario';
+        
+        console.log('🔐 Usuario autenticado en TaskInbox:', {
+          id: currentUser.id,
+          nombreCompleto,
+          email: currentUser.email,
+          roles: currentUser.roles
+        });
+      } else {
+        console.warn('⚠️ No se pudo obtener el usuario autenticado');
+        this.usuario = 'Usuario';
+      }
+    } catch (error) {
+      console.error('❌ Error al obtener usuario autenticado:', error);
+      this.usuario = 'Usuario';
+    }
   }
 
   /**
    * Formatea el monto del financiamiento o retorna 'No definido' si no existe
    */
   formatFinanciamientoMonto(timebox: Timebox): string {
-    const monto = timebox.fases?.kickOff?.financiamiento?.montoBase;
+    // Validar que existan las propiedades antes de acceder a ellas
+    const monto = timebox.fases?.kickOff && 'financiamiento' in timebox.fases.kickOff
+      ? (timebox.fases.kickOff as any).financiamiento?.montoBase
+      : undefined;
     return monto ? this.formatCurrency(monto) : 'No definido';
   }
 
-  /**
-   * Formatea el monto del financiamiento del timebox seleccionado o retorna 'No definido' si no existe
-   */
-  formatFinanciamientoMontoSeleccionado(): string {
-    if (!this.timeboxSeleccionado) return 'No definido';
-    const monto = this.timeboxSeleccionado.fases?.kickOff?.financiamiento?.montoBase;
-    return monto ? this.formatCurrency(monto) : 'No definido';
-  }
+
 
   // --- Timebox --- //
 
@@ -147,10 +170,15 @@ export class InboxComponent implements OnInit {
   /** Aplicar filtros */
   applyFilters(): void {
     console.log('DEBUG - Aplicando filtros. Filtro activo:', this.filterState);
+    console.log('DEBUG - Total de timeboxes antes de filtrar:', this.timeboxes.length);
     
     let filtrados = [...this.timeboxes];
 
     switch (this.filterState) {
+      case 'Todos':
+        // No filtrar, mostrar todos los timeboxes
+        console.log('DEBUG - Mostrando TODOS los timeboxes sin filtros');
+        break;
       case 'Disponible':
         filtrados = filtrados.filter(
           (s) => {
@@ -165,18 +193,16 @@ export class InboxComponent implements OnInit {
             const rolesDisponibles = this.getRolesDisponiblesParaTimebox(s);
             const hayRolesDisponibles = rolesDisponibles.length > 0;
             
-            // Debug: Log para el timebox TEST1108
-            if (s.fases?.planning?.codigo === 'TEST1108') {
-              console.log('DEBUG TEST1108:', {
-                codigo: s.fases.planning.codigo,
-                estado: s.estado,
-                estadoOk,
-                teamMovilization,
-                rolesDisponibles,
-                hayRolesDisponibles,
-                resultado: estadoOk && hayRolesDisponibles
-              });
-            }
+            // Debug: Log para TODOS los timeboxes
+            console.log(`DEBUG - Timebox ${s.fases?.planning?.codigo || 'Sin código'}:`, {
+              codigo: s.fases?.planning?.codigo,
+              estado: s.estado,
+              estadoOk,
+              teamMovilization,
+              rolesDisponibles,
+              hayRolesDisponibles,
+              resultado: estadoOk && hayRolesDisponibles
+            });
             
             return estadoOk && hayRolesDisponibles;
           }
@@ -326,10 +352,48 @@ export class InboxComponent implements OnInit {
     return formatDate(dateToDate);
   }
 
+  /**
+   * Refresca los datos del timebox seleccionado
+   * Útil después de acciones como rechazar postulaciones
+   */
+  async refrescarTimeboxSeleccionado(): Promise<void> {
+    if (!this.timeboxSeleccionado) return;
+    
+    try {
+      console.log('🔄 Refrescando datos del timebox:', this.timeboxSeleccionado.fases?.planning?.codigo);
+      
+      // Recargar el timebox desde el backend
+      const response = await this.timeboxPublicoService.getTimebox(this.timeboxSeleccionado.id).toPromise();
+      
+      if (response) {
+        // Actualizar el timebox en la lista
+        const index = this.timeboxes.findIndex(t => t.id === this.timeboxSeleccionado!.id);
+        if (index !== -1) {
+          this.timeboxes[index] = response;
+          this.timeboxSeleccionado = response;
+        }
+        
+        // Recalcular roles disponibles
+        this.obtenerRolesDisponibles();
+        
+        console.log('✅ Timebox refrescado exitosamente');
+      }
+    } catch (error) {
+      console.error('❌ Error refrescando timebox:', error);
+    }
+  }
+
   /**Obtener roles disponibles para postulación */
   obtenerRolesDisponibles(): void {
     this.rolesDisponibles = []; // Resetear la lista
     this.rolesSeleccionados = []; // Resetear roles seleccionados
+
+    // Debug: Verificar usuario autenticado
+    console.log('DEBUG obtenerRolesDisponibles:', {
+      usuario: this.usuario,
+      timeboxSeleccionado: this.timeboxSeleccionado?.fases?.planning?.codigo,
+      postulaciones: this.timeboxSeleccionado?.publicacionOferta?.postulaciones
+    });
 
     if (this.timeboxSeleccionado) {
       let teamMovilization: TeamMovilization = this.timeboxSeleccionado.fases
@@ -359,10 +423,51 @@ export class InboxComponent implements OnInit {
         const roleValue = (teamMovilization as any)[roleKey];
         // Si el rol es `null` o no tiene nombre, significa que no está asignado.
         // Y el usuario actual no se ha postulado ya a este rol en específico.
+        // SOLO considerar postulaciones con estado "Pendiente" o "Aprobada"
+        // IMPORTANTE: Comparar por ID único del usuario, no por nombre
         const yaPostuladoARolEspecifico =
           this.timeboxSeleccionado?.publicacionOferta?.postulaciones?.some(
-            (p) => p.desarrollador === this.usuario && p.rol === roleKey
+            (p) => {
+              // Comparar por ID único del usuario si está disponible, sino por nombre
+              const esMismoUsuario = p.desarrollador === this.usuario;
+              const esMismoRol = p.rol === roleKey;
+              const esEstadoActivo = p.estadoSolicitud === 'Pendiente' || p.estadoSolicitud === 'Aprobada';
+              
+              return esMismoUsuario && esMismoRol && esEstadoActivo;
+            }
           );
+
+        // Debug: Log para verificar postulaciones
+        if (this.timeboxSeleccionado?.fases?.planning?.codigo === 'TEST1108' || 
+            this.timeboxSeleccionado?.fases?.planning?.codigo === 'TBX-TEST-2808') {
+          console.log(`DEBUG ${this.timeboxSeleccionado.fases.planning.codigo} - Verificando rol ${roleKey}:`, {
+            roleValue,
+            yaPostuladoARolEspecifico,
+            postulaciones: this.timeboxSeleccionado?.publicacionOferta?.postulaciones,
+            usuario: this.usuario,
+            esDisponible: (!roleValue || !roleValue.nombre || roleValue.nombre === '') && !yaPostuladoARolEspecifico
+          });
+          
+          // Log detallado de postulaciones para este rol específico
+          const postulacionesParaEsteRol = this.timeboxSeleccionado?.publicacionOferta?.postulaciones?.filter(
+            (p) => p.rol === roleKey
+          );
+          console.log(`DEBUG ${this.timeboxSeleccionado.fases.planning.codigo} - Postulaciones para rol ${roleKey}:`, postulacionesParaEsteRol);
+          
+          // Log detallado de la comparación de usuario
+          if (postulacionesParaEsteRol && postulacionesParaEsteRol.length > 0) {
+            postulacionesParaEsteRol.forEach((p, index) => {
+              console.log(`DEBUG ${this.timeboxSeleccionado?.fases?.planning?.codigo} - Postulación ${index + 1} para ${roleKey}:`, {
+                desarrollador: p.desarrollador,
+                usuarioActual: this.usuario,
+                esMismoUsuario: p.desarrollador === this.usuario,
+                rol: p.rol,
+                estadoSolicitud: p.estadoSolicitud,
+                esEstadoActivo: p.estadoSolicitud === 'Pendiente' || p.estadoSolicitud === 'Aprobada'
+              });
+            });
+          }
+        }
 
         if (
           (!roleValue || !roleValue.nombre || roleValue.nombre === '') &&
@@ -370,6 +475,12 @@ export class InboxComponent implements OnInit {
         ) {
           this.rolesDisponibles.push(roleKey);
         }
+      });
+
+      // Debug: Log final de roles disponibles
+      console.log('DEBUG obtenerRolesDisponibles - Resultado final:', {
+        rolesDisponibles: this.rolesDisponibles,
+        rolesSeleccionados: this.rolesSeleccionados
       });
     }
   }
@@ -546,6 +657,20 @@ export class InboxComponent implements OnInit {
   }
 
   // --- Acciones --- //
+
+  /**
+   * Refresca manualmente el timebox seleccionado
+   * Útil para probar después de acciones como rechazar postulaciones
+   */
+  async refrescarManualmente(): Promise<void> {
+    if (!this.timeboxSeleccionado) {
+      alert('No hay un Timebox seleccionado para refrescar.');
+      return;
+    }
+    
+    await this.refrescarTimeboxSeleccionado();
+    alert('Timebox refrescado. Revisa la consola para ver los logs de debug.');
+  }
 
   /**Postular a un timebox */
   postularATimebox(): void {

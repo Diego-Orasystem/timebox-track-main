@@ -217,9 +217,14 @@
           formControlName="nombre"
           placeholder="Nombre del timebox"
           id="timebox-name"
-          class="text-2xl placeholder:text-slate-500 font-bold tracking-wide focus:outline-none w-full border-b border-gray-300 focus:border-b-2 focus:border-[var(--primary)]"
+          [class]="form.get('nombre')?.invalid && form.get('nombre')?.touched ? 'text-2xl placeholder:text-slate-500 font-bold tracking-wide focus:outline-none w-full border-b-2 border-red-500 focus:border-b-2 focus:border-[var(--primary)]' : 'text-2xl placeholder:text-slate-500 font-bold tracking-wide focus:outline-none w-full border-b border-gray-300 focus:border-b-2 focus:border-[var(--primary)]'"
           type="text"
         />
+        <!-- Mensaje de error para nombre -->
+        <div *ngIf="form.get('nombre')?.invalid && form.get('nombre')?.touched" class="mt-1 text-sm text-red-600">
+          <span *ngIf="form.get('nombre')?.errors?.['required']">El nombre del timebox es obligatorio</span>
+          <span *ngIf="form.get('nombre')?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</span>
+        </div>
         <div
           *ngIf="form.get('completada')?.value"
           class="text-xs inline-flex gap-2 mt-2"
@@ -241,9 +246,14 @@
           formControlName="codigo"
           placeholder="Escribe aquí el código del timebox"
           id="timebox-code"
-          class="w-full bg-[var(--backgroundLight)] border border-[var(--lines)] py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:boder-1 focus:border-[var(--primary)]"
+          [class]="form.get('codigo')?.invalid && form.get('codigo')?.touched ? 'w-full bg-[var(--backgroundLight)] border-2 border-red-500 py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-red-500' : 'w-full bg-[var(--backgroundLight)] border border-[var(--lines)] py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:boder-1 focus:border-[var(--primary)]'"
           type="text"
         />
+        <!-- Mensaje de error para código -->
+        <div *ngIf="form.get('codigo')?.invalid && form.get('codigo')?.touched" class="mt-1 text-sm text-red-600">
+          <span *ngIf="form.get('codigo')?.errors?.['required']">El código del timebox es obligatorio</span>
+          <span *ngIf="form.get('codigo')?.errors?.['minlength']">El código debe tener al menos 2 caracteres</span>
+        </div>
       </div>
 
       <div class="">
@@ -307,8 +317,13 @@
           placeholder="Escribe aquí una descripción detallada del timebox"
           id="description"
           rows="3"
-          class="w-full bg-[var(--backgroundLight)] border border-[var(--lines)] py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:boder-1 focus:border-[var(--primary)]"
+          [class]="form.get('descripcion')?.invalid && form.get('descripcion')?.touched ? 'w-full bg-[var(--backgroundLight)] border-2 border-red-500 py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-red-500' : 'w-full bg-[var(--backgroundLight)] border border-[var(--lines)] py-2 rounded-sm text-[12px] px-2 placeholder:text-[var(--disabled)] focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:boder-1 focus:border-[var(--primary)]'"
         ></textarea>
+        <!-- Mensaje de error para descripción -->
+        <div *ngIf="form.get('descripcion')?.invalid && form.get('descripcion')?.touched" class="mt-1 text-sm text-red-600">
+          <span *ngIf="form.get('descripcion')?.errors?.['required']">La descripción del timebox es obligatoria</span>
+          <span *ngIf="form.get('descripcion')?.errors?.['minlength']">La descripción debe tener al menos 10 caracteres</span>
+        </div>
       </div>
     </section>
 

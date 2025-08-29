@@ -69,6 +69,89 @@ export class FormsComponent implements OnInit {
 
   constructor(private fb: FormBuilder) {}
 
+  // Método para verificar si el formulario de planning es válido
+  isPlanningValid(): boolean {
+    const planningForm = this.form.get('planning') as FormGroup;
+    if (!planningForm) return false;
+    
+    // Forzar validación de todos los campos
+    this.validatePlanningForm();
+    
+    return planningForm.valid;
+  }
+
+  // Método para forzar validación del formulario de planning
+  validatePlanningForm(): void {
+    const planningForm = this.form.get('planning') as FormGroup;
+    if (!planningForm) return;
+    
+    // Marcar todos los campos como touched para mostrar errores
+    Object.keys(planningForm.controls).forEach(key => {
+      const control = planningForm.get(key);
+      if (control) {
+        control.markAsTouched();
+        control.updateValueAndValidity();
+      }
+    });
+  }
+
+  // Método para obtener errores de validación del planning
+  getPlanningErrors(): { [key: string]: string } {
+    const planningForm = this.form.get('planning') as FormGroup;
+    if (!planningForm) return {};
+
+    const errors: { [key: string]: string } = {};
+    
+    // Debug: mostrar información del formulario
+    console.log('🔍 Debug getPlanningErrors:');
+    console.log('📋 Planning form válido:', planningForm.valid);
+    console.log('📋 Planning form touched:', planningForm.touched);
+    
+    Object.keys(planningForm.controls).forEach(key => {
+      const control = planningForm.get(key);
+      if (control) {
+        console.log(`🔍 Campo ${key}:`, {
+          value: control.value,
+          valid: control.valid,
+          touched: control.touched,
+          errors: control.errors,
+          required: control.hasError('required'),
+          minlength: control.hasError('minlength')
+        });
+        
+        // Mostrar errores incluso si no está touched para debugging
+        if (control.errors) {
+          if (control.errors['required']) {
+            errors[key] = 'Este campo es obligatorio';
+          } else if (control.errors['minlength']) {
+            const requiredLength = control.errors['minlength'].requiredLength;
+            errors[key] = `Mínimo ${requiredLength} caracteres`;
+          }
+        }
+      }
+    });
+    
+    console.log('❌ Errores encontrados:', errors);
+    return errors;
+  }
+
+  // Método para obtener nombres de campos legibles
+  getFieldDisplayName(fieldKey: string): string {
+    const fieldNames: { [key: string]: string } = {
+      nombre: 'Nombre del timebox',
+      codigo: 'Código',
+      descripcion: 'Descripción',
+      tipoTimebox: 'Tipo de timebox',
+      eje: 'Eje',
+      aplicativo: 'Aplicativo',
+      alcance: 'Alcance',
+      esfuerzo: 'Esfuerzo',
+      fechaInicio: 'Fecha de inicio',
+      teamLeader: 'Team Leader'
+    };
+    return fieldNames[fieldKey] || fieldKey;
+  }
+
   ngOnInit(): void {
     this.createForm();
 
@@ -89,6 +172,14 @@ export class FormsComponent implements OnInit {
     }
   }
 
+  // ✅ MÉTODO PARA OBTENER EL ID DEL TIMEBOX DE MANERA SEGURA
+  getTimeboxId(): string {
+    const id = this.timeboxData?.id;
+    console.log('🔍 getTimeboxId() llamado - timeboxData:', this.timeboxData);
+    console.log('🔍 getTimeboxId() - ID encontrado:', id);
+    return id || '';
+  }
+
   //--- Formulario padre ---//
 
   /**Inicializa el parent form de las fases del timebox */
@@ -98,16 +189,16 @@ export class FormsComponent implements OnInit {
       businessAnalyst: [''],
       estado: [''],
       planning: this.fb.group({
-        nombre: [''],
-        codigo: [''],
-        descripcion: [''],
+        nombre: ['', [Validators.required, Validators.minLength(3)]],
+        codigo: ['', [Validators.required, Validators.minLength(2)]],
+        descripcion: ['', [Validators.required, Validators.minLength(10)]],
         tipoTimebox: [''],
-        eje: [''],
-        aplicativo: [''],
-        alcance: [''],
-        esfuerzo: [''],
-        fechaInicio: [''],
-        teamLeader: [''],
+        eje: ['', Validators.required],
+        aplicativo: ['', Validators.required],
+        alcance: ['', Validators.required],
+        esfuerzo: ['', Validators.required],
+        fechaInicio: ['', Validators.required],
+        teamLeader: ['', Validators.required],
         adjuntos: this.fb.array([]),
         skills: this.fb.array([]),
         cumplimiento: this.fb.array([]),
@@ -121,12 +212,6 @@ export class FormsComponent implements OnInit {
           solutionTester: [null],
           businessAdvisor: [null],
           technicalAdvisor: [null],
-        }),
-        financiamiento: this.fb.group({
-          moneda: ['CLP', Validators.required],
-          montoBase: [null, [Validators.required, Validators.min(0)]],
-          porcentajeAnticipado: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
-          observaciones: ['']
         }),
         adjuntos: this.fb.array([]),
         participantes: this.fb.array([]),
@@ -781,12 +866,21 @@ export class FormsComponent implements OnInit {
     const currentStepFormGroup = this.form.get(phaseKey) as FormGroup;
 
     if (!currentStepFormGroup.valid) {
-      alert(
-        `El formulario de la fase '${
-          this.steps[this.currentStepIndex].name
-        }' tiene errores. Por favor, revisa los campos.`
-      );
+      // Marcar todos los campos como touched para mostrar errores
       currentStepFormGroup.markAllAsTouched();
+      
+      // Si es el paso de planning, mostrar mensaje específico
+      if (this.currentStepIndex === 0) {
+        alert(
+          'El formulario de Planning tiene campos obligatorios sin completar. Por favor, revisa los campos marcados en rojo.'
+        );
+      } else {
+        alert(
+          `El formulario de la fase '${
+            this.steps[this.currentStepIndex].name
+          }' tiene errores. Por favor, revisa los campos.`
+        );
+      }
       return;
     }
 
@@ -969,17 +1063,39 @@ export class FormsComponent implements OnInit {
       },
     };
 
-    // Lógica para el estado final del Timebox
+    // ✅ LÓGICA MEJORADA para el estado final del Timebox
     if (publishTimebox) {
       // Si se está publicando, cambiar estado a "Disponible"
       updatedTimebox.estado = 'Disponible';
+      console.log('🔍 saveFormAndEmit: Publicando → Estado: Disponible');
     } else {
-      // Lógica para el estado final del Timebox si es el último paso y está completado
-      const isLastStep = this.currentStepIndex === this.steps.length - 1;
-      if (isLastStep) {
-        if (groupToUpdate.get('completada')?.value || keyToUpdate === 'entrega') {
+      // ✅ Verificar si todas las fases están completadas para marcar como Finalizado
+      const todasLasFasesCompletadas = 
+        updatedTimebox.fases?.planning?.completada &&
+        updatedTimebox.fases?.kickOff?.completada &&
+        updatedTimebox.fases?.refinement?.completada &&
+        updatedTimebox.fases?.qa?.completada &&
+        updatedTimebox.fases?.close?.completada;
+      
+      if (todasLasFasesCompletadas) {
+        updatedTimebox.estado = 'Finalizado';
+        console.log('🔍 saveFormAndEmit: Todas las fases completadas → Estado: Finalizado');
+      } else if (keyToUpdate === 'close' && groupToUpdate.get('completada')?.value) {
+        // ✅ Caso especial: Si se está completando Close, verificar si todas las fases están completadas
+        const closeCompletado = groupToUpdate.get('completada')?.value;
+        const otrasFasesCompletadas = 
+          updatedTimebox.fases?.planning?.completada &&
+          updatedTimebox.fases?.kickOff?.completada &&
+          updatedTimebox.fases?.refinement?.completada &&
+          updatedTimebox.fases?.qa?.completada;
+        
+        if (closeCompletado && otrasFasesCompletadas) {
           updatedTimebox.estado = 'Finalizado';
+          console.log('🔍 saveFormAndEmit: Close completado + otras fases completadas → Estado: Finalizado');
         }
+      } else {
+        // ✅ Mantener el estado actual si no se cumplen las condiciones
+        console.log('🔍 saveFormAndEmit: Manteniendo estado actual:', updatedTimebox.estado);
       }
     }
 

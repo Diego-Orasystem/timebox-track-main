@@ -6,6 +6,7 @@ import { UploadService } from '../../../../shared/services/upload.service';
 import { ModalDetallePagoComponent } from '../../components/modal-detalle-pago/modal-detalle-pago.component';
 import { OrdenDePagoIndividual } from '../../../../shared/interfaces/orden-de-pago.interface';
 import { environment } from '../../../../../environments/environment';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 // Interfaces
 interface Pago {
@@ -25,6 +26,7 @@ interface Pago {
 interface OrdenPago {
   id: string;
   developer_id: string;
+  developer_nombre?: string; // ✅ Nombre del developer
   monto: string;
   moneda: string;
   concepto: string;
@@ -48,6 +50,11 @@ export class MisPagosComponent implements OnInit {
   loading = false;
   developerIdConfigurado = false;
   
+  // ✅ Control de acceso
+  isAdmin = false;
+  currentUserId = '';
+  currentUserName = '';
+  
   // Usuario por defecto: Juan Pérez
   private readonly USUARIO_POR_DEFECTO = {
     id: 'c4ec45fc-1939-43c6-9d4b-2be658567c79',
@@ -57,6 +64,7 @@ export class MisPagosComponent implements OnInit {
   // Inyección de servicios usando inject()
   private finanzasService = inject(FinanzasService);
   private uploadService = inject(UploadService);
+  private authService = inject(AuthService);
 
   // Propiedades para filtros
   filterState: string = 'Todos';
@@ -79,6 +87,7 @@ export class MisPagosComponent implements OnInit {
     { key: 'fecha', label: 'Fecha' },
     { key: 'monto', label: 'Monto' },
     { key: 'moneda', label: 'Moneda' },
+    { key: 'developer', label: 'Developer' }, // ✅ Nueva columna para developer
     { key: 'metodo', label: 'Método' },
     { key: 'referencia', label: 'Referencia' },
     { key: 'orden', label: 'Orden' },
@@ -89,19 +98,90 @@ export class MisPagosComponent implements OnInit {
   private readonly backendUrl = 'http://localhost:3000';
 
   ngOnInit() {
+    this.verificarRolUsuario();
     this.configurarDeveloperIdPorDefecto();
   }
+  
+  // ✅ Verificar rol del usuario para control de acceso
+  private verificarRolUsuario() {
+    try {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        this.currentUserId = currentUser.id;
+        this.currentUserName = currentUser.first_name + ' ' + currentUser.last_name;
+        
+        // Verificar si es admin
+        this.isAdmin = this.authService.hasRole('Platform Administrator') || 
+                      this.authService.hasRole('admin') ||
+                      this.authService.hasRole('Admin');
+        
+        console.log('🔐 Control de acceso - Usuario:', {
+          id: this.currentUserId,
+          nombre: this.currentUserName,
+          isAdmin: this.isAdmin
+        });
+      } else {
+        console.warn('⚠️ No se pudo obtener el usuario autenticado');
+        this.currentUserId = '';
+        this.currentUserName = '';
+        this.isAdmin = false;
+      }
+    } catch (error) {
+      console.error('❌ Error al verificar rol de usuario:', error);
+      this.currentUserId = '';
+      this.currentUserName = '';
+      this.isAdmin = false;
+    }
+  }
 
-  // Configurar developerId por defecto
+  // ✅ Configurar developerId con control de acceso
   private configurarDeveloperIdPorDefecto() {
     let developerId = window.localStorage.getItem('developerId');
     
-    if (!developerId) {
-      developerId = this.USUARIO_POR_DEFECTO.id;
-      window.localStorage.setItem('developerId', developerId);
-      console.log('🔧 DeveloperId configurado por defecto:', developerId);
+    // ✅ Si es admin, puede ver todos los pagos
+    if (this.isAdmin) {
+      console.log('🔐 Usuario admin - Puede ver todos los pagos');
+      this.developerIdConfigurado = true;
+      this.cargarMisPagosAdmin(); // ID vacío para admin = ver todos
+      return;
     }
     
+    // ✅ Si no es admin, SOLO puede ver sus propios pagos
+    if (!developerId) {
+      developerId = this.currentUserId;
+    }
+    
+    // ✅ VERIFICACIÓN CRÍTICA: Usuario no admin solo puede ver sus propios pagos
+    if (!this.isAdmin && developerId !== this.currentUserId) {
+      console.warn('🚫 ACCESO DENEGADO: Usuario intentando ver pagos de otro usuario');
+      console.warn('🚫 Usuario actual:', this.currentUserId);
+      console.warn('🚫 Intentando acceder a:', developerId);
+      
+      // Forzar redirección a sus propios pagos
+      developerId = this.currentUserId;
+      
+      // Limpiar localStorage para evitar futuros accesos no autorizados
+      window.localStorage.removeItem('developerId');
+    }
+    
+    // Configurar developerId en localStorage
+    window.localStorage.setItem('developerId', developerId);
+    this.developerIdConfigurado = true;
+    
+    console.log('🔐 Cargando pagos para usuario:', {
+      developerId,
+      isAdmin: this.isAdmin,
+      currentUserId: this.currentUserId,
+      currentUserName: this.currentUserName
+    });
+    
+    // ✅ VERIFICACIÓN FINAL: Asegurar que se use el ID correcto
+    if (!this.isAdmin && developerId !== this.currentUserId) {
+      console.error('❌ ERROR CRÍTICO: Usuario no autorizado - Forzando ID correcto');
+      developerId = this.currentUserId;
+    }
+    
+    // Cargar pagos
     this.cargarMisPagos(developerId);
   }
 
@@ -145,6 +225,53 @@ export class MisPagosComponent implements OnInit {
       this.developerIdConfigurado = true;
     } catch (error) {
       console.error('❌ Error cargando mis pagos:', error);
+      this.pagos = [];
+    } finally {
+      this.loading = false;
+    }
+  }
+
+  // ✅ Cargar mis pagos para administradores (todos los pagos)
+  async cargarMisPagosAdmin() {
+    try {
+      this.loading = true;
+      console.log('🔐 Cargando TODOS los pagos (vista admin)');
+      
+      const response: any = await this.finanzasService.getMisPagos('').toPromise();
+      
+      console.log('📡 Respuesta completa (admin):', response);
+      
+      if (response && response.status && response.data) {
+        // Respuesta con estructura {status, data}
+        this.pagos = response.data;
+        console.log('✅ Pagos cargados para admin (con status):', this.pagos.length);
+      } else if (Array.isArray(response)) {
+        // Respuesta directa como array
+        this.pagos = response;
+        console.log('✅ Pagos cargados para admin (array directo):', this.pagos.length);
+      } else {
+        console.log('❌ Formato de respuesta no reconocido (admin):', response);
+        this.pagos = [];
+        return;
+      }
+      
+      // Log de tipos de pagos
+      if (this.pagos.length > 0) {
+        this.pagos.forEach((orden, index) => {
+          console.log(`📊 Orden ${index + 1} (admin):`, {
+            id: orden.id,
+            developer_id: orden.developer_id,
+            totalPagos: orden.pagos.length,
+            tipos: orden.pagos.map(p => p.metodo),
+            comprobantes: orden.pagos.filter(p => p.metodo === 'Comprobante').length,
+            otros: orden.pagos.filter(p => p.metodo !== 'Comprobante').length
+          });
+        });
+      }
+      
+      this.developerIdConfigurado = true;
+    } catch (error) {
+      console.error('❌ Error cargando pagos para admin:', error);
       this.pagos = [];
     } finally {
       this.loading = false;

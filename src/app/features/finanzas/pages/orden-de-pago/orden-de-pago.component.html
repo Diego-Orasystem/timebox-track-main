@@ -2,8 +2,23 @@
   <!-- Header -->
   <div class="max-w-7xl mx-auto">
     <div class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Órdenes de Pago</h1>
-      <p class="mt-2 text-gray-600">Gestiona y aprueba las solicitudes de pago de los developers</p>
+      <div class="flex items-center gap-4 mb-2">
+        <h1 class="text-3xl font-bold text-gray-900">Órdenes de Pago</h1>
+        <!-- ✅ Indicador de Admin -->
+        <div
+          *ngIf="isAdmin"
+          class="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-800 text-sm font-semibold rounded-full border border-purple-300"
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+          ADMIN
+        </div>
+      </div>
+      <p class="mt-2 text-gray-600">
+        <span *ngIf="!isAdmin">Gestiona y aprueba las solicitudes de pago de los developers</span>
+        <span *ngIf="isAdmin">Vista de administrador: Puedes ver y gestionar todas las órdenes de pago del sistema</span>
+      </p>
     </div>
 
     <!-- Filtros -->
@@ -93,16 +108,16 @@
                   <div class="flex-shrink-0 h-10 w-10">
                     <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
                       <span class="text-sm font-medium text-blue-600">
-                        {{ getInitials(orden.developer_id) }}
+                        {{ getInitials(orden.developer_nombre || orden.developer_id) }}
                       </span>
                     </div>
                   </div>
                   <div class="ml-4">
                     <div class="text-sm font-medium text-gray-900">
-                      {{ orden.developer_id }}
+                      {{ orden.developer_nombre || 'Sin nombre' }}
                     </div>
                     <div class="text-sm text-gray-500">
-                      ID: {{ orden.id }}
+                      ID: {{ orden.developer_id }}
                     </div>
                   </div>
                 </div>
@@ -156,36 +171,36 @@
                     👁️ Ver
                   </button>
 
-                  <!-- Aprobar (solo si está pendiente) -->
+                  <!-- Aprobar (solo admin y si está pendiente) -->
                   <button 
-                    *ngIf="orden.estado === 'Pendiente'"
+                    *ngIf="isAdmin && orden.estado === 'Pendiente'"
                     (click)="aprobarOrden(orden)"
                     class="text-green-600 hover:text-green-900 px-3 py-1 rounded-md hover:bg-green-50"
                   >
                     ✅ Aprobar
                   </button>
 
-                  <!-- Rechazar (solo si está pendiente) -->
+                  <!-- Rechazar (solo admin y si está pendiente) -->
                   <button 
-                    *ngIf="orden.estado === 'Pendiente'"
+                    *ngIf="isAdmin && orden.estado === 'Pendiente'"
                     (click)="rechazarOrden(orden)"
                     class="text-red-600 hover:text-red-900 px-3 py-1 rounded-md hover:bg-red-50"
                   >
                     ❌ Rechazar
                   </button>
 
-                  <!-- Marcar como Pagada (solo si está aprobada) -->
+                  <!-- Marcar como Pagada (solo admin y si está aprobada) -->
                   <button 
-                    *ngIf="orden.estado === 'Aprobada'"
+                    *ngIf="isAdmin && orden.estado === 'Aprobada'"
                     (click)="marcarComoPagada(orden)"
                     class="text-purple-600 hover:text-purple-900 px-3 py-1 rounded-md hover:bg-purple-50"
                   >
                     💰 Pagada
                   </button>
 
-                  <!-- Adjuntar Comprobante (solo si está pagada) -->
+                  <!-- Adjuntar Comprobante (solo admin y si está pagada) -->
                   <button 
-                    *ngIf="orden.estado === 'Pagada'"
+                    *ngIf="isAdmin && orden.estado === 'Pagada'"
                     (click)="adjuntarComprobante(orden)"
                     class="text-indigo-600 hover:text-indigo-900 px-3 py-1 rounded-md hover:bg-indigo-50"
                   >
@@ -252,7 +267,11 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Developer</label>
-              <p class="mt-1 text-sm text-gray-900">{{ ordenSeleccionada.developer_id }}</p>
+              <p class="mt-1 text-sm text-gray-900">
+                <span class="font-medium">{{ ordenSeleccionada.developer_nombre || 'Sin nombre' }}</span>
+                <br>
+                <span class="text-gray-500">ID: {{ ordenSeleccionada.developer_id }}</span>
+              </p>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700">Monto</label>

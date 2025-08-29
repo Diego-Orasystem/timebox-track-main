@@ -24,7 +24,6 @@ export interface Planning {
 export interface KickOff {
   fechaCompletado: string;
   teamMovilization: TeamMovilization;
-  financiamiento?: Financiamiento;
   adjuntos?: Adjuntos[];
   participantes?: Persona[];
   listaAcuerdos?: Checklist[];
@@ -154,9 +153,4 @@ export interface DisponibilidadPorDia {
   };
 }
 
-export interface Financiamiento {
-  moneda: string;
-  montoBase: number;
-  porcentajeAnticipado: number;
-  observaciones?: string;
-}
+

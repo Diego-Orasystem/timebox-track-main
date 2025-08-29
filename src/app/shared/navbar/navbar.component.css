@@ -8,3 +8,55 @@
 .mobile-menu.open svg {
   transform: rotate(90deg);
 }
+
+/* Estilos para el navbar */
+.profile {
+  transition: all 0.2s ease-in-out;
+}
+
+.profile:hover {
+  transform: scale(1.05);
+}
+
+/* Animación para el menú desplegable */
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para los botones del menú */
+.menu-button {
+  transition: all 0.15s ease-in-out;
+}
+
+.menu-button:hover {
+  background-color: #f3f4f6;
+}
+
+/* Estilos para el botón de cerrar sesión */
+.logout-button {
+  transition: all 0.15s ease-in-out;
+}
+
+.logout-button:hover {
+  background-color: #fef2f2;
+}
+
+/* Estilos para el avatar en el menú */
+.menu-avatar {
+  transition: all 0.2s ease-in-out;
+}
+
+.menu-avatar:hover {
+  transform: scale(1.1);
+}

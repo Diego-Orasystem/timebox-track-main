@@ -114,19 +114,41 @@ export class TimeboxService {
    * @returns El estado calculado del Timebox.
    */
   private determineTimeboxState(timebox: Timebox): Timebox['estado'] {
+    // ✅ PRIORIDAD 1: Si la fase Close está completada, el timebox está Finalizado
     if (timebox.fases?.close?.completada) {
+      console.log('🔍 determineTimeboxState: Close completada → Finalizado');
       return 'Finalizado';
     }
+    
+    // ✅ PRIORIDAD 2: Si todas las fases están completadas, el timebox está Finalizado
+    const todasLasFasesCompletadas = 
+      timebox.fases?.planning?.completada &&
+      timebox.fases?.kickOff?.completada &&
+      timebox.fases?.refinement?.completada &&
+      timebox.fases?.qa?.completada;
+    
+    if (todasLasFasesCompletadas) {
+      console.log('🔍 determineTimeboxState: Todas las fases completadas → Finalizado');
+      return 'Finalizado';
+    }
+    
+    // ✅ PRIORIDAD 3: Si hay un Solution Developer asignado, está En Ejecución
     if (
       timebox.fases?.kickOff?.teamMovilization?.solutionDeveloper?.nombre &&
-      timebox.fases.kickOff.teamMovilization.solutionDeveloper.nombre.trim() !==
-        ''
+      timebox.fases.kickOff.teamMovilization.solutionDeveloper.nombre.trim() !== ''
     ) {
+      console.log('🔍 determineTimeboxState: Solution Developer asignado → En Ejecución');
       return 'En Ejecución';
     }
+    
+    // ✅ PRIORIDAD 4: Si está publicado, está Disponible
     if (timebox.publicacionOferta?.publicado) {
+      console.log('🔍 determineTimeboxState: Publicado → Disponible');
       return 'Disponible';
     }
+    
+    // ✅ PRIORIDAD 5: Por defecto, está En Definición
+    console.log('🔍 determineTimeboxState: Por defecto → En Definición');
     return 'En Definición';
   }
 

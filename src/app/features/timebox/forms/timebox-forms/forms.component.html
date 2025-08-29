@@ -22,19 +22,65 @@
       *ngSwitchCase="2"
     ></app-refinement>
     <app-qa formGroupName="qa" #stepComponent *ngSwitchCase="3"></app-qa>
-    <app-close
-      formGroupName="close"
-      #stepComponent
-      *ngSwitchCase="4"
-    ></app-close>
+         <app-close
+       [timeboxId]="getTimeboxId()"
+       formGroupName="close"
+       #stepComponent
+       *ngSwitchCase="4"
+     ></app-close>
   </ng-container>
+
+  <!-- Mensajes de Error de Validación -->
+  <div *ngIf="currentStepIndex === 0" class="mb-4 p-4 border rounded-md" 
+       [class]="!isPlanningValid() ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center">
+        <svg *ngIf="!isPlanningValid()" class="w-5 h-5 text-red-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+        </svg>
+        <svg *ngIf="isPlanningValid()" class="w-5 h-5 text-green-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clip-rule="evenodd"></path>
+        </svg>
+        <h3 class="text-sm font-medium" [class]="!isPlanningValid() ? 'text-red-800' : 'text-green-800'">
+          {{ !isPlanningValid() ? 'Campos obligatorios pendientes' : 'Formulario válido' }}
+        </h3>
+      </div>
+      <button 
+        (click)="validatePlanningForm()" 
+        type="button"
+        class="text-xs px-2 py-1 bg-gray-200 hover:bg-gray-300 rounded text-gray-700"
+        title="Forzar validación">
+        🔍 Validar
+      </button>
+    </div>
+    
+    <div class="mt-2 text-sm" [class]="!isPlanningValid() ? 'text-red-700' : 'text-green-700'">
+      <div *ngIf="!isPlanningValid()">
+        <p>Por favor, completa los siguientes campos obligatorios antes de continuar:</p>
+        <ul class="mt-2 list-disc list-inside">
+          <li *ngFor="let error of getPlanningErrors() | keyvalue">
+            <strong>{{ getFieldDisplayName(error.key) }}:</strong> {{ error.value }}
+          </li>
+          <li *ngIf="(getPlanningErrors() | keyvalue)?.length === 0">
+            <em>No se detectaron errores específicos. Revisa la consola para más detalles.</em>
+          </li>
+        </ul>
+      </div>
+      <div *ngIf="isPlanningValid()">
+        <p>✅ Todos los campos obligatorios están completados correctamente.</p>
+      </div>
+    </div>
+  </div>
+  
+
 
   <!--Botones-->
   <div class="buttons inline-flex items-end place-content-end space-x-4">
     <button
       (click)="handleCompletarPaso()"
       type="button"
-      class="px-4 py-3 text-[12px] font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300"
+      [disabled]="currentStepIndex === 0 && !isPlanningValid()"
+      class="px-4 py-3 text-[12px] font-medium text-white bg-[var(--primary)] rounded-sm hover:bg-[var(--primaryDark)] focus:outline-none cursor-pointer duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
       *ngIf="currentStepIndex < steps.length"
     >
       <ng-container [ngSwitch]="buttonText()">

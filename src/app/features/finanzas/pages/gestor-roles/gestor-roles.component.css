@@ -1,0 +1,79 @@
+/* Estilos específicos para el gestor de roles */
+
+.container {
+  max-width: 1200px;
+}
+
+/* Estilos para la tabla */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background-color: #f9fafb;
+  z-index: 10;
+}
+
+/* Estilos para los botones de acción */
+button {
+  transition: all 0.2s ease-in-out;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Estilos para los inputs de edición */
+input[type="number"] {
+  transition: border-color 0.2s ease-in-out;
+}
+
+input[type="number"]:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Estilos para las tarjetas de resumen */
+.bg-white {
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.bg-white:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para las filas de la tabla */
+tr {
+  transition: background-color 0.2s ease-in-out;
+}
+
+/* Estilos para los badges de moneda */
+.bg-blue-100 {
+  transition: background-color 0.2s ease-in-out;
+}
+
+.bg-blue-100:hover {
+  background-color: #dbeafe;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .overflow-x-auto {
+    overflow-x: auto;
+  }
+  
+  table {
+    min-width: 800px;
+  }
+}

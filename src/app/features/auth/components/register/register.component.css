@@ -1,0 +1,101 @@
+/* Estilos específicos para el componente de registro */
+
+/* Animaciones de entrada */
+.min-h-screen {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para campos de formulario */
+input:focus {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Estilos para botones */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Estilos para mensajes de error */
+.border-red-300 {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Estilos para mensajes de éxito */
+.bg-green-50 {
+  animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para el spinner de carga */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Estilos responsivos */
+@media (max-width: 640px) {
+  .sm:px-10 {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  .sm:max-w-md {
+    max-width: 100%;
+    margin-left: 1rem;
+    margin-right: 1rem;
+  }
+}
+
+/* Estilos para el checkbox de términos */
+input[type="checkbox"]:checked {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Estilos para enlaces */
+a:hover {
+  text-decoration: underline;
+}
+
+/* Estilos para el botón deshabilitado */
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Transiciones suaves */
+* {
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}

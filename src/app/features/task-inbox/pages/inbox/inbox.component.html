@@ -107,6 +107,25 @@
           class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
           [ngClass]="{
             'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
+              filterState === 'Todos',
+            'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
+              filterState !== 'Todos'
+          }"
+        >
+          <input
+            type="radio"
+            name="filterState"
+            value="Todos"
+            [(ngModel)]="filterState"
+            (change)="applyFilters()"
+            class="hidden"
+          />
+          <span>Todos</span>
+        </label>
+        <label
+          class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
+          [ngClass]="{
+            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
               filterState === 'Disponible',
             'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
               filterState !== 'Disponible'
@@ -2069,50 +2088,7 @@
         </ng-template>
       </section>
 
-      <!-- Financiamiento -->
-      <section class="my-6">
-        <div class="mb-4">
-          <h2
-            class="text-lg font-semibold text-[var(--primary)] flex items-center gap-2"
-          >
-            💰 Financiamiento
-          </h2>
-        </div>
 
-        <!-- Moneda y Monto Base -->
-        <div class="w-full mt-4 inline-flex justify-start items-baseline gap-2">
-          <p class="text-xs text-[var(--text-medium)] mb-1">
-            Monto base:
-          </p>
-          <p class="text-xs font-semibold">
-            {{ timeboxSeleccionado.fases?.kickOff?.financiamiento?.moneda || 'No definido' }} 
-            {{ formatFinanciamientoMontoSeleccionado() }}
-          </p>
-        </div>
-
-        <!-- Porcentaje Anticipado -->
-        <div class="w-full inline-flex justify-start items-baseline gap-2">
-          <p class="text-xs text-[var(--text-medium)] mb-1">
-            Porcentaje anticipado:
-          </p>
-          <p class="text-xs font-semibold">
-            {{ timeboxSeleccionado.fases?.kickOff?.financiamiento?.porcentajeAnticipado || 'No definido' }}%
-          </p>
-        </div>
-
-        <!-- Observaciones -->
-        <div
-          *ngIf="timeboxSeleccionado.fases?.kickOff?.financiamiento?.observaciones"
-          class="w-full mt-4"
-        >
-          <p class="text-xs text-[var(--text-medium)] mb-1">
-            Observaciones:
-          </p>
-          <p class="text-xs font-semibold">
-            {{ timeboxSeleccionado.fases?.kickOff?.financiamiento?.observaciones }}
-          </p>
-        </div>
-      </section>
 
       <!-- Call to Action Button -->
       <div class="w-full pt-6">

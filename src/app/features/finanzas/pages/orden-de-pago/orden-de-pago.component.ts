@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FinanzasService } from '../../services/finanzas.service';
+import { AuthService } from '../../../../shared/services/auth.service';
 
 interface OrdenPago {
   id: string;
   developer_id: string;
+  developer_nombre?: string; // ✅ Nombre del developer
   monto: number;
   moneda: string;
   concepto: string;
@@ -30,6 +32,11 @@ export class OrdenDePagoComponent implements OnInit {
   estado = '';
   moneda = '';
   
+  // ✅ Control de acceso
+  isAdmin = false;
+  currentUserId = '';
+  currentUserName = '';
+  
   // Paginación
   paginaActual = 1;
   itemsPorPagina = 10;
@@ -47,10 +54,46 @@ export class OrdenDePagoComponent implements OnInit {
   // Math para template
   Math = Math;
 
-  constructor(private finanzasService: FinanzasService) {}
+  constructor(
+    private finanzasService: FinanzasService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
+    this.verificarRolUsuario();
     this.cargar();
+  }
+  
+  // ✅ Verificar rol del usuario para control de acceso
+  private verificarRolUsuario() {
+    try {
+      const currentUser = this.authService.getCurrentUser();
+      if (currentUser) {
+        this.currentUserId = currentUser.id;
+        this.currentUserName = currentUser.first_name + ' ' + currentUser.last_name;
+        
+        // Verificar si es admin
+        this.isAdmin = this.authService.hasRole('Platform Administrator') || 
+                      this.authService.hasRole('admin') ||
+                      this.authService.hasRole('Admin');
+        
+        console.log('🔐 Control de acceso - Usuario:', {
+          id: this.currentUserId,
+          nombre: this.currentUserName,
+          isAdmin: this.isAdmin
+        });
+      } else {
+        console.warn('⚠️ No se pudo obtener el usuario autenticado');
+        this.currentUserId = '';
+        this.currentUserName = '';
+        this.isAdmin = false;
+      }
+    } catch (error) {
+      console.error('❌ Error al verificar rol de usuario:', error);
+      this.currentUserId = '';
+      this.currentUserName = '';
+      this.isAdmin = false;
+    }
   }
 
   cargar(): void {

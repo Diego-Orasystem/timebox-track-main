@@ -87,15 +87,7 @@ export class KickoffComponent implements OnDestroy {
     const formValues = parentForm.getRawValue();
     console.log('🔍 KickoffComponent ngOnInit - timeboxData:', formValues);
     
-    // Suscribirse a cambios en el financiamiento para debug
-    const financiamientoGroup = this.form.get('financiamiento');
-    if (financiamientoGroup) {
-      financiamientoGroup.valueChanges.subscribe(value => {
-        console.log('🔍 Financiamiento cambiado:', value);
-        // Validar financiamiento cuando cambie
-        this.validateFinanciamiento();
-      });
-    }
+
 
     // Cargar todas las personas desde la API
     this.timeboxApiService.getPersonas().subscribe({
@@ -170,57 +162,17 @@ export class KickoffComponent implements OnDestroy {
     this.destroy$.complete();
   }
 
-  /**
-   * Valida que todos los campos de financiamiento estén completos
-   * @returns true si todos los campos están completos, false en caso contrario
-   */
-  validateFinanciamiento(): boolean {
-    const financiamientoGroup = this.form.get('financiamiento');
-    if (!financiamientoGroup) {
-      console.warn('🔍 No se encontró el grupo de financiamiento');
-      return false;
-    }
 
-    const moneda = financiamientoGroup.get('moneda')?.value;
-    const montoBase = financiamientoGroup.get('montoBase')?.value;
-    const porcentajeAnticipado = financiamientoGroup.get('porcentajeAnticipado')?.value;
-    // Las observaciones ya no son obligatorias
-
-    // Validaciones adicionales
-    const montoBaseValid = montoBase !== null && montoBase !== undefined && montoBase >= 0;
-    const porcentajeValid = porcentajeAnticipado !== null && porcentajeAnticipado !== undefined && 
-                           porcentajeAnticipado >= 0 && porcentajeAnticipado <= 100;
-
-    const isValid = moneda && montoBaseValid && porcentajeValid;
-
-    console.log('🔍 Validación de financiamiento:', {
-      moneda,
-      montoBase,
-      montoBaseValid,
-      porcentajeAnticipado,
-      porcentajeValid,
-      isValid
-    });
-
-    // Marcar campos como touched para mostrar errores
-    if (!isValid) {
-      financiamientoGroup.get('moneda')?.markAsTouched();
-      financiamientoGroup.get('montoBase')?.markAsTouched();
-      financiamientoGroup.get('porcentajeAnticipado')?.markAsTouched();
-      // No marcar observaciones como touched ya que no son obligatorias
-    }
-
-    return isValid;
-  }
 
   /**
    * Verifica si la fase de kickoff puede ser marcada como completada
    * @returns true si puede ser completada, false en caso contrario
    */
   canCompleteKickoff(): boolean {
-    const financiamientoValid = this.validateFinanciamiento();
-    console.log('🔍 Kickoff puede ser completado:', financiamientoValid);
-    return financiamientoValid;
+    // Ahora solo se valida que el equipo esté asignado
+    const teamAssigned = this.areAllTeamRolesAssigned();
+    console.log('🔍 Kickoff puede ser completado:', teamAssigned);
+    return teamAssigned;
   }
 
   /**
@@ -229,15 +181,15 @@ export class KickoffComponent implements OnDestroy {
    */
   isKickoffFormValid(): boolean {
     const formValid = this.form.valid;
-    const financiamientoValid = this.validateFinanciamiento();
+    const teamAssigned = this.areAllTeamRolesAssigned();
     
     console.log('🔍 Formulario de kickoff válido:', {
       formValid,
-      financiamientoValid,
-      overallValid: formValid && financiamientoValid
+      teamAssigned,
+      overallValid: formValid && teamAssigned
     });
     
-    return formValid && financiamientoValid;
+    return formValid && teamAssigned;
   }
 
   areAllTeamRolesAssigned(): boolean {
@@ -512,24 +464,10 @@ export class KickoffComponent implements OnDestroy {
 
   isRoleInvalid(roleName: string): boolean {
     console.log('🚀 isRoleInvalid() iniciado para roleName:', roleName);
-    const control = (this.form.get('teamMovilization') as FormGroup)?.get(
-      roleName
-    );
-    const searchControl = this.getSearchControlForRole(roleName);
-
-    if (control?.hasError('required') && control.touched && !control.value) {
-      return true;
-    }
-
-    const searchText = searchControl?.value;
-    if (typeof searchText === 'string' && searchText !== '') {
-      const isSelected = this.allPersonas.some(
-        (p) => p.nombre.toLowerCase() === searchText.toLowerCase()
-      );
-      if (!isSelected) {
-        return true;
-      }
-    }
+    
+    // ✅ EXCEPCIÓN: Para TODOS los roles del Kick Off, nunca mostrar como inválidos
+    // No es necesario que estén en la lista predefinida
+    console.log('✅ Todos los roles del Kick Off: No se validan - siempre válidos');
     return false;
   }
 

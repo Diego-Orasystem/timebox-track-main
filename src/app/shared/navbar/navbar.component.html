@@ -4,40 +4,97 @@
   <app-breadcrumb></app-breadcrumb>
 
   <div class="inline-flex items-center justify-end gap-4 relative">
-    <h1 class="text-sm font-semibold">👋🏻 Hola, {{ persona.nombre }}!</h1>
+    <!-- Mostrar saludo solo si el usuario está autenticado -->
+    <div *ngIf="isAuthenticated" class="text-right">
+      <h1 class="text-sm font-semibold">👋🏻 Hola, {{ userFullName }}!</h1>
+      <p class="text-xs text-gray-600">{{ userEmail }}</p>
+    </div>
 
-    <!-- Avatar (Botón) -->
+    <!-- Avatar (Botón) - Solo mostrar si está autenticado -->
     <button
-      class="profile w-10 h-10 bg-[var(--backgroundActive)] rounded-full flex items-center justify-center text-white font-semibold cursor-pointer"
+      *ngIf="isAuthenticated"
+      class="profile w-10 h-10 bg-[var(--backgroundActive)] rounded-full flex items-center justify-center text-white font-semibold cursor-pointer hover:bg-blue-700 transition-colors"
       (click)="toggleMenu()"
     >
-      {{ persona.nombre.charAt(0) }}
+      {{ userInitials }}
     </button>
 
     <!-- Menú desplegable -->
     <div
-      *ngIf="isMenuOpen"
+      *ngIf="isMenuOpen && isAuthenticated"
       class="absolute top-16 right-0 z-50 w-72 bg-white shadow-xl rounded-lg border border-[var(--lines)] p-4 animate-fade-in"
     >
-      <h2 class="text-base font-semibold text-[var(--primaryDark)]">
-        {{ persona.nombre }}
-      </h2>
-      <p class="text-sm text-[var(--text-medium)] mb-1">{{ persona.rol }}</p>
-      <p class="text-xs text-[var(--text-light)] mb-4">{{ persona.email }}</p>
-
-      <div *ngIf="persona.habilidades?.length ?? 0 > 0">
-        <h3 class="text-xs font-medium text-[var(--text-light)] mb-2">
-          Habilidades Validadas
-        </h3>
-        <ul class="flex flex-wrap gap-2">
-          <li
-            *ngFor="let habilidad of persona.habilidades"
-            class="text-[10px] bg-indigo-100 text-[var(--darkText)] px-3 py-1 rounded-full"
-          >
-            {{ habilidad }}
-          </li>
-        </ul>
+      <!-- Información del usuario -->
+      <div class="flex items-center space-x-3 mb-4 pb-3 border-b border-gray-200">
+        <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+          {{ userInitials }}
+        </div>
+        <div>
+          <h2 class="text-base font-semibold text-[var(--primaryDark)]">
+            {{ userFullName }}
+          </h2>
+          <p class="text-sm text-[var(--text-medium)]">{{ userEmail }}</p>
+        </div>
       </div>
+
+      <!-- Opciones del menú -->
+      <div class="space-y-2">
+        <!-- Perfil -->
+        <button
+          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2"
+          (click)="toggleMenu()"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+          </svg>
+          <span>Mi Perfil</span>
+        </button>
+
+        <!-- Configuración -->
+        <button
+          class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors flex items-center space-x-2"
+          (click)="toggleMenu()"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+          </svg>
+          <span>Configuración</span>
+        </button>
+
+        <!-- Separador -->
+        <div class="border-t border-gray-200 my-2"></div>
+
+        <!-- Cerrar Sesión -->
+        <button
+          class="w-full text-left px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-md transition-colors flex items-center space-x-2"
+          (click)="logout()"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          <span>Cerrar Sesión</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Botones de autenticación si no está autenticado -->
+    <div *ngIf="!isAuthenticated" class="flex items-center gap-3">
+      <!-- Botón de Login -->
+      <button
+        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors font-medium"
+        routerLink="/login"
+      >
+        Iniciar Sesión
+      </button>
+      
+      <!-- Botón de Registro -->
+      <button
+        class="px-4 py-2 bg-white text-blue-600 border border-blue-600 rounded-md hover:bg-blue-50 transition-colors font-medium"
+        routerLink="/register"
+      >
+        Crear Cuenta
+      </button>
     </div>
   </div>
 </nav>

@@ -1,4 +1,12 @@
-<sp-sidebar>
-  <sp-navbar></sp-navbar>
+<!-- Mostrar sidebar y navbar solo cuando esté autenticado -->
+<div *ngIf="isAuthenticated$ | async; else loginView">
+  <sp-sidebar>
+    <sp-navbar></sp-navbar>
+    <router-outlet></router-outlet>
+  </sp-sidebar>
+</div>
+
+<!-- Mostrar solo el router-outlet para el login -->
+<ng-template #loginView>
   <router-outlet></router-outlet>
-</sp-sidebar>
+</ng-template>

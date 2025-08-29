@@ -3,10 +3,22 @@
     class="header flex flex-col md:flex-row items-start md:items-center justify-between w-full"
   >
     <div class="flex flex-col select-none mb-4 md:mb-0">
-      <h1 class="text-md font-extrabold text-[var(--darkText)]">Mis pagos</h1>
+      <div class="flex items-center gap-3">
+        <h1 class="text-md font-extrabold text-[var(--darkText)]">Mis pagos</h1>
+        <!-- ✅ Indicador de Admin -->
+        <div
+          *ngIf="isAdmin"
+          class="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs font-semibold rounded-full border border-purple-300"
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L13.09 8.26L20 9L13.09 9.74L12 16L10.91 9.74L4 9L10.91 8.26L12 2Z" fill="currentColor"/>
+          </svg>
+          ADMIN
+        </div>
+      </div>
       <p class="text-sm text-[var(--text-medium)] mt-1">
-        Aquí podrás ver el detalle de pagos en curso e históricos. Haz click en
-        un pago para ver su detalle.
+        <span *ngIf="!isAdmin">Aquí podrás ver el detalle de pagos en curso e históricos. Haz click en un pago para ver su detalle.</span>
+        <span *ngIf="isAdmin">Vista de administrador: Puedes ver todos los pagos del sistema.</span>
       </p>
     </div>
   </div>
@@ -143,6 +155,17 @@
               </td>
               <td class="py-3 px-4 text-sm text-gray-600">
                 {{ orden.moneda }}
+              </td>
+              <!-- ✅ Columna del Developer -->
+              <td class="py-3 px-4 text-sm text-gray-600">
+                <div class="flex flex-col gap-1">
+                  <span class="font-medium text-gray-900">
+                    {{ orden.developer_nombre || 'Sin nombre' }}
+                  </span>
+                  <span class="text-xs text-gray-500 font-mono">
+                    {{ truncateText(orden.developer_id, 8) }}
+                  </span>
+                </div>
               </td>
               <td class="py-3 px-4">
                 <div class="flex flex-col gap-1">
