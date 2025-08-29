@@ -10,7 +10,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=4000
-    network_mode: "host"
     restart: unless-stopped
     container_name: timebox-track-app
 
@@ -26,7 +25,6 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-    network_mode: "host"
     profiles:
       - dev
     container_name: timebox-track-dev
