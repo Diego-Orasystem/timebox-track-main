@@ -31,14 +31,14 @@ export const routes: Routes = [
       ),
     canActivate: [LoginGuard]
   },
-  
+
   // Ruta raíz - redirige a home si está autenticado
   {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full'
   },
-  
+
   // Rutas protegidas - solo accesibles si está autenticado
   {
     path: 'home',
@@ -49,7 +49,7 @@ export const routes: Routes = [
     canActivate: [AuthGuard],
     data: { breadcrumb: 'Inicio' }
   },
-  
+
   {
     path: 'home/:nombreProyecto',
     loadComponent: () =>
@@ -77,7 +77,16 @@ export const routes: Routes = [
       ).then((m) => m.TimeboxMaintainerComponent),
     canActivate: [AuthGuard]
   },
-  
+
+  {
+    path: 'timebox-frappe-gantt',
+    loadComponent: () =>
+      import(
+        './features/timebox/pages/timebox-frappe-gantt/timebox-frappe-gantt.component'
+      ).then((m) => m.TimeboxFrappeGanttComponent),
+    canActivate: [AuthGuard]
+  },
+
   {
     path: 'task-inbox',
     loadComponent: () =>
@@ -86,7 +95,7 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard]
   },
-  
+
   {
     path: 'timebox-requests',
     loadComponent: () =>
@@ -95,7 +104,7 @@ export const routes: Routes = [
       ).then((m) => m.TimeboxRequestsComponent),
     canActivate: [AuthGuard]
   },
-  
+
   {
     path: 'projects/:projectId',
     component: ProjectDetailComponent,
@@ -128,7 +137,7 @@ export const routes: Routes = [
       },
     ],
   },
-  
+
   {
     path: 'mis-pagos',
     loadComponent: () =>
@@ -137,7 +146,7 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard]
   },
-  
+
   {
     path: 'ordenes-pago',
     loadComponent: () =>
@@ -146,7 +155,7 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard]
   },
-  
+
   // Ruta del gestor de roles (solo para usuarios con permisos de gestión de roles)
   {
     path: 'gestor-roles',
@@ -156,7 +165,7 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard]
   },
-  
+
   // Ruta de gestión de usuarios (solo para administradores)
   {
     path: 'admin/users',
@@ -166,7 +175,7 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard]
   },
-  
+
   // Ruta catch-all - redirige a login si no está autenticado, a home si está autenticado
   {
     path: '**',

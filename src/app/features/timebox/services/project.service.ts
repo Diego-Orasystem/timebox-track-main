@@ -20,10 +20,10 @@ export class ProjectService {
    * Transforma un timebox del formato del backend al formato del frontend
    */
   private transformTimeboxFromBackend(timebox: any): Timebox {
-    console.log('🔍 transformTimeboxFromBackend - timebox recibido:', timebox);
-    console.log('🔍 transformTimeboxFromBackend - planning recibido:', timebox.fases?.planning);
-    console.log('🔍 transformTimeboxFromBackend - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
-    
+    // console.log('🔍 transformTimeboxFromBackend - timebox recibido:', timebox);
+    // console.log('🔍 transformTimeboxFromBackend - planning recibido:', timebox.fases?.planning);
+    // console.log('🔍 transformTimeboxFromBackend - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
+
     return {
       ...timebox,
       // Mapear campos del backend al frontend
@@ -373,7 +373,7 @@ export class ProjectService {
 
   private findContentsByParent(contents: ProjectContent[], parentId: string | null): ProjectContent[] {
     const result: ProjectContent[] = [];
-    
+
     for (const content of contents) {
       if (content.parent_id === parentId) {
         result.push(content);
@@ -382,7 +382,7 @@ export class ProjectService {
         result.push(...this.findContentsByParent(content.contenido, parentId));
       }
     }
-    
+
     return result;
   }
 

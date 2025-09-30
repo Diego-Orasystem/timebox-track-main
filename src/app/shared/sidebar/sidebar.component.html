@@ -35,7 +35,7 @@
         >
           Acceso
         </h1>
-        
+
         <!-- Botón de Login -->
         <a
           class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
@@ -58,7 +58,7 @@
             Iniciar Sesión
           </span>
         </a>
-        
+
         <!-- Botón de Registro -->
         <a
           class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
@@ -81,7 +81,7 @@
             Crear Cuenta
           </span>
         </a>
-        
+
         <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
       </div>
 
@@ -264,6 +264,45 @@
               Timebox Requests
             </span>
           </a>
+          <a
+            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            [routerLink]="'/timebox-frappe-gantt'"
+            routerLinkActive="active-link"
+            [ngClass]="{
+              'justify-center': isSidebarCollapsed,
+              'justify-start gap-3': !isSidebarCollapsed
+            }"
+          >
+            <svg
+              class="h-5 w-5 flex-shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M7 13h8M7 17h4"
+              />
+            </svg>
+            <span
+              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              [ngClass]="{
+                'opacity-100 max-w-full': !isSidebarCollapsed,
+                'opacity-0 max-w-0': isSidebarCollapsed
+              }"
+            >
+              Timebox Gantt
+            </span>
+          </a>
         </div>
 
         <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
@@ -421,7 +460,7 @@
                Órdenes de Pago
              </span>
            </a>
-           
+
            <!-- Gestor de Roles - Solo para usuarios con permisos de gestión de roles -->
            <a
              *ngIf="hasPermission('role_management')"
