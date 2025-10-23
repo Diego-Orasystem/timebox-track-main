@@ -31,6 +31,7 @@ export interface Timebox {
   appId: string;
   compensacionEconomica: CompensacionEconomica;
   estado: 'En Definición' | 'Disponible' | 'En Ejecución' | 'Finalizado';
+  created_at?: string;
 }
 
 export interface CompensacionEconomica {

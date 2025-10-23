@@ -41,7 +41,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   selectedProjectId = '';
   // Signals
   timeboxes = signal<Timebox[]>([]);
-  currentViewMode = signal<'Quarter Day' | 'Half Day' | 'Day' | 'Week' | 'Month' | 'Year'>('Week');
+  currentViewMode = signal<'Week'>('Week');
   viewReady = signal<boolean>(false);
   // Variables para modal/formulario
   modalMode: 'create' | 'edit' = 'create';
@@ -76,10 +76,10 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       const isReady = this.viewReady();
 
       if (isReady && tasks.length > 0) {
-        console.log('Tareas generadas para Gantt:', tasks);
+        //console.log('Tareas generadas para Gantt:', tasks);
         this.renderGantt(tasks);
       } else if (isReady && tasks.length === 0) {
-        console.warn('No hay tareas válidas con fechas de inicio y fin');
+        //console.warn('No hay tareas válidas con fechas de inicio y fin');
         this.destroyGantt();
       }
     });
@@ -131,20 +131,39 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
 
     const el = this.ganttRoot.nativeElement;
     el.innerHTML = '';
+    //console.log('Tareas antes del sort:', tasks);
+    /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/ 
+    //ordernar las task por fecha de creación descendente
+    tasks.sort((a, b) => {
+      const dateA = new Date(a.createdAt).getTime();
+      const dateB = new Date(b.createdAt).getTime();
+      return dateA - dateB;
+    });
+    //console.log('Tareas despues del sort:', tasks);
 
     try {
-      this.ganttInstance = new Gantt(el, tasks, {
+      const ganttOptions: any = {
         view_mode: this.currentViewMode(),
         bar_height: 30,
         bar_corner_radius: 3,
         padding: 15,
         container_height: 650,
-        popup_on: 'hover',
+        popup_trigger: 'hover', 
+        readonly: true,
         language: 'es',
         on_click: (task: any) => this.onTaskClick(task),
         on_date_change: (task: any, start: Date, end: Date) => this.onTaskDateChange(task, start, end),
-        on_progress_change: (task: any, progress: number) => void(0),// Validar que las tareas no superen las 3 semanas (es el límite)
-      });
+        on_progress_change: (task: any, progress: number) => void(0),
+        todayBtn: false,
+      };
+
+      /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/ 
+      /*Quitar botón Today*/
+      this.ganttInstance = new Gantt(el, tasks, ganttOptions);
+      const todayBtn = el.querySelector('.today-button');
+      if (todayBtn) {
+        todayBtn.classList.add('hidden');
+      }
 
       // Acá se fuerza el overflow hidden después de un pequeño delay para evitar un segundo scroll en el container
       setTimeout(() => {
@@ -220,12 +239,12 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       progress,
       custom_class: `tb-${tb.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
       __color: color,
-      dependencies: ''
+      dependencies: '', 
+      createdAt: tb.created_at
     };
   }
 
   private buildTaskName(tb: Timebox): string {
-    console.log('Construyendo nombre para timebox:', tb);
     const tipo = tb.fases.planning?.nombre || 'Timebox';
     const estado = tb.estado || '';
     return `${tipo} • ${estado}`;
@@ -245,12 +264,20 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     const planning = tb.fases?.planning;
 
     if (planning) {
-      console.log('Planning encontrado para timebox:', tb.id, planning);
+      //console.log('Planning encontrado para timebox:', tb.id, planning);
 
       // Usar fechaInicio o fecha_inicio
-      const fechaInicio = planning.fechaInicio || planning.fecha_inicio;
+      const fechaInicio = new Date(planning.fechaInicio) || planning.fecha_inicio;
       // fechaFase podría ser la fecha de fin, o usar fechaCompletado
-      const fechaFin = planning.fechaCompletado || planning.fechaFase;
+      const semanas  = this.getSemanasEsfuerzo(planning.esfuerzo);
+
+       /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
+       /*
+          acá en vez de tomar la fecha fin que trae el planning, se calcula 
+          obteniendo las semanas de esfuerzo y se suman a la fecha inicio
+       */
+      // sumar semaas a la fecha inicio
+      const fechaFin = new Date(fechaInicio).setDate(new Date(fechaInicio).getDate() + (semanas * 7));
 
       if (fechaInicio) {
         const startDate = new Date(fechaInicio);
@@ -262,22 +289,22 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
             const endDate = new Date(fechaFin);
             if (!isNaN(endDate.getTime())) {
               const end = endDate.toISOString().split('T')[0];
-              console.log(`✅ Fechas extraídas de planning para ${tb.id}:`);
-              console.log(`   Inicio: ${start} (${fechaInicio})`);
-              console.log(`   Fin: ${end} (${fechaFin})`);
+              // console.log(`✅ Fechas extraídas de planning para ${tb.id}:`);
+              // console.log(`   Inicio: ${start} (${fechaInicio})`);
+              // console.log(`   Fin: ${end} (${fechaFin})`);
               return { start, end };
             }
           }
 
           // Si solo hay fecha inicio, calcular fin por defecto
           const defaultEnd = this.getDefaultEndDate(start);
-          console.log(`⚠️ Solo fecha inicio en planning para ${tb.id}: ${start}, usando fin por defecto: ${defaultEnd}`);
+          //console.log(`⚠️ Solo fecha inicio en planning para ${tb.id}: ${start}, usando fin por defecto: ${defaultEnd}`);
           return { start, end: defaultEnd };
         }
       }
     }
 
-    console.warn(`❌ Timebox ${tb.id} no tiene planning o fechas válidas en planning`);
+    //console.warn(`❌ Timebox ${tb.id} no tiene planning o fechas válidas en planning`);
 
     // Fallback: intentar extraer de otras fases
     const dates: Date[] = [];
@@ -334,6 +361,20 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     return { start, end };
   }
 
+  /**/
+  private getSemanasEsfuerzo(option : string) : number {
+      switch(option) {
+        case '1 sem':
+          return 1;
+        case '2 sem':
+          return 2;
+        case '3 sem':
+          return 3;
+        default:
+          return 1;// por defecto una semana que es lo que tiene como escogido el formulario de ingreso en el time box
+    }
+  }
+
   private getDefaultStartDate(): string {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -371,9 +412,6 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   }
 
   handleTimeboxSave(timeboxFromModal: Timebox): void {
-    console.log('🔄 ProjectTimeboxesComponent: handleTimeboxSave llamado con:', timeboxFromModal);
-    console.log('🔍 timeboxFromModal ID:', timeboxFromModal.id);
-
     if (!this.selectedProjectId) {
       console.error('❌ No hay projectId');
       return;

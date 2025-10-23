@@ -1,5 +1,5 @@
-<div class="p-8 sm:p-10 bg-gray-50 min-h-max font-sans">
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-10">
+<div class="p-3 sm:p-3 bg-gray-50 min-h-max font-sans">
+  <!-- <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-10">
     <div class="flex flex-col select-none mb-4 md:mb-0">
       <h1 class="text-md font-extrabold text-[var(--darkText)]">
         Mantenedor de Flujos de tareas (Gantt)
@@ -8,8 +8,8 @@
         Crea y administra sprints de trabajo en un diagrama de gantt.
       </p>
     </div>
-  </div>
-  <div class="bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300">
+  </div> -->
+  <div class="h-[80vh] bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300 ">
     <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-3 mb-4">
       <!-- Selector de proyecto -->
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -31,7 +31,10 @@
       </div>
       <!-- Controles de vista -->
       <div *ngIf="selectedProjectId !== ''" class="flex items-center gap-5">
-        <span class="text-xs text-[var(--text-medium)] mr-2">Vista:</span>
+        <!-- /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/  -->
+        <!-- se comenta el selector de vista ya que no es necesario para el nuevo sprint, de cualquier manera sigue tomando el valor con el signal currentViewMode (linea 37 a la 49)-->
+
+        <!-- <span class="text-xs text-[var(--text-medium)] mr-2">Vista:</span>
         <div class="flex gap-1 bg-gray-100 rounded-sm p-1">
           <button
             *ngFor="let mode of viewModes"
@@ -43,12 +46,12 @@
           >
             {{ mode.label }}
           </button>
-        </div>
+        </div> -->
 
         <button
           (click)="openModal()"
           [disabled]="disabledButton"
-          class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-between px-5 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primaryDark)] transition-colors duration-200"
+          class="max-w-40 cursor-pointer text-[12px] inline-flex items-center justify-between px-5 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-[var(--primaryDark)] transition-colors duration-200"
         >
           <svg
             width="20px"
@@ -96,14 +99,14 @@
               </g>
             </g>
           </svg>
-          <span class="text-xs font-medium">Nuevo</span>
+          <span class="text-xs font-medium"></span>
         </button>
       </div>
     </div>
     <!-- Contenedor del Gantt -->
     <div class="px-3 mt-6">
       <div *ngIf="selectedProjectId !== ''">
-        <div #ganttRoot class="w-full h-[55vh] bg-white border rounded p-4 overflow-scroll"></div>
+        <div #ganttRoot class="w-full min-h-full bg-white border rounded p-4 overflow-scroll"></div>
       </div>
       <div *ngIf="selectedProjectId === ''" class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded">
         <div class="text-center">
