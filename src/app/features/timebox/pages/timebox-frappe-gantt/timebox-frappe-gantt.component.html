@@ -103,18 +103,56 @@
         </button>
       </div>
     </div>
-    <!-- Contenedor del Gantt -->
-    <div class="px-3 mt-6">
-      <div *ngIf="selectedProjectId !== ''">
-        <div #ganttRoot class="w-full min-h-full bg-white border rounded p-4 overflow-scroll"></div>
-      </div>
-      <div *ngIf="selectedProjectId === ''" class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded">
-        <div class="text-center">
-          <svg class="mx-auto w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
-          <p class="text-sm text-gray-500">Selecciona un proyecto para visualizar time line</p>
+    <!-- Contenedor del Gantt y Lista -->
+    <div class="px-3 mt-6 flex gap-4 h-auto">
+      <div *ngIf="selectedProjectId !== ''" class="flex w-full gap-4">
+        <!-- Lista de Tareas -->
+        <div class="w-1/4">
+          <!-- Cabecera del listado -->
+          <div class="bg-white border-b p-6 border rounded-t">
+            <h2 class="text-sm font-semibold text-[var(--darkText)]">
+                 {{ selectedProjectName() }}
+            </h2>
+            <p class="text-xs text-gray-500 mt-1">Listado de timeboxes</p>
+          </div>
+          
+          <!-- Contenedor scrolleable de tareas -->
+          <div class="border-x border-b rounded-b bg-white">
+            <div class="overflow-y-auto" [style.height]="'calc(65vh - 56px)'">
+              <div 
+                *ngFor="let task of ganttTasks()"
+                (click)="highlightTask(task)"
+                [class.bg-[var(--backgroundActive)]="selectedTaskId === task.id"
+                class="border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors duration-200 p-1"
+              >
+                <div class="flex justify-between items-center">
+                  <p class="text-sm font-medium truncate flex-1">{{task.name}}</p>
+                  <div class="flex items-center gap-2 ml-4">
+                    <span class="text-xs  whitespace-nowrap">{{task.start | date:'shortDate'}}</span>
+                    <span class="text-xs ">-</span>
+                    <span class="text-xs  whitespace-nowrap">{{task.end | date:'shortDate'}}</span>
+                  </div>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full mt-2">
+                  <div 
+                    class="h-1.5 rounded-full" 
+                    [style.width]="task.progress + '%'"
+                    [style.background-color]="task.__color"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Gantt Chart -->
+        <div class="w-3/4">
+          <div #ganttRoot class="w-full bg-white border rounded"></div>
+        </div>
+      </div>
+      
+      <div *ngIf="selectedProjectId === ''" class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded">
+        <p class="text-gray-500 text-sm">Seleccione un proyecto para ver su diagrama Gantt</p>
       </div>
     </div>
   </div>

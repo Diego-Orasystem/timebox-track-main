@@ -14,7 +14,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { map, takeUntil } from 'rxjs/operators';
 import Gantt from 'frappe-gantt';
 import { ProjectService } from '../../services/project.service';
 import { Project } from '../../../../shared/interfaces/project.interface';
@@ -39,6 +39,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   // Variables para proyectos
   projects$: Observable<Project[]>;
   selectedProjectId = '';
+  selectedProjectName = signal<string>('');
   // Signals
   timeboxes = signal<Timebox[]>([]);
   currentViewMode = signal<'Week'>('Week');
@@ -48,6 +49,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   showModal: boolean = false;
   disabledButton: boolean = true;
   selectedTimebox: Timebox = {} as Timebox;
+  selectedTaskId: string = '';
 
   // Computed signal para las tareas del Gantt
   ganttTasks = computed(() => {
@@ -102,7 +104,16 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   }
 
   onProjectChange(newProjectId: string) {
+    console.log('Proyecto seleccionado:', newProjectId);
     this.selectedProjectId = newProjectId;
+    //cambio de nombre para el proyecto
+    this.projects$.pipe(
+      map((projects: Project[]) => projects.find(p => p.id === this.selectedProjectId)?.nombre || '')
+    ).subscribe(projectName => {
+      this.selectedProjectName.set(projectName);
+    });
+
+
     this.disabledButton = this.selectedProjectId != '' ? false : true;
     if (!newProjectId) {
       this.timeboxes.set([]);
@@ -448,6 +459,26 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
           alert('Error al crear el timebox. Inténtalo de nuevo.');
         }
       });
+    }
+  }
+
+  highlightTask(task: any) {
+    this.selectedTaskId = task.id;
+    
+    // Remover highlight previo
+    const ganttContainer = this.ganttRoot.nativeElement;
+    ganttContainer.querySelectorAll('.gantt-highlight').forEach((el: any) => {
+      el.classList.remove('gantt-highlight');
+    });
+    
+    // Agregar highlight a la barra correspondiente
+    const taskBar = ganttContainer.querySelector(`[data-id="${task.id}"]`) ||
+                    ganttContainer.querySelector(`.bar-wrapper[task-id="${task.id}"]`) ||
+                    ganttContainer.querySelector(`#task-${task.id}`);
+    
+    if (taskBar) {
+      taskBar.classList.add('gantt-highlight');
+      taskBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
   }
 }
