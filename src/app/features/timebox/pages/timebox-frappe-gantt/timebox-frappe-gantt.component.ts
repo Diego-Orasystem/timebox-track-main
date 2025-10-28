@@ -233,14 +233,17 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     /*validar todos los progresos de los timebox  WARD*/
     const color = this.colorMap[tb.estado] ?? '#3B82F6';
     let progress = 0;
-    if (tb.estado === 'Finalizado') {
-      progress = 100;
-    } else if (tb.estado === 'En Ejecución') {
-      progress = this.calculateProgress(tb);
-    } else if (tb.estado === 'Disponible') {
-      progress = 10;
+    console.log(tb.estado);
+    switch(tb.estado) {
+      case 'En Definición':
+        progress = 0;
+        break;
+      case 'Finalizado':
+        progress = 100;
+        break;
+      default:
+        progress = this.calculateProgress(tb);
     }
-
     const taskName = this.buildTaskName(tb);
 
     return {
@@ -264,12 +267,13 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
 
     //*revisar, esto calcula mal WARD*/
   private calculateProgress(tb: Timebox): number {
-    const fases = tb.fases || {};
-    const fasesCompletadas = Object.values(fases).filter((fase: any) =>
-      fase && (fase.completado || fase.fechaFin)
-    ).length;
-    const totalFases = Object.keys(fases).length || 1;
-    return Math.round((fasesCompletadas / totalFases) * 100);
+    let total = 0;
+    total += tb.fases.planning?.completada ? 1 : 0;
+    total += tb.fases.kickOff?.completada ? 1 : 0;
+    total += tb.fases.refinement?.completada ? 1 : 0;
+    total += tb.fases.qa?.completada ? 1 : 0;
+    total += tb.fases.close?.completada ? 1 : 0;
+    return Math.round((total / 5) * 100);
   }
 
   private extractStartEndFromTimebox(tb: Timebox): { start?: string; end?: string } {
