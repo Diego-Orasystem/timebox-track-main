@@ -159,13 +159,12 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
         bar_corner_radius: 3,
         padding: 15,
         container_height: 650,
-        popup_trigger: 'hover', 
+        popup_on: 'hover', 
         readonly: true,
         language: 'es',
         on_click: (task: any) => this.onTaskClick(task),
         on_date_change: (task: any, start: Date, end: Date) => this.onTaskDateChange(task, start, end),
         on_progress_change: (task: any, progress: number) => void(0),
-        todayBtn: false,
       };
 
       /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/ 
@@ -178,11 +177,13 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
 
       // Acá se fuerza el overflow hidden después de un pequeño delay para evitar un segundo scroll en el container
       setTimeout(() => {
-          const ganttContainer = el.querySelector('.gantt-container');
-          if (ganttContainer) {
-            (ganttContainer as HTMLElement).style.overflowY = 'hidden';
-            (ganttContainer as HTMLElement).style.overflowX = 'scroll';
-          }
+        const ganttContainer = el.querySelector('.gantt-container');
+        if (ganttContainer) {
+          (ganttContainer as HTMLElement).style.overflowY = 'hidden';
+          (ganttContainer as HTMLElement).style.overflowX = 'scroll';
+          (ganttContainer as HTMLElement).style.minHeight = '';
+          (ganttContainer as HTMLElement).style.height = '100%';
+        }
       }, 50);
 
     } catch (error) {

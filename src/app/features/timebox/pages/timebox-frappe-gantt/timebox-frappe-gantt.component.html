@@ -1,15 +1,5 @@
 <div class="p-3 sm:p-3 bg-gray-50 min-h-max font-sans">
-  <!-- <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 sm:mb-10">
-    <div class="flex flex-col select-none mb-4 md:mb-0">
-      <h1 class="text-md font-extrabold text-[var(--darkText)]">
-        Mantenedor de Flujos de tareas (Gantt)
-      </h1>
-      <p class="text-sm text-[var(--text-medium)] mt-1">
-        Crea y administra sprints de trabajo en un diagrama de gantt.
-      </p>
-    </div>
-  </div> -->
-  <div class="h-[80vh] bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300 ">
+  <div class="h-[87vh] bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300 ">
     <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-3 mb-4">
       <!-- Selector de proyecto -->
       <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
@@ -31,23 +21,6 @@
       </div>
       <!-- Controles de vista -->
       <div *ngIf="selectedProjectId !== ''" class="flex items-center gap-5">
-        <!-- /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/  -->
-        <!-- se comenta el selector de vista ya que no es necesario para el nuevo sprint, de cualquier manera sigue tomando el valor con el signal currentViewMode (linea 37 a la 49)-->
-
-        <!-- <span class="text-xs text-[var(--text-medium)] mr-2">Vista:</span>
-        <div class="flex gap-1 bg-gray-100 rounded-sm p-1">
-          <button
-            *ngFor="let mode of viewModes"
-            (click)="changeViewMode(mode.value)"
-            [class.bg-white]="currentViewMode() === mode.value"
-            [class.text-[var(--primary)]="currentViewMode() === mode.value"
-            [class.shadow-sm]="currentViewMode() === mode.value"
-            class="px-3 py-1.5 text-xs rounded-sm transition-all duration-200 hover:bg-white hover:shadow-sm text-[var(--darkText)]"
-          >
-            {{ mode.label }}
-          </button>
-        </div> -->
-
         <button
           (click)="openModal()"
           [disabled]="disabledButton"
@@ -104,41 +77,82 @@
       </div>
     </div>
     <!-- Contenedor del Gantt y Lista -->
-    <div class="px-3 mt-6 flex gap-4 h-auto">
+    <div class="px-3 mt-6 flex gap-4 h-11/12">
       <div *ngIf="selectedProjectId !== ''" class="flex w-full gap-4">
-        <!-- Lista de Tareas -->
+        <!-- Lista de Tareas estilo MS Project -->
         <div class="w-1/4">
           <!-- Cabecera del listado -->
-          <div class="bg-white border-b p-6 border rounded-t">
-            <h2 class="text-sm font-semibold text-[var(--darkText)]">
-                 {{ selectedProjectName() }}
-            </h2>
-            <p class="text-xs text-gray-500 mt-1">Listado de timeboxes</p>
+          <div class="bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-300 rounded-t-sm mt-2.5">
+            <div class="px-4 py-2.5 border-b border-gray-300">
+              <h2 class="text-xs font-bold text-gray-700 uppercase tracking-wide">
+                {{ selectedProjectName() }}
+              </h2>
+            </div>
+            <!-- Headers de columnas estilo Project -->
+            <div class="mt-1 grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-300 bg-gray-100">
+              <div class="col-span-5">Nombre</div>
+              <div class="col-span-3 text-center">Inicio</div>
+              <div class="col-span-3 text-center">Fin</div>
+              <div class="col-span-1 text-center">%</div>
+            </div>
           </div>
           
           <!-- Contenedor scrolleable de tareas -->
-          <div class="border-x border-b rounded-b bg-white">
+          <div class="border-x border-b border-gray-300 rounded-b-sm bg-white">
             <div class="overflow-y-auto" [style.height]="'calc(65vh - 56px)'">
               <div 
-                *ngFor="let task of ganttTasks()"
+                *ngFor="let task of ganttTasks(); let i = index"
                 (click)="highlightTask(task)"
-                [class.bg-[var(--backgroundActive)]="selectedTaskId === task.id"
-                class="border-b last:border-b-0 cursor-pointer hover:bg-gray-50 transition-colors duration-200 p-1"
+                [class.bg-blue-50]="selectedTaskId === task.id"
+                [class.border-l-4]="selectedTaskId === task.id"
+                [class.border-l-blue-500]="selectedTaskId === task.id"
+                class="border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-all duration-150"
               >
-                <div class="flex justify-between items-center">
-                  <p class="text-sm font-medium truncate flex-1">{{task.name}}</p>
-                  <div class="flex items-center gap-2 ml-4">
-                    <span class="text-xs  whitespace-nowrap">{{task.start | date:'shortDate'}}</span>
-                    <span class="text-xs ">-</span>
-                    <span class="text-xs  whitespace-nowrap">{{task.end | date:'shortDate'}}</span>
+                <!-- Fila de datos estilo tabla -->
+                <div class="grid grid-cols-12 gap-2 px-3 py-1.5 items-center text-xs">
+                  <!-- Nombre de tarea con indicador -->
+                  <div class="col-span-5 flex items-center gap-1.5">
+                    <span class="flex-shrink-0 w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-bold text-white" 
+                          [style.background-color]="task.__color">
+                      {{i + 1}}
+                    </span>
+                    <span class="font-medium text-gray-800 truncate" [title]="task.name">
+                      {{task.name}}
+                    </span>
+                  </div>
+                  
+                  <!-- Fecha inicio -->
+                  <div class="col-span-3 text-center text-gray-600 text-[11px] font-mono">
+                    {{task.start | date:'dd/MM/yy'}}
+                  </div>
+                  
+                  <!-- Fecha fin -->
+                  <div class="col-span-3 text-center text-gray-600 text-[11px] font-mono">
+                    {{task.end | date:'dd/MM/yy'}}
+                  </div>
+                  
+                  <!-- Progreso -->
+                  <div class="col-span-1 text-center">
+                    <span class="text-[10px] font-bold" 
+                          [class.text-green-600]="task.progress === 100"
+                          [class.text-blue-600]="task.progress > 0 && task.progress < 100"
+                          [class.text-gray-400]="task.progress === 0">
+                      {{task.progress}}%
+                    </span>
                   </div>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full mt-2">
-                  <div 
-                    class="h-1.5 rounded-full" 
-                    [style.width]="task.progress + '%'"
-                    [style.background-color]="task.__color"
-                  ></div>
+                
+                <!-- Barra de progreso -->
+                <div class="px-3 pb-2">
+                  <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                    <div 
+                      class="h-full rounded-full transition-all duration-300 relative"
+                      [style.width]="task.progress + '%'"
+                      [style.background-color]="task.__color"
+                    >
+                      <div class="absolute inset-0 bg-white opacity-20"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -147,7 +161,7 @@
 
         <!-- Gantt Chart -->
         <div class="w-3/4">
-          <div #ganttRoot class="w-full bg-white border rounded"></div>
+          <div #ganttRoot class="w-full bg-white border border-gray-500 rounded h-full"></div>
         </div>
       </div>
       
