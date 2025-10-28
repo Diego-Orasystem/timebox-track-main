@@ -230,7 +230,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       endDate.setDate(endDate.getDate() + 1);
       finalEnd = endDate.toISOString().split('T')[0];
     }
-
+    /*validar todos los progresos de los timebox  WARD*/
     const color = this.colorMap[tb.estado] ?? '#3B82F6';
     let progress = 0;
     if (tb.estado === 'Finalizado') {
@@ -262,6 +262,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     return `${tipo} • ${estado}`;
   }
 
+    //*revisar, esto calcula mal WARD*/
   private calculateProgress(tb: Timebox): number {
     const fases = tb.fases || {};
     const fasesCompletadas = Object.values(fases).filter((fase: any) =>

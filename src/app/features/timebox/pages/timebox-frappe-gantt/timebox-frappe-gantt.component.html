@@ -82,7 +82,7 @@
         <!-- Lista de Tareas estilo MS Project -->
         <div class="w-1/4">
           <!-- Cabecera del listado -->
-          <div class="bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-300 rounded-t-sm mt-2.5">
+          <div class="bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-300 rounded-t-sm pt-3">
             <div class="px-4 py-2.5 border-b border-gray-300">
               <h2 class="text-xs font-bold text-gray-700 uppercase tracking-wide">
                 {{ selectedProjectName() }}
@@ -144,7 +144,7 @@
                 
                 <!-- Barra de progreso -->
                 <div class="px-3 pb-2">
-                  <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                  <div class="w-full bg-gray-200 rounded-full h-1 overflow-hidden">
                     <div 
                       class="h-full rounded-full transition-all duration-300 relative"
                       [style.width]="task.progress + '%'"
@@ -161,7 +161,7 @@
 
         <!-- Gantt Chart -->
         <div class="w-3/4">
-          <div #ganttRoot class="w-full bg-white border border-gray-500 rounded h-full"></div>
+          <div #ganttRoot class="w-full bg-white border border-gray-300 rounded h-full"></div>
         </div>
       </div>
       
