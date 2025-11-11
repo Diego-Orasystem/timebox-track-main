@@ -9,7 +9,7 @@ import {
   signal,
   computed,
   effect,
-  ViewEncapsulation
+  ViewEncapsulation,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,12 +29,14 @@ import { ModalCreateComponent } from '../../components/modal-create-timebox/moda
   styleUrls: ['./timebox-frappe-gantt.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDestroy {
+export class TimeboxFrappeGanttComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @Input() colorMap: { [k: string]: string } = {
     'En Definición': '#9CA3AF',
-    'Disponible': '#10B981',
+    Disponible: '#10B981',
     'En Ejecución': '#3B82F6',
-    'Finalizado': '#6B7280'
+    Finalizado: '#6B7280',
   };
   // Variables para proyectos
   projects$: Observable<Project[]>;
@@ -55,18 +57,19 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   ganttTasks = computed(() => {
     const timeboxesList = this.timeboxes();
     return timeboxesList
-      .map(tb => this.timeboxToGanttTask(tb))
-      .filter(t => !!t.start && !!t.end);
+      .map((tb) => this.timeboxToGanttTask(tb))
+      .filter((t) => !!t.start && !!t.end);
   });
 
   viewModes = [
     { value: 'Day', label: 'Día' },
     { value: 'Week', label: 'Semana' },
     { value: 'Month', label: 'Mes' },
-    { value: 'Year', label: 'Año' }
+    { value: 'Year', label: 'Año' },
   ];
 
-  @ViewChild('ganttRoot', { static: false }) ganttRoot!: ElementRef<HTMLDivElement>;
+  @ViewChild('ganttRoot', { static: false })
+  ganttRoot!: ElementRef<HTMLDivElement>;
 
   private ganttInstance: any = null;
   private destroyed$ = new Subject<void>();
@@ -90,8 +93,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     this.projects$ = this.projectService.getProjects();
   }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   ngAfterViewInit(): void {
     this.viewReady.set(true);
@@ -107,12 +109,16 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     console.log('Proyecto seleccionado:', newProjectId);
     this.selectedProjectId = newProjectId;
     //cambio de nombre para el proyecto
-    this.projects$.pipe(
-      map((projects: Project[]) => projects.find(p => p.id === this.selectedProjectId)?.nombre || '')
-    ).subscribe(projectName => {
-      this.selectedProjectName.set(projectName);
-    });
-
+    this.projects$
+      .pipe(
+        map(
+          (projects: Project[]) =>
+            projects.find((p) => p.id === this.selectedProjectId)?.nombre || ''
+        )
+      )
+      .subscribe((projectName) => {
+        this.selectedProjectName.set(projectName);
+      });
 
     this.disabledButton = this.selectedProjectId != '' ? false : true;
     if (!newProjectId) {
@@ -121,9 +127,10 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       return;
     }
 
-    this.projectService.getTimeboxesByProjectId(newProjectId)
+    this.projectService
+      .getTimeboxesByProjectId(newProjectId)
       .pipe(takeUntil(this.destroyed$))
-      .subscribe(timeboxes => {
+      .subscribe((timeboxes) => {
         this.timeboxes.set(timeboxes);
       });
   }
@@ -143,7 +150,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     const el = this.ganttRoot.nativeElement;
     el.innerHTML = '';
     //console.log('Tareas antes del sort:', tasks);
-    /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/ 
+    /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
     //ordernar las task por fecha de creación descendente
     tasks.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
@@ -159,15 +166,16 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
         bar_corner_radius: 3,
         padding: 15,
         container_height: 650,
-        popup_on: 'hover', 
+        popup_on: 'hover',
         readonly: true,
         language: 'es',
         on_click: (task: any) => this.onTaskClick(task),
-        on_date_change: (task: any, start: Date, end: Date) => this.onTaskDateChange(task, start, end),
-        on_progress_change: (task: any, progress: number) => void(0),
+        on_date_change: (task: any, start: Date, end: Date) =>
+          this.onTaskDateChange(task, start, end),
+        on_progress_change: (task: any, progress: number) => void 0,
       };
 
-      /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/ 
+      /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
       /*Quitar botón Today*/
       this.ganttInstance = new Gantt(el, tasks, ganttOptions);
       const todayBtn = el.querySelector('.today-button');
@@ -185,7 +193,6 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
           (ganttContainer as HTMLElement).style.height = '100%';
         }
       }, 50);
-
     } catch (error) {
       console.error('Error:', error);
     }
@@ -203,7 +210,8 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private onTaskClick(task: any) {
-    this.selectedTimebox = this.timeboxes().find(tb => tb.id === task.id) || {} as Timebox;
+    this.selectedTimebox =
+      this.timeboxes().find((tb) => tb.id === task.id) || ({} as Timebox);
     this.modalMode = 'edit';
     this.openModal();
   }
@@ -234,7 +242,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     const color = this.colorMap[tb.estado] ?? '#3B82F6';
     let progress = 0;
     console.log(tb.estado);
-    switch(tb.estado) {
+    switch (tb.estado) {
       case 'En Definición':
         progress = 0;
         break;
@@ -254,18 +262,18 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       progress,
       custom_class: `tb-${tb.id.replace(/[^a-zA-Z0-9_-]/g, '_')}`,
       __color: color,
-      dependencies: '', 
-      createdAt: tb.created_at
+      dependencies: '',
+      createdAt: tb.created_at,
     };
   }
 
   private buildTaskName(tb: Timebox): string {
     const tipo = tb.fases.planning?.nombre || 'Timebox';
     const estado = tb.estado || '';
-    return `${tipo} • ${estado}`;
+    return `${tipo}`;
   }
 
-    //*revisar, esto calcula mal WARD*/
+  //*revisar, esto calcula mal WARD*/
   private calculateProgress(tb: Timebox): number {
     let total = 0;
     total += tb.fases.planning?.completada ? 1 : 0;
@@ -276,7 +284,10 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     return Math.round((total / 5) * 100);
   }
 
-  private extractStartEndFromTimebox(tb: Timebox): { start?: string; end?: string } {
+  private extractStartEndFromTimebox(tb: Timebox): {
+    start?: string;
+    end?: string;
+  } {
     // Priorizar planning si existe
     const planning = tb.fases?.planning;
 
@@ -284,17 +295,20 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       //console.log('Planning encontrado para timebox:', tb.id, planning);
 
       // Usar fechaInicio o fecha_inicio
-      const fechaInicio = new Date(planning.fechaInicio) || planning.fecha_inicio;
+      const fechaInicio =
+        new Date(planning.fechaInicio) || planning.fecha_inicio;
       // fechaFase podría ser la fecha de fin, o usar fechaCompletado
-      const semanas  = this.getSemanasEsfuerzo(planning.esfuerzo);
+      const semanas = this.getSemanasEsfuerzo(planning.esfuerzo);
 
-       /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
-       /*
+      /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
+      /*
           acá en vez de tomar la fecha fin que trae el planning, se calcula 
           obteniendo las semanas de esfuerzo y se suman a la fecha inicio
        */
       // sumar semaas a la fecha inicio
-      const fechaFin = new Date(fechaInicio).setDate(new Date(fechaInicio).getDate() + (semanas * 7));
+      const fechaFin = new Date(fechaInicio).setDate(
+        new Date(fechaInicio).getDate() + semanas * 7
+      );
 
       if (fechaInicio) {
         const startDate = new Date(fechaInicio);
@@ -330,10 +344,20 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     Object.values(fases).forEach((fase: any) => {
       if (!fase || fase === planning) return; // Saltar planning que ya se revisó
 
-      const possibleStartKeys = ['start', 'fechaInicio', 'fecha_inicio', 'fecha'];
-      const possibleEndKeys = ['end', 'fechaFin', 'fecha_fin', 'fechaCompletado'];
+      const possibleStartKeys = [
+        'start',
+        'fechaInicio',
+        'fecha_inicio',
+        'fecha',
+      ];
+      const possibleEndKeys = [
+        'end',
+        'fechaFin',
+        'fecha_fin',
+        'fechaCompletado',
+      ];
 
-      possibleStartKeys.forEach(key => {
+      possibleStartKeys.forEach((key) => {
         const dateValue = fase[key];
         if (dateValue) {
           const d = new Date(dateValue);
@@ -341,7 +365,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
         }
       });
 
-      possibleEndKeys.forEach(key => {
+      possibleEndKeys.forEach((key) => {
         const dateValue = fase[key];
         if (dateValue) {
           const d = new Date(dateValue);
@@ -353,7 +377,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     // Extraer fecha de entrega
     if (tb.entrega) {
       const entregaKeys = ['start', 'fecha', 'fechaEntrega', 'fecha_entrega'];
-      entregaKeys.forEach(key => {
+      entregaKeys.forEach((key) => {
         const dateValue = (tb.entrega as any)?.[key];
         if (dateValue) {
           const d = new Date(dateValue);
@@ -363,32 +387,36 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     }
 
     if (dates.length === 0) {
-      console.warn(`❌ Timebox ${tb.id} no tiene fechas válidas en ninguna fuente`);
+      console.warn(
+        `❌ Timebox ${tb.id} no tiene fechas válidas en ninguna fuente`
+      );
       return { start: undefined, end: undefined };
     }
 
-    const minTime = Math.min(...dates.map(d => d.getTime()));
-    const maxTime = Math.max(...dates.map(d => d.getTime()));
+    const minTime = Math.min(...dates.map((d) => d.getTime()));
+    const maxTime = Math.max(...dates.map((d) => d.getTime()));
 
     const start = new Date(minTime).toISOString().split('T')[0];
     const end = new Date(maxTime).toISOString().split('T')[0];
 
-    console.log(`📅 Fechas extraídas del fallback para ${tb.id}: ${start} - ${end}`);
+    console.log(
+      `📅 Fechas extraídas del fallback para ${tb.id}: ${start} - ${end}`
+    );
 
     return { start, end };
   }
 
   /**/
-  private getSemanasEsfuerzo(option : string) : number {
-      switch(option) {
-        case '1 sem':
-          return 1;
-        case '2 sem':
-          return 2;
-        case '3 sem':
-          return 3;
-        default:
-          return 1;// por defecto una semana que es lo que tiene como escogido el formulario de ingreso en el time box
+  private getSemanasEsfuerzo(option: string): number {
+    switch (option) {
+      case '1 sem':
+        return 1;
+      case '2 sem':
+        return 2;
+      case '3 sem':
+        return 3;
+      default:
+        return 1; // por defecto una semana que es lo que tiene como escogido el formulario de ingreso en el time box
     }
   }
 
@@ -419,7 +447,9 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   openModal(): void {
     this.modalMode = this.modalMode;
     this.showModal = true;
-    this.selectedTimebox = this.selectedTimebox ? { ...this.selectedTimebox } : {} as Timebox;
+    this.selectedTimebox = this.selectedTimebox
+      ? { ...this.selectedTimebox }
+      : ({} as Timebox);
   }
 
   closeModal(): void {
@@ -436,52 +466,51 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
 
     if (timeboxFromModal.id) {
       // Actualizar timebox existente
-      this.projectService.updateTimebox(
-        this.selectedProjectId,
-        timeboxFromModal
-      ).subscribe({
-        next: (resultTimebox: Timebox) => {
-          console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
-          this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir los cambios
-        },
-        error: (error: any) => {
-          console.error('❌ Error actualizando timebox:', error);
-          alert('Error al actualizar el timebox. Inténtalo de nuevo.');
-        }
-      });
+      this.projectService
+        .updateTimebox(this.selectedProjectId, timeboxFromModal)
+        .subscribe({
+          next: (resultTimebox: Timebox) => {
+            console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
+            this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir los cambios
+          },
+          error: (error: any) => {
+            console.error('❌ Error actualizando timebox:', error);
+            alert('Error al actualizar el timebox. Inténtalo de nuevo.');
+          },
+        });
     } else {
       // Crear nuevo timebox
-      this.projectService.createTimebox(
-        this.selectedProjectId,
-        timeboxFromModal
-      ).subscribe({
-        next: (resultTimebox: Timebox) => {
-          console.log('✅ Timebox creado exitosamente:', resultTimebox);
-          this.selectedTimebox = { ...resultTimebox };
-          this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir el nuevo
-        },
-        error: (error: any) => {
-          console.error('Error creando timebox:', error);
-          alert('Error al crear el timebox. Inténtalo de nuevo.');
-        }
-      });
+      this.projectService
+        .createTimebox(this.selectedProjectId, timeboxFromModal)
+        .subscribe({
+          next: (resultTimebox: Timebox) => {
+            console.log('✅ Timebox creado exitosamente:', resultTimebox);
+            this.selectedTimebox = { ...resultTimebox };
+            this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir el nuevo
+          },
+          error: (error: any) => {
+            console.error('Error creando timebox:', error);
+            alert('Error al crear el timebox. Inténtalo de nuevo.');
+          },
+        });
     }
   }
 
   highlightTask(task: any) {
     this.selectedTaskId = task.id;
-    
+
     // Remover highlight previo
     const ganttContainer = this.ganttRoot.nativeElement;
     ganttContainer.querySelectorAll('.gantt-highlight').forEach((el: any) => {
       el.classList.remove('gantt-highlight');
     });
-    
+
     // Agregar highlight a la barra correspondiente
-    const taskBar = ganttContainer.querySelector(`[data-id="${task.id}"]`) ||
-                    ganttContainer.querySelector(`.bar-wrapper[task-id="${task.id}"]`) ||
-                    ganttContainer.querySelector(`#task-${task.id}`);
-    
+    const taskBar =
+      ganttContainer.querySelector(`[data-id="${task.id}"]`) ||
+      ganttContainer.querySelector(`.bar-wrapper[task-id="${task.id}"]`) ||
+      ganttContainer.querySelector(`#task-${task.id}`);
+
     if (taskBar) {
       taskBar.classList.add('gantt-highlight');
       taskBar.scrollIntoView({ behavior: 'smooth', block: 'center' });
