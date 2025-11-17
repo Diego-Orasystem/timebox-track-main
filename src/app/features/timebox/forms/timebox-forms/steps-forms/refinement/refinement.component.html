@@ -35,11 +35,13 @@
   </div>
   <div class="flex flex-col w-full gap-6">
     <div>
-      <h2 class="text-xl font-bold">Fase de Refinement</h2>
+      <h2 class="text-xl font-bold">
+        Fase de Refinement (Solicitudes y Entrega)
+      </h2>
       <div *ngIf="form.get('completada')?.value">
         <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
         <span class="text-[12px] text-[var(--secondary)] font-semibold">
-          {{ form.get("fechaCompletado")?.value }}
+          {{ getFormattedDate(form.get("fechaFase")?.value) }}
         </span>
       </div>
     </div>
@@ -124,7 +126,7 @@
                   >Fecha de solicitud:
                 </span>
                 <span class="text-[12px] text-[var(--secondary)] font-semibold">
-                  {{ revision.get("fechaSolicitud")?.value }}
+                  {{ getFormattedDate(revision.get("fechaSolicitud")?.value) }}
                 </span>
               </div>
 
@@ -177,7 +179,7 @@
                     Lista de acuerdos
                   </h1>
                   <div
-                    *ngIf="getListaAcuerdosFormArray(i)"
+                    *ngIf="getListaAcuerdosFormArray(i).length > 0"
                     formArrayName="listaAcuerdos"
                     class="flex flex-col items-start text-sm gap-3 bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)]"
                   >
@@ -200,6 +202,7 @@
                         }}</span>
                       </label>
                       <button
+                        *ngIf="getListaAcuerdosFormArray(i).length > 0"
                         (click)="eliminarChecklist(i, j)"
                         class="text-[var(--disabled)] text-sm cursor-pointer hover:text-red-500"
                       >
@@ -209,7 +212,7 @@
                   </div>
                   <div
                     *ngIf="getListaAcuerdosFormArray(i).length == 0"
-                    class="text-[12px]"
+                    class="text-[12px] text-gray-500"
                   >
                     No hay items añadidos.
                   </div>
@@ -286,9 +289,18 @@
           </div>
         </div>
       </form>
-      <div *ngIf="revisiones.length === 0" class="text-[12px] text-gray-500">
-        No hay revisiones solicitadas. Haz clic en "Nueva revisión" para añadir
-        una.
+      <div
+        *ngIf="revisiones.length === 0"
+        class="entrega-section p-4 bg-[var(--backgroundLight)] rounded-md border border-[var(--lines)]"
+      >
+        <div
+          class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
+        >
+          <p>No hay revisiones registradas</p>
+          <p class="mt-2 text-xs">
+            Haz clic en "Nueva revisión" para solicitar una.
+          </p>
+        </div>
       </div>
     </section>
 
@@ -480,10 +492,9 @@
           <div
             class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
           >
-            <p>No hay información de entrega disponible para mostrar.</p>
+            <p>No hay información de entrega disponible para mostrar</p>
             <p class="mt-2 text-xs">
-              Para ver los detalles de la entrega la fase debe ser completada
-              por el responsable.
+              Aún no se ha realizado la entrega del Timebox.
             </p>
           </div>
         </ng-template>
@@ -657,10 +668,9 @@
           <div
             class="info-message text-center py-6 text-sm text-[var(--disabled)] italic border border-dashed border-[var(--lines)] rounded-sm"
           >
-            <p>No hay solicitud de cierre disponible para mostrar.</p>
+            <p>No hay solicitud de cierre disponible para mostrar</p>
             <p class="mt-2 text-xs">
-              El responsable debe adjuntar las evidencias de cierre y luego
-              realizar una solicitud de cierre.
+              Aún no se ha realizado la solicitud de cierre del Timebox.
             </p>
           </div>
         </ng-template>

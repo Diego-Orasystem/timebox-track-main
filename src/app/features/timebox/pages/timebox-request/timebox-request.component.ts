@@ -24,7 +24,7 @@ export interface FlattenedRequest {
   timeboxId: string;
   timeboxName: string;
   timeboxStatus: string;
-  projectId: string;
+  entregableId: string;
   postulacion: Postulacion;
   requestStatus: 'pending' | 'approved' | 'rejected';
 }
@@ -111,7 +111,7 @@ export class TimeboxRequestsComponent implements OnInit {
               timeboxName:
                 timebox.fases?.planning?.nombre || 'Timebox sin nombre',
               timeboxStatus: timebox.estado,
-              projectId: timebox.projectId,
+              entregableId: timebox.entregableId,
               postulacion,
               requestStatus,
             });

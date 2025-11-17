@@ -26,7 +26,7 @@ export interface Timebox {
     fechaPublicacion?: string;
     postulaciones?: Postulacion[];
   };
-  projectId: string;
+  entregableId: string;
   monto?: number;
   estado: 'En Definición' | 'Disponible' | 'En Ejecución' | 'Finalizado';
   

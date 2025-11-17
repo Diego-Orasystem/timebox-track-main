@@ -1,7 +1,15 @@
 /* En tu archivo styles.css o app.component.css */
+/* Aplica color blanco permanente al ícono y texto del link activo */
+.active-link svg,
+.active-link span {
+  color: white !important;
+  stroke: white !important;
+  font-weight: 600;
+}
 
+/* Mantén el color blanco del texto */
 .active-link {
-  background-color: var(--primary) !important; /* Usa tu color primario para el fondo del link activo */
-  color: var(--lightText) !important;       /* Asegura que el texto sea blanco */
-  font-weight: 600 !important;              /* Haz el texto un poco más audaz */
+  background-color: var(--color-gray-800) !important;
+  color: white !important;
+  font-weight: 600 !important;
 }

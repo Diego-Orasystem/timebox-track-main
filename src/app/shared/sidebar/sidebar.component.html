@@ -3,13 +3,13 @@
     class="fixed top-0 left-0 h-full p-4 flex flex-col shadow-xl z-20 transition-all duration-300 ease-in-out transform"
     [ngClass]="{
       'w-[220px]': !isSidebarCollapsed,
-      'w-[75px]': isSidebarCollapsed,
-      'bg-[var(--darkText)]': true,
-      'border-r border-[var(--backgroundActive)]': true
+      'w-[80px]': isSidebarCollapsed,
+      'bg-[white]': true,
+      'border-r border-[var(--lines)]': true
     }"
   >
     <div
-      class="h-[70px] flex items-center justify-center font-bold text-xl text-[var(--lightText)] border-b border-[var(--backgroundActive)] pb-4 mb-6 overflow-hidden whitespace-nowrap"
+      class="h-[70px] flex items-center justify-center font-bold text-xl text-[var(--darkText)] border-b border-slate-100 pb-4 mb-2 overflow-hidden whitespace-nowrap"
     >
       <span
         *ngIf="!isSidebarCollapsed"
@@ -38,15 +38,25 @@
 
         <!-- Botón de Login -->
         <a
-          class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+          class="flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 hover:text-[var(--lightText)] focus:outline-none"
           [routerLink]="'/login'"
           [ngClass]="{
             'justify-center': isSidebarCollapsed,
             'justify-start gap-3': !isSidebarCollapsed
           }"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
+            ></path>
           </svg>
           <span
             class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
@@ -61,15 +71,25 @@
 
         <!-- Botón de Registro -->
         <a
-          class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+          class="flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 hover:text-[var(--lightText)] focus:outline-none"
           [routerLink]="'/register'"
           [ngClass]="{
             'justify-center': isSidebarCollapsed,
             'justify-start gap-3': !isSidebarCollapsed
           }"
         >
-          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+          <svg
+            class="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"
+            ></path>
           </svg>
           <span
             class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
@@ -81,14 +101,12 @@
             Crear Cuenta
           </span>
         </a>
-
-        <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
       </div>
 
       <!-- Menú principal solo para usuarios autenticados -->
       <div *ngIf="isAuthenticated">
         <h1
-          class="text-xs uppercase font-semibold text-[var(--lightText)] mb-3 tracking-wider px-2 pt-2 transition-opacity duration-200"
+          class="text-xs uppercase font-semibold text-[var(--text-light)] mb-3 tracking-wider px-2 transition-opacity duration-200"
           [ngClass]="{
             'opacity-100': !isSidebarCollapsed,
             'opacity-0 hidden': isSidebarCollapsed
@@ -98,17 +116,8 @@
         </h1>
 
         <div class="flex flex-col gap-1 text-[var(--lightText)]">
-          <h2
-            class="text-xs uppercase font-medium text-[var(--text-light)] px-2 pb-1 transition-opacity duration-200"
-            [ngClass]="{
-              'opacity-100': !isSidebarCollapsed,
-              'opacity-0 hidden': isSidebarCollapsed
-            }"
-          >
-            General
-          </h2>
           <a
-            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'home'"
             routerLinkActive="active-link"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -117,31 +126,30 @@
               'justify-start gap-3': !isSidebarCollapsed
             }"
           >
+            <!-- Ícono -->
             <svg
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
+              <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M11.3103 1.77586C11.6966 1.40805 12.3034 1.40805 12.6897 1.77586L20.6897 9.39491L23.1897 11.7759C23.5896 12.1567 23.605 12.7897 23.2241 13.1897C22.8433 13.5896 22.2103 13.605 21.8103 13.2241L21 12.4524V20C21 21.1046 20.1046 22 19 22H14H10H5C3.89543 22 3 21.1046 3 20V12.4524L2.18966 13.2241C1.78972 13.605 1.15675 13.5896 0.775862 13.1897C0.394976 12.7897 0.410414 12.7897 0.810345 11.7759L3.31034 9.39491L11.3103 1.77586ZM5 10.5476V20H9V15C9 13.3431 10.3431 12 12 12C13.6569 12 15 13.3431 15 15V20H19V10.5476L12 3.88095L5 10.5476ZM13 20V15C13 14.4477 12.5523 14 12 14C11.4477 14 11 14.4477 11 15V20H13Z"
-                  fill="#ffffff"
-                ></path>
-              </g>
+                d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"
+              />
             </svg>
+
+            <!-- Texto -->
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -150,9 +158,12 @@
           </a>
         </div>
 
-        <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
+        <div class="w-full h-px bg-slate-50 my-2"></div>
 
-        <div *ngIf="hasPermission('timebox_management')" class="flex flex-col gap-1 text-[var(--lightText)]">
+        <div
+          *ngIf="hasPermission('timebox_management')"
+          class="flex flex-col gap-1 text-[var(--lightText)]"
+        >
           <h2
             class="text-xs uppercase font-medium text-[var(--text-light)] px-2 pb-1 transition-opacity duration-200"
             [ngClass]="{
@@ -163,7 +174,7 @@
             Timebox
           </h2>
           <a
-            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'/timebox-planning'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -172,22 +183,27 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              stroke-width="1.5"
               stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-              ></path>
+                d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -195,7 +211,7 @@
             </span>
           </a>
           <a
-            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'/timebox-maintainer'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -204,28 +220,32 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              stroke-width="1.5"
               stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-              ></path>
+                d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z"
+              />
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              ></path>
+                d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+              />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -233,7 +253,7 @@
             </span>
           </a>
           <a
-            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'/timebox-requests'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -242,22 +262,27 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              stroke-width="1.5"
               stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-              ></path>
+                d="M11.35 3.836c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m8.9-4.414c.376.023.75.05 1.124.08 1.131.094 1.976 1.057 1.976 2.192V16.5A2.25 2.25 0 0 1 18 18.75h-2.25m-7.5-10.5H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V18.75m-7.5-10.5h6.375c.621 0 1.125.504 1.125 1.125v9.375m-8.25-3 1.5 1.5 3-3.75"
+              />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -265,7 +290,7 @@
             </span>
           </a>
           <a
-            class="flex items-center p-2 rounded-md transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'/timebox-frappe-gantt'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -274,29 +299,27 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M7 13h8M7 17h4"
+                d="M6.75 2.994v2.25m10.5-2.25v2.25m-14.252 13.5V7.491a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v11.251m-18 0a2.25 2.25 0 0 0 2.25 2.25h13.5a2.25 2.25 0 0 0 2.25-2.25m-18 0v-7.5a2.25 2.25 0 0 1 2.25-2.25h13.5a2.25 2.25 0 0 1 2.25 2.25v7.5m-6.75-6h2.25m-9 2.25h4.5m.002-2.25h.005v.006H12v-.006Zm-.001 4.5h.006v.006h-.006v-.005Zm-2.25.001h.005v.006H9.75v-.006Zm-2.25 0h.005v.005h-.006v-.005Zm6.75-2.247h.005v.005h-.005v-.005Zm0 2.247h.006v.006h-.006v-.006Zm2.25-2.248h.006V15H16.5v-.005Z"
               />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -305,9 +328,12 @@
           </a>
         </div>
 
-        <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
+        <div class="w-full h-px bg-slate-50 my-2"></div>
 
-        <div *ngIf="hasPermission('task_management')" class="flex flex-col gap-1">
+        <div
+          *ngIf="hasPermission('task_management')"
+          class="flex flex-col gap-1"
+        >
           <h2
             class="text-xs uppercase font-medium text-[var(--text-light)] px-2 pb-1 transition-opacity duration-200"
             [ngClass]="{
@@ -318,7 +344,7 @@
             Inbox
           </h2>
           <a
-            class="flex items-center p-2 rounded-md text-[var(--lightText)] transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'task-inbox'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -327,22 +353,27 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
+              xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
+              stroke-width="1.5"
               stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-width="2"
-                d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
-              ></path>
+                d="M9 3.75H6.912a2.25 2.25 0 0 0-2.15 1.588L2.35 13.177a2.25 2.25 0 0 0-.1.661V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18v-4.162c0-.224-.034-.447-.1-.661L19.24 5.338a2.25 2.25 0 0 0-2.15-1.588H15M2.25 13.5h3.86a2.25 2.25 0 0 1 2.012 1.244l.256.512a2.25 2.25 0 0 0 2.013 1.244h3.218a2.25 2.25 0 0 0 2.013-1.244l.256-.512a2.25 2.25 0 0 1 2.013-1.244h3.859M12 3v8.25m0 0-3-3m3 3 3-3"
+              />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -351,7 +382,7 @@
           </a>
         </div>
 
-        <div class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
+        <div class="w-full h-px bg-slate-50 my-2"></div>
 
         <div class="flex flex-col gap-1">
           <h2
@@ -364,7 +395,7 @@
             Finanzas
           </h2>
           <a
-            class="flex items-center p-2 rounded-md text-[var(--lightText)] transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'mis-pagos'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -373,45 +404,27 @@
             }"
           >
             <svg
-              class="h-5 w-5 flex-shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
+              <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="#ffffff"
-                  stroke-width="2"
-                ></circle>
-                <path
-                  d="M15 9.94728C14.5 9.3 13.8 8.5 12 8.5C10.2 8.5 9 9.51393 9 9.94728C9 10.3806 9.06786 10.9277 10 11.5C10.7522 11.9618 12.6684 12.0439 13.5 12.5C14.679 13.1467 14.8497 13.8202 14.8497 14.0522C14.8497 14.6837 13.4175 15.4852 12 15.5C10.536 15.5153 9.5 14.7 9 14.0522"
-                  stroke="#ffffff"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
-                <path
-                  d="M12 7V17"
-                  stroke="#ffffff"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                ></path>
-              </g>
+                d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+              />
             </svg>
+
             <span
-              class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
               [ngClass]="{
-                'opacity-100 max-w-full': !isSidebarCollapsed,
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
                 'opacity-0 max-w-0': isSidebarCollapsed
               }"
             >
@@ -419,7 +432,7 @@
             </span>
           </a>
           <a
-            class="flex items-center p-2 rounded-md text-[var(--lightText)] transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
             [routerLink]="'ordenes-pago'"
             routerLinkActive="active-link"
             [ngClass]="{
@@ -428,110 +441,138 @@
             }"
           >
             <svg
-              class="h-5 w-5"
-              viewBox="0 0 24 24"
-              fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              stroke="#ffffff"
-              stroke-width="0.192"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
             >
-              <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-              <g
-                id="SVGRepo_tracerCarrier"
+              <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
-              ></g>
-              <g id="SVGRepo_iconCarrier">
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M7.09878 1.25004C7.14683 1.25006 7.19559 1.25008 7.24508 1.25008H16.7551C16.8045 1.25008 16.8533 1.25006 16.9014 1.25004C17.9181 1.2496 18.6178 1.24929 19.2072 1.45435C20.3201 1.84161 21.1842 2.73726 21.5547 3.86559L20.8421 4.09954L21.5547 3.86559C21.7507 4.46271 21.7505 5.17254 21.7501 6.22655C21.7501 6.27372 21.7501 6.32158 21.7501 6.37014V20.3743C21.7501 21.8395 20.0231 22.7118 18.8857 21.671C18.8062 21.5983 18.694 21.5983 18.6145 21.671L18.1314 22.1131C17.2032 22.9624 15.7969 22.9624 14.8688 22.1131C14.5138 21.7882 13.9864 21.7882 13.6314 22.1131C12.7032 22.9624 11.2969 22.9624 10.3688 22.1131C10.0138 21.7882 9.48637 21.7882 9.13138 22.1131C8.20319 22.9624 6.79694 22.9624 5.86875 22.1131L5.38566 21.671C5.30618 21.5983 5.19395 21.5983 5.11448 21.671C3.97705 22.7118 2.25007 21.8395 2.25007 20.3743V6.37014C2.25007 6.32158 2.25005 6.27372 2.25003 6.22655C2.24965 5.17255 2.24939 4.46271 2.44545 3.86559C2.81591 2.73726 3.68002 1.84161 4.79298 1.45435C5.3823 1.24929 6.08203 1.2496 7.09878 1.25004ZM7.24508 2.75008C6.024 2.75008 5.6034 2.76057 5.28593 2.87103C4.62655 3.10047 4.09919 3.63728 3.8706 4.3335C3.75951 4.67183 3.75007 5.11796 3.75007 6.37014V20.3743C3.75007 20.4933 3.80999 20.5661 3.88517 20.6009C3.92434 20.619 3.96264 20.6237 3.99456 20.6194C4.0227 20.6156 4.05911 20.6035 4.10185 20.5644C4.75453 19.9671 5.74561 19.9671 6.39828 20.5644L6.88138 21.0065C7.23637 21.3313 7.76377 21.3313 8.11875 21.0065C9.04694 20.1571 10.4532 20.1571 11.3814 21.0065C11.7364 21.3313 12.2638 21.3313 12.6188 21.0065C13.5469 20.1571 14.9532 20.1571 15.8814 21.0065C16.2364 21.3313 16.7638 21.3313 17.1188 21.0065L17.6019 20.5644C18.2545 19.9671 19.2456 19.9671 19.8983 20.5644C19.941 20.6035 19.9774 20.6156 20.0056 20.6194C20.0375 20.6237 20.0758 20.619 20.115 20.6009C20.1901 20.5661 20.2501 20.4934 20.2501 20.3743V6.37014C20.2501 5.11797 20.2406 4.67183 20.1295 4.3335C19.9009 3.63728 19.3736 3.10047 18.7142 2.87103C18.3967 2.76057 17.9761 2.75008 16.7551 2.75008H7.24508ZM6.25007 7.50008C6.25007 7.08587 6.58585 6.75008 7.00007 6.75008H7.50007C7.91428 6.75008 8.25007 7.08587 8.25007 7.50008C8.25007 7.9143 7.91428 8.25008 7.50007 8.25008H7.00007C6.58585 8.25008 6.25007 7.9143 6.25007 7.50008ZM9.75007 7.50008C9.75007 7.08587 10.0859 6.75008 10.5001 6.75008H17.0001C17.4143 6.75008 17.7501 7.08587 17.7501 7.50008C17.7501 7.9143 17.4143 8.25008 17.0001 8.25008H10.5001C10.0859 8.25008 9.75007 7.9143 9.75007 7.50008ZM6.25007 11.0001C6.25007 10.5859 6.58585 10.2501 7.00007 10.2501H7.50007C7.91428 10.2501 8.25007 10.5859 8.25007 11.0001C8.25007 11.4143 7.91428 11.7501 7.50007 11.7501H7.00007C6.58585 11.7501 6.25007 11.4143 6.25007 11.0001ZM9.75007 11.0001C9.75007 10.5859 10.0859 10.2501 10.5001 10.2501H17.0001C17.4143 10.2501 17.7501 10.5859 17.7501 11.0001C17.7501 11.4143 17.4143 11.7501 17.0001 11.7501H10.5001C10.0859 11.7501 9.75007 11.4143 9.75007 11.0001ZM6.25007 14.5001C6.25007 14.0859 6.58585 13.7501 7.00007 13.7501H7.50007C7.91428 13.7501 8.25007 14.0859 8.25007 14.5001C8.25007 14.9143 7.91428 15.2501 7.50007 15.2501H7.00007C6.58585 15.2501 6.25007 14.9143 6.25007 14.5001ZM9.75007 14.5001C9.75007 14.0859 10.0859 13.7501 10.5001 13.7501H17.0001C17.4143 13.7501 17.7501 14.0859 17.7501 14.5001C17.7501 14.9143 17.4143 15.2501 17.0001 15.2501H10.5001C10.0859 15.2501 9.75007 14.9143 9.75007 14.5001Z"
-                   fill="#ffffff"
-                 ></path>
-               </g>
-             </svg>
-             <span
-               class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
-               [ngClass]="{
-                 'opacity-100 max-w-full': !isSidebarCollapsed,
-                 'opacity-0 max-w-0': isSidebarCollapsed
-               }"
-             >
-               Órdenes de Pago
-             </span>
-           </a>
+                d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m3.75 9v7.5m2.25-6.466a9.016 9.016 0 0 0-3.461-.203c-.536.072-.974.478-1.021 1.017a4.559 4.559 0 0 0-.018.402c0 .464.336.844.775.994l2.95 1.012c.44.15.775.53.775.994 0 .136-.006.27-.018.402-.047.539-.485.945-1.021 1.017a9.077 9.077 0 0 1-3.461-.203M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
+              />
+            </svg>
 
-           <!-- Gestor de Roles - Solo para usuarios con permisos de gestión de roles -->
-           <a
-             *ngIf="hasPermission('role_management')"
-             class="flex items-center p-2 rounded-md text-[var(--lightText)] transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
-             [routerLink]="'gestor-roles'"
-             routerLinkActive="active-link"
-             [ngClass]="{
-               'justify-center': isSidebarCollapsed,
-               'justify-start gap-3': !isSidebarCollapsed
-             }"
-           >
-             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
-             </svg>
-             <span
-               class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
-               [ngClass]="{
-                 'opacity-100 max-w-full': !isSidebarCollapsed,
-                 'opacity-0 max-w-0': isSidebarCollapsed
-               }"
-             >
-               Gestor de Roles
-             </span>
-           </a>
-         </div>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
+              [ngClass]="{
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
+                'opacity-0 max-w-0': isSidebarCollapsed
+              }"
+            >
+              Órdenes de Pago
+            </span>
+          </a>
 
+          <!-- Gestor de Roles - Solo para usuarios con permisos de gestión de roles -->
+          <a
+            *ngIf="hasPermission('role_management')"
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
+            [routerLink]="'gestor-roles'"
+            routerLinkActive="active-link"
+            [ngClass]="{
+              'justify-center': isSidebarCollapsed,
+              'justify-start gap-3': !isSidebarCollapsed
+            }"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
+              />
+            </svg>
 
+            <span
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
+              [ngClass]="{
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
+                'opacity-0 max-w-0': isSidebarCollapsed
+              }"
+            >
+              Gestor de Roles
+            </span>
+          </a>
+        </div>
 
-         <!-- Sección de Administración - Solo para administradores -->
-         <div *ngIf="hasPermission('user_management')" class="w-full h-px bg-[var(--backgroundActive)] my-2"></div>
+        <!-- Sección de Administración - Solo para administradores -->
+        <div
+          *ngIf="hasPermission('user_management')"
+          class="w-full h-px bg-slate-50 my-2"
+        ></div>
 
-         <div *ngIf="hasPermission('user_management')" class="flex flex-col gap-1">
-           <h2
-             class="text-xs uppercase font-medium text-[var(--text-light)] px-2 pb-1 transition-opacity duration-200"
-             [ngClass]="{
-               'opacity-100': !isSidebarCollapsed,
-               'opacity-0 hidden': isSidebarCollapsed
-             }"
-           >
-             Administración
-           </h2>
-           <a
-             class="flex items-center p-2 rounded-md text-[var(--lightText)] transition-all duration-200 ease-in-out hover:bg-[var(--primary)] hover:text-[var(--lightText)] focus:outline-none"
-             [routerLink]="'admin/users'"
-             routerLinkActive="active-link"
-             [ngClass]="{
-               'justify-center': isSidebarCollapsed,
-               'justify-start gap-3': !isSidebarCollapsed
-             }"
-           >
-             <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
-             </svg>
-             <span
-               class="text-sm font-medium whitespace-nowrap overflow-hidden transition-opacity duration-200"
-               [ngClass]="{
-                 'opacity-100 max-w-full': !isSidebarCollapsed,
-                 'opacity-0 max-w-0': isSidebarCollapsed
-               }"
-             >
-               Gestión de Usuarios
-             </span>
-           </a>
-         </div>
+        <div
+          *ngIf="hasPermission('user_management')"
+          class="flex flex-col gap-1"
+        >
+          <h2
+            class="text-xs uppercase font-medium text-[var(--text-light)] px-2 pb-1 transition-opacity duration-200"
+            [ngClass]="{
+              'opacity-100': !isSidebarCollapsed,
+              'opacity-0 hidden': isSidebarCollapsed
+            }"
+          >
+            Administración
+          </h2>
+          <a
+            class="group flex items-center p-2 rounded-sm transition-all duration-200 ease-in-out hover:bg-gray-800 focus:outline-none"
+            [routerLink]="'admin/users'"
+            routerLinkActive="active-link"
+            [ngClass]="{
+              'justify-center': isSidebarCollapsed,
+              'justify-start gap-3': !isSidebarCollapsed
+            }"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke-width="1.5"
+              stroke="currentColor"
+              class="size-6 transition-colors duration-200"
+              [ngClass]="{
+                'text-[var(--text-medium)] group-hover:text-white': true
+              }"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"
+              />
+            </svg>
+            <span
+              class="text-xs font-medium whitespace-nowrap text-[var(--text-medium)] group-hover:text-white overflow-hidden transition-all duration-200"
+              [ngClass]="{
+                ' opacity-100 max-w-full': !isSidebarCollapsed,
+                'opacity-0 max-w-0': isSidebarCollapsed
+              }"
+            >
+              Gestión de Usuarios
+            </span>
+          </a>
+        </div>
       </div>
     </nav>
 
-    <div class="mt-auto pt-6 border-t border-[var(--backgroundActive)]">
+    <div class="mt-auto pt-6">
       <button
         (click)="toggleSidebar()"
-        class="w-full flex items-center justify-center p-2 rounded-md text-[var(--lightText)] bg-[var(--accent)] transition-all duration-200 ease-in-out focus:outline-none cursor-pointer"
+        class="w-full flex items-center justify-center p-2 rounded-sm text-[var(--lightText)] bg-[var(--primary)] transition-all duration-200 ease-in-out focus:outline-none cursor-pointer"
         aria-label="Toggle sidebar"
       >
         <svg

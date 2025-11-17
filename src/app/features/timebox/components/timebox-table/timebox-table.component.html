@@ -20,10 +20,10 @@
           [class.selected]="timebox.id === selectedTimebox.id"
         >
           <td>
-            {{ timebox.fases.planning?.nombre }}
+            {{ timebox.entregableId }}
           </td>
           <td>
-            {{ timebox.tipoTimebox }}
+            {{ timebox.fases.planning?.nombre }}
           </td>
           <td>
             {{ timebox.fases.planning?.esfuerzo || "Sin definir" }}

@@ -13,6 +13,13 @@ export class StepperComponent {
 
   @Input() steps: { name: string; completed: boolean }[] = [];
 
+  // 👉 Paso pendiente más próximo (el primero que NO está completado)
+  get firstPendingStepIndex(): number {
+    const index = this.steps.findIndex((step) => !step.completed);
+    // Si todos los pasos están completados, devolvemos el último
+    return index === -1 ? this.steps.length - 1 : index;
+  }
+
   onStepClick(index: number) {
     if (this.puedeAvanzarA && this.puedeAvanzarA(index)) {
       this.stepChange.emit(index);

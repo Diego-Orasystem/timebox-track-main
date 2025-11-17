@@ -486,7 +486,7 @@ export class InboxComponent implements OnInit {
     }
 
     // Actualizar el timebox en el servicio de persistencia
-    this.projectService.updateTimebox(tbx.projectId, tbx).subscribe({
+    this.projectService.updateTimebox(tbx.entregableId, tbx).subscribe({
       next: (updatedTimebox: Timebox) => {
         this.timeboxSeleccionado = { ...updatedTimebox }; // Actualizar el seleccionado para la UI
         this.loadTimeboxes(); // Recargar la lista para reflejar los cambios en los filtros
@@ -547,7 +547,7 @@ export class InboxComponent implements OnInit {
       responsable: this.usuario,
     };
 
-    this.projectService.updateTimebox(tbx.projectId, {
+    this.projectService.updateTimebox(tbx.entregableId, {
       ...tbx,
       entrega: entrega,
     }).subscribe({
@@ -609,7 +609,7 @@ export class InboxComponent implements OnInit {
       completada: false,
     };
 
-    this.projectService.updateTimebox(tbx.projectId, {
+    this.projectService.updateTimebox(tbx.entregableId, {
       ...tbx,
       fases: {
         ...tbx.fases,
@@ -772,7 +772,7 @@ export class InboxComponent implements OnInit {
       : [];
     currentRevisions.push(solicitud);
 
-    this.projectService.updateTimebox(tbx.projectId, {
+    this.projectService.updateTimebox(tbx.entregableId, {
       ...tbx,
       fases: {
         ...tbx.fases,
