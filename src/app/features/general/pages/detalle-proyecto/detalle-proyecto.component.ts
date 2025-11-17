@@ -3,9 +3,9 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import {
-  Aplicacion,
-  Project,
-} from '../../../../shared/interfaces/project.interface';
+  Entregable,
+  Product,
+} from '../../../../shared/interfaces/product.interface';
 import { MOCK_PROJECTS } from '../../../../core/data/mock-projects';
 
 @Component({
@@ -15,52 +15,36 @@ import { MOCK_PROJECTS } from '../../../../core/data/mock-projects';
   standalone: true,
 })
 export class DetalleProyectoComponent {
-  nombreProyecto = '';
-  proyecto: Project = {} as Project;
-  projects: Project[] = [...MOCK_PROJECTS];
+  nombreProducto = '';
+  producto: Product = {} as Product;
+  productos: Product[] = [...MOCK_PROJECTS];
   busqueda: string = '';
-  apps: Aplicacion[] = [] as Aplicacion[];
+  entregables: Entregable[] = [] as Entregable[];
 
   constructor(private route: ActivatedRoute) {}
 
   ngOnInit() {
-    this.nombreProyecto =
-      this.route.snapshot.paramMap.get('nombreProyecto') ?? '';
+    this.nombreProducto =
+      this.route.snapshot.paramMap.get('nombreProducto') ?? '';
     // Aquí puedes obtener el proyecto desde un servicio o array mock:
 
-    this.proyecto = this.obtenerProyecto(this.nombreProyecto);
-    this.apps = this.proyecto.apps || [];
+    this.producto = this.obtenerProyecto(this.nombreProducto);
+    this.entregables = [];
   }
 
-  get appsFiltradas(): Aplicacion[] {
-    if (!this.busqueda.trim()) return this.apps;
+  get entregablesFiltrados(): Entregable[] {
+    if (!this.busqueda.trim()) return this.entregables;
 
-    return this.apps.filter((app) =>
-      app.nombre.toLowerCase().includes(this.busqueda.toLowerCase())
+    return this.entregables.filter((ent) =>
+      ent.nombre.toLowerCase().includes(this.busqueda.toLowerCase())
     );
   }
 
-  obtenerProyecto(nombre: string): Project {
-    return this.projects.find((p) => p.nombre === nombre) as Project;
+  obtenerProyecto(nombre: string): Product {
+    return this.productos.find((p) => p.nombre === nombre) as Product;
   }
 
-  getCantidadTimeboxes(app: Aplicacion): number {
-    return app.timeboxes.length;
-  }
-
-  getCantidadColaboradores(app: Aplicacion): number {
-    return app.team.length;
-  }
-
-  getProgreso(app: Aplicacion): number {
-    const total = app.timeboxes.length;
-    const completados = app.timeboxes.filter(
-      (t) => t.estado === 'Finalizado'
-    ).length;
-    return total === 0 ? 0 : Math.round((completados / total) * 100);
-  }
-
-  obtenerTeam(app: Aplicacion) {
-    return app.team.map((persona) => persona.nombre).join(', ');
+  getCantidadTimeboxes(ent: Entregable): number {
+    return ent.timeboxes.length;
   }
 }

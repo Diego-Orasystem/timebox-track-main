@@ -11,14 +11,14 @@
       >
         <div class="relative w-full sm:w-auto min-w-[280px]">
           <select
-            [(ngModel)]="selectedProjectId"
+            [(ngModel)]="selectedentregableId"
             (ngModelChange)="onProjectChange($event)"
             class="block w-full px-4 py-2 rounded-sm text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200 text-[var(--darkText)] bg-white"
           >
             <option value="" disabled>Seleccione un proyecto *</option>
-            <option *ngIf="selectedProjectId != ''" value="">Limpiar</option>
-            <ng-container *ngIf="projects$ | async as projects">
-              <option *ngFor="let project of projects" [value]="project.id">
+            <option *ngIf="selectedentregableId != ''" value="">Limpiar</option>
+            <ng-container *ngIf="products$ | async as products">
+              <option *ngFor="let project of products" [value]="project.id">
                 {{ project.nombre }}
               </option>
             </ng-container>
@@ -26,7 +26,7 @@
         </div>
       </div>
       <!-- Controles de vista -->
-      <div *ngIf="selectedProjectId !== ''" class="flex items-center gap-5">
+      <div *ngIf="selectedentregableId !== ''" class="flex items-center gap-5">
         <button
           (click)="openModal()"
           [disabled]="disabledButton"
@@ -84,7 +84,7 @@
     </div>
     <!-- Contenedor del Gantt y Lista -->
     <div class="px-3 mt-6 flex gap-4 h-11/12">
-      <div *ngIf="selectedProjectId !== ''" class="flex w-full gap-4">
+      <div *ngIf="selectedentregableId !== ''" class="flex w-full gap-4">
         <!-- Lista de Tareas estilo MS Project -->
         <div class="w-1/4">
           <!-- Cabecera del listado -->
@@ -111,14 +111,14 @@
 
           <!-- Contenedor scrolleable de tareas -->
           <div class="border-x border-b border-gray-300 rounded-b-sm bg-white">
-            <div class="overflow-y-auto" [style.height]="'calc(65vh - 56px)'">
+            <div class="overflow-y-auto" [style.height]="'calc(71vh - 56px)'">
               <div
                 *ngFor="let task of ganttTasks(); let i = index"
                 (click)="highlightTask(task)"
-                [class.bg-blue-50]="selectedTaskId === task.id"
+                [class.bg-slate-50]="selectedTaskId === task.id"
                 [class.border-l-4]="selectedTaskId === task.id"
-                [class.border-l-blue-500]="selectedTaskId === task.id"
-                class="border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-all duration-150"
+                [class.border-l-gray-800]="selectedTaskId === task.id"
+                class="border-b border-gray-200 py-1.5 pr-2 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-all duration-150"
               >
                 <!-- Fila de datos estilo tabla -->
                 <div
@@ -158,10 +158,11 @@
                   <div class="col-span-1 text-center">
                     <span
                       class="text-[10px] font-bold"
-                      [class.text-green-600]="task.progress === 100"
-                      [class.text-blue-600]="
-                        task.progress > 0 && task.progress < 100
+                      [class.text-[var(--secondary)]]="task.progress === 100"
+                      [class.text-[var(--primary)]]="
+                        task.progress > 10 && task.progress < 100
                       "
+                      [class.text-[#A65F01]]="task.progress === 10"
                       [class.text-gray-400]="task.progress === 0"
                     >
                       {{ task.progress }}%
@@ -198,7 +199,7 @@
       </div>
 
       <div
-        *ngIf="selectedProjectId === ''"
+        *ngIf="selectedentregableId === ''"
         class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded"
       >
         <p class="text-gray-500 text-sm">
@@ -213,6 +214,6 @@
   (close)="closeModal()"
   [mode]="modalMode"
   [timeboxData]="selectedTimebox"
-  [projectId]="selectedProjectId"
+  [entregableId]="selectedentregableId"
   (timeboxOutput)="handleTimeboxSave($event)"
 ></app-modal-create>

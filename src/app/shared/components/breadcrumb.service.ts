@@ -56,14 +56,14 @@ export class BreadcrumbService {
       const label =
         child.data['title'] ||
         child.data['breadcrumb'] ||
-        child.paramMap.get('projectId') || // Para la ruta ':projectId'
+        child.paramMap.get('entregableId') || // Para la ruta ':entregableId'
         child.paramMap.get('folderId') || // Para la ruta ':folderId'
         ''; // Por si acaso no hay nada relevante
 
       if (label && url) {
         // Solo agrega si hay un label y una URL válida
         // Evitar duplicados si una ruta tiene hijos que también definen su propio breadcrumb
-        // Esto es útil para cuando tienes ':projectId' y luego 'timeboxes' o 'folders'
+        // Esto es útil para cuando tienes ':entregableId' y luego 'timeboxes' o 'folders'
         const existingBreadcrumb = breadcrumbs.find((b) => b.url === url);
         if (!existingBreadcrumb) {
           breadcrumbs.push({

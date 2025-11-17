@@ -39,7 +39,6 @@ export interface Refinement {
 export interface QaData {
   fechaCompletado?: string;
   estadoConsolidacion?: string; // 'Pendiente', 'En Progreso', 'Completado', 'Bloqueado'
-  progresoConsolidacion?: number; // Ej. 75
 
   // Despliegue
   fechaPreparacionEntorno?: string; // O Date
@@ -49,18 +48,10 @@ export interface QaData {
   observacionesDespliegue?: string; // Para párrafos largos
 
   // Testing General
-  planPruebasUrl?: string; // URL al documento/herramienta
+
   resultadosPruebas?: string; // Ej. '150/160 casos de prueba pasados'
   bugsIdentificados?: string; // Ej. '5 abiertos, 2 críticos'
-  urlBugs?: string; // URL al sistema de bugs
   responsableQA?: string;
-
-  // UAT
-  fechaInicioUAT?: string; // O Date
-  fechaFinUAT?: string; // O Date
-  estadoUAT?: string; // 'Pendiente', 'En Progreso', 'Aprobado', 'Rechazado'
-  responsableUAT?: string;
-  feedbackUAT?: string; // Para párrafos largos
 
   // Adjuntos
   adjuntosQA?: Adjuntos[]; // Reutiliza tu interfaz Adjunto: { nombre: string, url: string, type?: string }
@@ -152,5 +143,3 @@ export interface DisponibilidadPorDia {
     bloques: BloqueHorario[];
   };
 }
-
-

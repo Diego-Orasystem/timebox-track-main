@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import {
   FormGroup,
   FormBuilder,
@@ -52,7 +59,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
   // Este FormControl solo maneja el TEXTO que el usuario escribe en el input.
   teamLeaderSearchControl = new FormControl<string | null>('');
   private destroy$ = new Subject<void>(); // Para desuscribirse de observables y evitar fugas de memoria
-  
+
   @Output() autoSaveRequest = new EventEmitter<Timebox>();
 
   constructor(
@@ -72,49 +79,42 @@ export class PlanningComponent implements OnInit, OnDestroy {
         this.teamLeaders = personas.filter(
           (persona) => persona.rol === 'Team Leader'
         );
-        console.log('🔍 PlanningComponent - TeamLeaders cargados:', this.teamLeaders);
       },
       error: (error) => {
         console.error('Error cargando personas:', error);
         this.teamLeaders = [];
-      }
-    });
-
-    // Log del estado inicial del formulario
-    console.log('🔍 PlanningComponent ngOnInit - Form state:', {
-      teamLeader: this.form.get('teamLeader')?.value,
-      skills: this.form.get('skills')?.value,
-      completada: this.form.get('completada')?.value
+      },
     });
 
     const currentTeamLeader: Persona | null =
       this.form.get('teamLeader')?.value;
-    console.log('🔍 PlanningComponent ngOnInit - currentTeamLeader:', currentTeamLeader);
-    
+
     if (
       currentTeamLeader &&
       typeof currentTeamLeader === 'object' &&
       currentTeamLeader.nombre
     ) {
-      console.log('🔍 Setting teamLeader in search control:', currentTeamLeader.nombre);
       this.teamLeaderSearchControl.setValue(currentTeamLeader.nombre);
     } else {
       console.log('🔍 No hay teamLeader inicial o está mal formateado');
     }
 
     // Suscribirse a cambios en el grupo planning completo para refrescar UI
-    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(value => {
-      console.log('🔍 Form value changed:', value);
+    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((value) => {
       this.updateUIFromForm();
     });
 
     // Suscripción específica al control teamLeader para reflejar cambios programáticos del padre
     const teamLeaderCtrl = this.form.get('teamLeader');
-    teamLeaderCtrl?.valueChanges.pipe(takeUntil(this.destroy$)).subscribe((leader) => {
-      if (leader && typeof leader === 'object' && leader.nombre) {
-        this.teamLeaderSearchControl.setValue(leader.nombre, { emitEvent: false });
-      }
-    });
+    teamLeaderCtrl?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((leader) => {
+        if (leader && typeof leader === 'object' && leader.nombre) {
+          this.teamLeaderSearchControl.setValue(leader.nombre, {
+            emitEvent: false,
+          });
+        }
+      });
 
     // Forzar una sincronización inicial asincrónica por si el patch del padre ocurre después
     setTimeout(() => this.updateUIFromForm());
@@ -153,17 +153,16 @@ export class PlanningComponent implements OnInit, OnDestroy {
     const teamLeader = this.form.get('teamLeader')?.value;
     const skills = this.form.get('skills')?.value;
     const completada = this.form.get('completada')?.value;
-    
-    console.log('🔍 Updating UI from form:', { teamLeader, skills, completada });
-    console.log('🔍 TeamLeader type:', typeof teamLeader);
-    console.log('🔍 TeamLeader value:', teamLeader);
-    
+
     // Actualizar Team Leader en el input de búsqueda
     if (teamLeader && typeof teamLeader === 'object' && teamLeader.nombre) {
-      console.log('🔍 Setting teamLeader in search control:', teamLeader.nombre);
-      this.teamLeaderSearchControl.setValue(teamLeader.nombre, { emitEvent: false });
+      this.teamLeaderSearchControl.setValue(teamLeader.nombre, {
+        emitEvent: false,
+      });
     } else {
-      console.log('🔍 Clearing teamLeader search control - no valid teamLeader found');
+      console.log(
+        '🔍 Clearing teamLeader search control - no valid teamLeader found'
+      );
       this.teamLeaderSearchControl.setValue('', { emitEvent: false });
     }
   }
@@ -213,8 +212,14 @@ export class PlanningComponent implements OnInit, OnDestroy {
       const searchText = this.teamLeaderSearchControl.value;
 
       // Si hay un Team Leader válido en el formulario, priorizar mostrarlo SIEMPRE
-      if (selectedValue && typeof selectedValue === 'object' && selectedValue.nombre) {
-        this.teamLeaderSearchControl.setValue(selectedValue.nombre, { emitEvent: false });
+      if (
+        selectedValue &&
+        typeof selectedValue === 'object' &&
+        selectedValue.nombre
+      ) {
+        this.teamLeaderSearchControl.setValue(selectedValue.nombre, {
+          emitEvent: false,
+        });
       } else {
         // Solo limpiar si el usuario escribió algo que no coincide con ninguna persona
         if (typeof searchText === 'string' && searchText.trim() !== '') {
@@ -260,12 +265,12 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   // Método para marcar todos los campos como touched para mostrar errores
   markAllFieldsAsTouched(): void {
-    Object.keys(this.form.controls).forEach(key => {
+    Object.keys(this.form.controls).forEach((key) => {
       const control = this.form.get(key);
       if (control) {
         control.markAsTouched();
         if (control instanceof FormGroup) {
-          Object.keys(control.controls).forEach(subKey => {
+          Object.keys(control.controls).forEach((subKey) => {
             const subControl = control.get(subKey);
             if (subControl) {
               subControl.markAsTouched();
@@ -291,15 +296,16 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   getEntregablesTimebox(): string[] {
     const typeId = this.rootFormGroup.control.get('tipoTimebox')?.value;
-    
+
     if (!typeId) return [];
 
-    const currentOptions = this.timeboxTypeService.timeboxTypesSubject.getValue();
-    
+    const currentOptions =
+      this.timeboxTypeService.timeboxTypesSubject.getValue();
+
     if (!currentOptions || currentOptions.length === 0) return [];
 
     const selectedType = currentOptions.find((opt) => opt.id === typeId);
-    
+
     if (!selectedType || !selectedType.entregablesComunes) return [];
 
     return selectedType.entregablesComunes;
@@ -307,15 +313,16 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   getEvidenciasTimebox(): string[] {
     const typeId = this.rootFormGroup.control.get('tipoTimebox')?.value;
-    
+
     if (!typeId) return [];
 
-    const currentOptions = this.timeboxTypeService.timeboxTypesSubject.getValue();
-    
+    const currentOptions =
+      this.timeboxTypeService.timeboxTypesSubject.getValue();
+
     if (!currentOptions || currentOptions.length === 0) return [];
 
     const selectedType = currentOptions.find((opt) => opt.id === typeId);
-    
+
     if (!selectedType || !selectedType.evidenciasCierre) return [];
 
     return selectedType.evidenciasCierre;
@@ -349,7 +356,7 @@ export class PlanningComponent implements OnInit, OnDestroy {
   getFormattedDate(date: string | undefined): string {
     if (!date) return '';
     const dateToDate = new Date(date);
-    return formatDate(dateToDate, false);
+    return formatDate(dateToDate, true);
   }
 
   onAlcanceChange(alcance: string) {
@@ -381,146 +388,27 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   recibirArchivo(files: File[]) {
     const adjuntos = this.getAdjuntosFormArray();
-    
-    // Subir cada archivo al servidor
-    files.forEach((file) => {
-      // Agregar temporalmente el archivo con estado de carga
-      const adjuntoGroup = this.fb.group({
-        nombre: [file.name],
-        url: ['Subiendo...'],
-        uploading: [true],
-        adjuntoId: [null as string | null]
-      });
-      adjuntos.push(adjuntoGroup);
-      
-      // Subir archivo al servidor
-      this.uploadService.uploadFile(file).subscribe({
-        next: (uploadResult) => {
-          // Actualizar con la URL real del archivo subido
-          adjuntoGroup.patchValue({
-            url: uploadResult.data.url,
-            uploading: false,
-            adjuntoId: uploadResult.data.id
-          });
-          console.log('Archivo subido exitosamente:', uploadResult);
-          
-          // Guardar automáticamente el timebox para persistir los adjuntos
-          this.saveTimeboxAutomatically();
-        },
-        error: (error) => {
-          console.error('Error al subir archivo:', error);
-          // Remover el adjunto fallido
-          const index = adjuntos.controls.indexOf(adjuntoGroup);
-          if (index > -1) {
-            adjuntos.removeAt(index);
-          }
-          alert(`Error al subir archivo ${file.name}: ${error.message || 'Error desconocido'}`);
-        }
-      });
-    });
-    
-    this.closeModalAdjuntos();
-  }
 
-  // Método para guardar automáticamente el timebox
-  private saveTimeboxAutomatically() {
-    // Obtener el formulario padre para construir el timebox completo
-    const parentForm = this.rootFormGroup.control;
-    const formValues = parentForm.getRawValue();
-    
-    // Crear un objeto Timebox básico con los datos del formulario
-    const timeboxToSave: Timebox = {
-      ...formValues,
-      fases: {
-        ...formValues.fases,
-        planning: {
-          ...formValues.planning,
-          adjuntos: this.getAdjuntosFormArray().value
-        }
-      }
-    };
-    
-    console.log('Guardando timebox automáticamente para persistir adjuntos...', timeboxToSave);
-    this.autoSaveRequest.emit(timeboxToSave);
+    files.forEach((file) => {
+      adjuntos.push(
+        this.fb.group({
+          nombre: [file.name],
+          url: [''],
+        })
+      );
+    });
+
+    this.closeModalAdjuntos();
   }
 
   downloadFile(adjuntoControl: AbstractControl) {
     const adjuntoValue = adjuntoControl.value;
     if (adjuntoValue && adjuntoValue.url) {
-      // Construir la URL completa usando la URL base del environment
-      const baseUrl = environment.apiUrl.replace('/api', ''); // Remover /api para obtener solo el servidor
-      const fullUrl = `${baseUrl}${adjuntoValue.url}`;
-      
-      console.log('🔍 Debug archivo planning:', {
-        adjuntoValue: adjuntoValue,
-        adjuntoUrl: adjuntoValue.url,
-        environmentApiUrl: environment.apiUrl,
-        baseUrl: baseUrl,
-        fullUrl: fullUrl
-      });
-      
-      // Para PDFs, intentar abrir directamente en el navegador
-      if (adjuntoValue.url.includes('.pdf')) {
-        // Intentar abrir en nueva pestaña primero
-        const newWindow = window.open(fullUrl, '_blank');
-        
-        // Si el navegador bloquea la nueva ventana, mostrar en modal
-        if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
-          console.log('Nueva ventana bloqueada, mostrando en modal...');
-          
-          // Crear un iframe temporal para abrir el PDF
-          const iframe = document.createElement('iframe');
-          iframe.src = fullUrl;
-          iframe.style.width = '100%';
-          iframe.style.height = '600px';
-          iframe.style.border = 'none';
-          
-          // Crear una ventana modal para mostrar el PDF
-          const modal = document.createElement('div');
-          modal.style.position = 'fixed';
-          modal.style.top = '0';
-          modal.style.left = '0';
-          modal.style.width = '100%';
-          modal.style.height = '100%';
-          modal.style.backgroundColor = 'rgba(0,0,0,0.8)';
-          modal.style.zIndex = '9999';
-          modal.style.display = 'flex';
-          modal.style.justifyContent = 'center';
-          modal.style.alignItems = 'center';
-          
-          const content = document.createElement('div');
-          content.style.backgroundColor = 'white';
-          content.style.padding = '20px';
-          content.style.borderRadius = '8px';
-          content.style.width = '90%';
-          content.style.height = '90%';
-          content.style.position = 'relative';
-          
-          const closeBtn = document.createElement('button');
-          closeBtn.textContent = 'Cerrar';
-          closeBtn.style.position = 'absolute';
-          closeBtn.style.top = '10px';
-          closeBtn.style.right = '10px';
-          closeBtn.style.padding = '8px 16px';
-          closeBtn.style.backgroundColor = '#f44336';
-          closeBtn.style.color = 'white';
-          closeBtn.style.border = 'none';
-          closeBtn.style.borderRadius = '4px';
-          closeBtn.style.cursor = 'pointer';
-          closeBtn.onclick = () => document.body.removeChild(modal);
-          
-          content.appendChild(closeBtn);
-          content.appendChild(iframe);
-          modal.appendChild(content);
-          document.body.appendChild(modal);
-        }
-      } else {
-        // Para otros tipos de archivo, descargar normalmente
-        const a = document.createElement('a');
-        a.href = fullUrl;
-        a.download = adjuntoValue.nombre || 'download';
-        a.click();
-      }
+      const url = adjuntoValue.url;
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = adjuntoValue.nombre || 'download';
+      a.click();
     } else if (adjuntoValue instanceof File) {
       const url = window.URL.createObjectURL(adjuntoValue);
       const a = document.createElement('a');
@@ -609,5 +497,4 @@ export class PlanningComponent implements OnInit, OnDestroy {
   eliminarChecklist(index: number) {
     this.cumplimiento.removeAt(index);
   }
-
 }

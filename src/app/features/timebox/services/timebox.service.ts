@@ -39,7 +39,7 @@ export class TimeboxService {
       error: (error) => {
         console.error('Error cargando timeboxes:', error);
         this.allTimeboxes = [];
-      }
+      },
     });
   }
 
@@ -119,34 +119,39 @@ export class TimeboxService {
       console.log('🔍 determineTimeboxState: Close completada → Finalizado');
       return 'Finalizado';
     }
-    
+
     // ✅ PRIORIDAD 2: Si todas las fases están completadas, el timebox está Finalizado
-    const todasLasFasesCompletadas = 
+    const todasLasFasesCompletadas =
       timebox.fases?.planning?.completada &&
       timebox.fases?.kickOff?.completada &&
       timebox.fases?.refinement?.completada &&
       timebox.fases?.qa?.completada;
-    
+
     if (todasLasFasesCompletadas) {
-      console.log('🔍 determineTimeboxState: Todas las fases completadas → Finalizado');
+      console.log(
+        '🔍 determineTimeboxState: Todas las fases completadas → Finalizado'
+      );
       return 'Finalizado';
     }
-    
+
     // ✅ PRIORIDAD 3: Si hay un Solution Developer asignado, está En Ejecución
     if (
       timebox.fases?.kickOff?.teamMovilization?.solutionDeveloper?.nombre &&
-      timebox.fases.kickOff.teamMovilization.solutionDeveloper.nombre.trim() !== ''
+      timebox.fases.kickOff.teamMovilization.solutionDeveloper.nombre.trim() !==
+        ''
     ) {
-      console.log('🔍 determineTimeboxState: Solution Developer asignado → En Ejecución');
+      console.log(
+        '🔍 determineTimeboxState: Solution Developer asignado → En Ejecución'
+      );
       return 'En Ejecución';
     }
-    
+
     // ✅ PRIORIDAD 4: Si está publicado, está Disponible
     if (timebox.publicacionOferta?.publicado) {
       console.log('🔍 determineTimeboxState: Publicado → Disponible');
       return 'Disponible';
     }
-    
+
     // ✅ PRIORIDAD 5: Por defecto, está En Definición
     console.log('🔍 determineTimeboxState: Por defecto → En Definición');
     return 'En Definición';
@@ -155,15 +160,14 @@ export class TimeboxService {
   /**
    * Crea un nuevo Timebox con un ID único y lo inicializa.
    * Este método es llamado por ProjectService, pero la lógica de inicialización del Timebox es de TimeboxService.
-   * @param projectId El ID del proyecto al que se asociará este Timebox (para referencia interna).
+   * @param entregableId El ID del proyecto al que se asociará este Timebox (para referencia interna).
    * @param initialTimeboxData Los datos iniciales del nuevo Timebox.
    * @returns El Timebox creado.
    */
-  createTimebox(projectId: string, initialTimeboxData: Timebox): Timebox {
+  createTimebox(entregableId: string, initialTimeboxData: Timebox): Timebox {
     const newTimebox: Timebox = {
       id: uuidv4(),
-      projectId: projectId,
-      appId: initialTimeboxData.appId || 'default-app',
+      entregableId: entregableId,
       tipoTimebox: initialTimeboxData.tipoTimebox || 'default-type',
       businessAnalyst: initialTimeboxData.businessAnalyst,
       estado: initialTimeboxData.estado || 'En Definición',
@@ -176,9 +180,9 @@ export class TimeboxService {
         entregaAnticipada: {
           duracionEstimadaDias: 0,
           valorBase: 0,
-          bonificaciones: []
-        }
-      }
+          bonificaciones: [],
+        },
+      },
     };
 
     newTimebox.estado = this.determineTimeboxState(newTimebox); // Determinar estado inicial
@@ -217,8 +221,8 @@ export class TimeboxService {
         entrega: mergedEntrega,
         publicacionOferta:
           updatedTimeboxData.publicacionOferta || currentTb.publicacionOferta,
-        // Asegúrate de que el projectId se mantiene
-        projectId: updatedTimeboxData.projectId || currentTb.projectId,
+        // Asegúrate de que el entregableId se mantiene
+        entregableId: updatedTimeboxData.entregableId || currentTb.entregableId,
       };
 
       mergedTb.estado = this.determineTimeboxState(mergedTb); // Re-determinar el estado
@@ -254,13 +258,13 @@ export class TimeboxService {
   /**
    * Obtiene todos los Timeboxes para un proyecto específico.
    * Este es el método que ProjectService llamará ahora.
-   * @param projectId El ID del proyecto.
+   * @param entregableId El ID del proyecto.
    * @returns Un array de Timeboxes asociados a ese proyecto.
    */
-  getTimeboxesForProject(projectId: string): Timebox[] {
+  getTimeboxesForProject(entregableId: string): Timebox[] {
     return JSON.parse(
       JSON.stringify(
-        this.allTimeboxes.filter((tb) => tb.projectId === projectId)
+        this.allTimeboxes.filter((tb) => tb.entregableId === entregableId)
       )
     );
   }
@@ -278,7 +282,12 @@ export class TimeboxService {
     roleKey: string,
     developerName: string
   ): Observable<Timebox> {
-    return this.timeboxApiService.assignRoleToTimebox(timeboxId, postulacionId, roleKey, developerName);
+    return this.timeboxApiService.assignRoleToTimebox(
+      timeboxId,
+      postulacionId,
+      roleKey,
+      developerName
+    );
   }
 
   rejectPostulacion(

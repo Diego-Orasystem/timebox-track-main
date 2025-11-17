@@ -5,10 +5,10 @@
   >
     <div class="flex flex-col select-none">
       <h1 class="text-md font-extrabold text-[var(--text-dark)]">
-        Apps del proyecto
+        Entregables
       </h1>
       <h2 class="text-xl font-bold text-[var(--primary)] mb-2">
-        {{ nombreProyecto }}
+        {{ nombreProducto }}
       </h2>
       <p class="text-sm text-[var(--text-medium)]">
         Visualiza los accesos directos a las secciones activas de cada
@@ -45,86 +45,28 @@
 
   <!-- Tarjetas de aplicaciones -->
   <div
-    *ngIf="appsFiltradas.length > 0"
+    *ngIf="entregablesFiltrados.length > 0"
     class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6"
   >
     <div
-      *ngFor="let app of appsFiltradas"
+      *ngFor="let ent of entregablesFiltrados"
       class="p-6 rounded-lg shadow-md hover:shadow-xl transition border border-[var(--lines)] bg-[var(--backgroundLight)] flex flex-col gap-4"
     >
       <div class="flex justify-between items-center">
         <h2 class="text-lg font-bold text-[var(--primary)]">
-          {{ app.nombre }}
+          {{ ent.nombre }}
         </h2>
-        <!-- Estado (ficticio) -->
-        <span
-          class="text-xs px-2 py-1 rounded-full font-semibold capitalize"
-          [ngClass]="{
-            'bg-green-100 text-green-700': app.estado === 'activa',
-            'bg-yellow-100 text-yellow-700': app.estado === 'en desarrollo',
-            'bg-red-100 text-red-700': app.estado === 'mantenimiento'
-          }"
-        >
-          {{ app.estado }}
-        </span>
       </div>
 
       <p class="text-sm text-[var(--text-medium)]">
-        {{ app.descripcion }}
+        {{ ent.descripcion }}
       </p>
-
-      <!-- Datos adicionales (ficticios) -->
-      <div class="text-xs text-[var(--text-light)] flex flex-col gap-1">
-        <span
-          ><strong>Team:</strong>
-          <span>
-            {{ obtenerTeam(app) }}
-          </span></span
-        >
-        <span><strong>Version:</strong> {{ app.version || "1.0.0" }}</span>
-      </div>
-
-      <!-- Enlaces -->
-      <div class="inline-flex flex-wrap gap-2 mt-2">
-        <a
-          *ngFor="let item of app.enlaces"
-          [href]="item.url"
-          target="_blank"
-          class="inline-flex items-center gap-2 px-3 py-2 text-xs font-medium rounded-full bg-indigo-400 text-white hover:bg-[var(--primaryDark)] duration-150"
-        >
-          <svg
-            class="w-4 h-4 text-white"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            viewBox="0 0 24 24"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              d="M14 5l7 7m0 0l-7 7m7-7H3"
-            ></path>
-          </svg>
-
-          {{ item.nombre }}
-        </a>
-      </div>
 
       <div class="flex flex-wrap gap-2 mt-2 text-[10px]">
         <span
           class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
         >
-          👥 Colaboradores: {{ getCantidadColaboradores(app) }}
-        </span>
-        <span
-          class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
-        >
-          🛠️ Timeboxes: {{ getCantidadTimeboxes(app) }}
-        </span>
-        <span
-          class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
-        >
-          📊 Progreso: {{ getProgreso(app) }}%
+          🛠️ Timeboxes: {{ getCantidadTimeboxes(ent) }}
         </span>
       </div>
     </div>

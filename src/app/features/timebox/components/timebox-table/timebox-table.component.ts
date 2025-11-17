@@ -20,10 +20,10 @@ import { SolicitudRevision } from '../../../../shared/interfaces/fases-timebox.i
 })
 export class TimeboxTableComponent implements OnChanges {
   tableLabels = [
+    'Entregable',
     'Timebox',
-    'Tipo',
     'Esfuerzo',
-    'Fecha Inicio Planning',
+    'Fecha Inicio',
     'Fecha Entrega',
     'Solicitud Vigente',
     'Estado',
@@ -72,7 +72,7 @@ export class TimeboxTableComponent implements OnChanges {
     const close = timebox.fases?.close;
     const entrega = timebox.entrega;
 
-    // Prioridad: 1. Cierre, 2. Revisión, 3. Entrega
+    // Prioridad: 1. Cierre, 2. Revisiï¿½n, 3. Entrega
 
     // A) Solicitud de Cierre pendiente en la fase 'Close'
     if (
@@ -84,7 +84,7 @@ export class TimeboxTableComponent implements OnChanges {
       return 'Cierre';
     }
 
-    // B) Revisión pendiente en la fase 'Refinement'
+    // B) Revisiï¿½n pendiente en la fase 'Refinement'
     if (
       refinement &&
       refinement.revisiones &&

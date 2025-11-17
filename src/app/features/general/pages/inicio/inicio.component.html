@@ -52,7 +52,7 @@
         class="cursor-pointer space-y-3"
         (click)="verDetalleProyecto(project.nombre)"
       >
-        <h2 class="text-lg font-bold text-[var(--primary)]">
+        <h2 class="text-lg font-semibold text-[var(--darkText)]">
           {{ project.nombre }}
         </h2>
         <p class="text-sm text-[var(--text-medium)]">
@@ -61,19 +61,6 @@
 
         <div class="text-xs text-[var(--text-light)]">
           📆 Creado el: {{ project.fechaCreacion | date : "mediumDate" }}
-        </div>
-
-        <div class="flex flex-wrap gap-3 mt-2 text-[10px]">
-          <span
-            class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
-          >
-            📱 Apps: {{ contarApps(project) }}
-          </span>
-          <span
-            class="bg-indigo-50 text-[var(--darkText)] px-3 py-2 rounded-full"
-          >
-            📊 Progreso: {{ getProgreso(project) }}%
-          </span>
         </div>
       </div>
     </div>

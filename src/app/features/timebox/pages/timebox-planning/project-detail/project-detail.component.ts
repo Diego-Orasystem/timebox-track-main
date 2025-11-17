@@ -7,8 +7,8 @@ import {
   Router,
 } from '@angular/router'; // Importa ActivatedRoute y Router
 import { Subscription } from 'rxjs'; // Para manejar las suscripciones
-import { Project } from '../../../../../shared/interfaces/project.interface';
-import { ProjectService } from '../../../services/project.service';
+import { Product } from '../../../../../shared/interfaces/product.interface';
+import { ProductService } from '../../../services/product.service';
 
 @Component({
   selector: 'app-project-detail',
@@ -21,13 +21,14 @@ import { ProjectService } from '../../../services/project.service';
         position: relative;
         display: flex;
         flex-wrap: wrap;
-        border-radius: 5px;
+        border-radius: 3px;
         background-color: var(--lines);
         box-sizing: border-box;
         box-shadow: 0 0 0px 1px rgba(0, 0, 0, 0.06);
         padding: 0.25rem;
         width: 400px; /* Puedes ajustar el ancho */
         font-size: 14px;
+        gap: 4px;
       }
 
       .radio-inputs .radio {
@@ -58,7 +59,7 @@ import { ProjectService } from '../../../services/project.service';
         ); /* Fondo blanco o claro para el tab activo */
         font-weight: 600; /* Texto en negrita para el tab activo */
         color: var(
-          --primary
+          gray-800
         ); /* Cambia el color del texto a tu color primario */
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
           0 1px 2px 0 rgba(0, 0, 0, 0.06); /* Una sombra sutil para darle elevación */
@@ -66,19 +67,18 @@ import { ProjectService } from '../../../services/project.service';
 
       /* Estilo para el hover de los tabs NO activos */
       .radio-inputs .radio .name:not(.tab-active):hover {
-        background-color: var(
-          --backgroundHover
-        ); /* Un gris muy claro o un poco más oscuro que el fondo de los radios inactivos */
+        background-color: white; /* Un gris muy claro o un poco más oscuro que el fondo de los radios inactivos */
         color: var(
-          --darkText
+          gray-600
         ); /* Asegura que el texto sea legible al hacer hover */
+        font-weight: 600;
       }
     </style>
 
     <div class=" p-10 flex flex-col gap-4">
       <div class="header inline-flex items-center justify-between w-full">
         <div class="flex flex-col place-content-center select-none w-full">
-          <h2 class="text-lg font-bold mb-3" [style.color]="'var(--primary)'">
+          <h2 class="text-lg font-bold text-gray-600">
             {{ currentProject?.nombre }}
           </h2>
           <p class="text-sm text-[var(--text-medium)]">
@@ -89,11 +89,11 @@ import { ProjectService } from '../../../services/project.service';
           <div class="radio-inputs">
             <label class="radio">
               <a
-                [routerLink]="['./folders']"
+                [routerLink]="['./docs']"
                 routerLinkActive="tab-active"
                 class="name"
               >
-                Carpetas
+                Documentación
               </a>
             </label>
             <label class="radio">
@@ -103,7 +103,7 @@ import { ProjectService } from '../../../services/project.service';
                 [routerLinkActiveOptions]="{ exact: true }"
                 class="name"
               >
-                Timeboxes
+                Timeboxs
               </a>
             </label>
           </div>
@@ -115,33 +115,33 @@ import { ProjectService } from '../../../services/project.service';
   `,
 })
 export class ProjectDetailComponent implements OnInit {
-  currentProject: Project | undefined;
+  currentProject: Product | undefined;
   private routeSubscription: Subscription | undefined;
 
   constructor(
     private route: ActivatedRoute,
     private router: Router, // Inyecta Router para la redirección inicial
-    private projectService: ProjectService
+    private productService: ProductService
   ) {}
 
   ngOnInit(): void {
     this.routeSubscription = this.route.paramMap.subscribe((params) => {
-      const projectId = params.get('projectId');
+      const projectId = params.get('productId');
       if (projectId) {
-        this.projectService.getProjectById(projectId).subscribe({
-          next: (project: Project) => {
+        this.productService.getProductById(projectId).subscribe({
+          next: (project: Product) => {
             this.currentProject = project;
           },
           error: (error: any) => {
             console.error('Error cargando proyecto:', error);
             this.currentProject = undefined;
-          }
+          },
         });
 
         // --- Lógica para asegurar que una pestaña esté activa por defecto ---
         // Si no hay una ruta hija activa (ej. /:projectId directamente),
         // redirige a la ruta 'timeboxes' por defecto.
-        if (this.router.url === `/` + projectId) {
+        if (this.router.url === `/products/` + projectId) {
           // Verifica si la URL actual es solo el ID del proyecto
           this.router.navigate(['./timeboxes'], { relativeTo: this.route });
         }

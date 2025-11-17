@@ -7,6 +7,7 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms'; // Solo necesitamos FormGroup y FormArray, no FormBuilder aquí
 import { Adjuntos } from '../../../../../../shared/interfaces/fases-timebox.interface';
+import { formatDate } from '../../../../../../shared/helpers/date-formatter';
 
 @Component({
   selector: 'app-qa', // Selector para tu componente QA
@@ -50,6 +51,13 @@ export class QaComponent implements OnInit {
     }
   }
 
+  /** Formatear fecha con el formato "Vie 05 may. 2025 hhmm hrs" */
+  getFormattedDate(date: string | undefined): string {
+    if (date == undefined || date == '') return '';
+
+    const dateToDate = new Date(date);
+    return formatDate(dateToDate);
+  }
   // Las interfaces se mantienen aquí para referencia, pero idealmente
   // deberían estar en un archivo de modelos/interfaces compartido.
 }

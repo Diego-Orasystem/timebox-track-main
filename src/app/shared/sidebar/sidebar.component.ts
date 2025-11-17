@@ -12,18 +12,18 @@ import { AuthService } from '../services/auth.service';
 })
 export class SidebarComponent implements OnInit {
   isMenuOpen = false;
-  isSidebarCollapsed = false;
+  isSidebarCollapsed = true;
   isAuthenticated = false;
+
+  //User Profile
 
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
     // Suscribirse al estado de autenticación
-    this.authService.isAuthenticated$.subscribe(
-      (authenticated) => {
-        this.isAuthenticated = authenticated;
-      }
-    );
+    this.authService.isAuthenticated$.subscribe((authenticated) => {
+      this.isAuthenticated = authenticated;
+    });
   }
 
   // Métodos para verificar permisos
@@ -38,8 +38,6 @@ export class SidebarComponent implements OnInit {
   hasAnyRole(roles: string[]): boolean {
     return this.authService.hasAnyRole(roles);
   }
-
-
 
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;

@@ -28,7 +28,7 @@ export class ModalCreateComponent implements OnChanges {
   @Input() timeboxData: Timebox = {} as Timebox;
   @Output() timeboxOutput = new EventEmitter<Timebox>();
 
-  @Input() projectId: string | null = null;
+  @Input() entregableId: string | null = null;
   @Input() folderId: string | null = null;
 
   steps = [
@@ -114,7 +114,7 @@ export class ModalCreateComponent implements OnChanges {
   handleStepCompleted(index: number): void {
     this.steps[index].completed = true;
     this.updateStepsCompletedState();
-    this.activeStep = Math.min(index + 1, this.steps.length - 1); // Avanza al siguiente paso
+    this.activeStep = Math.min(index + 1); // Avanza al siguiente paso
   }
 
   // Método dedicado para resetear el estado interno al INICIO de una CREACIÓN
@@ -147,22 +147,16 @@ export class ModalCreateComponent implements OnChanges {
   }
 
   onFormSubmit(formData: Timebox): void {
-    console.log('🔄 ModalCreateComponent: onFormSubmit llamado con:', formData);
-    console.log('🔍 ModalCreateComponent: timeboxData original:', this.timeboxData);
-    
     const timeboxToSave: Timebox = {
       ...this.timeboxData,
       tipoTimebox: formData.tipoTimebox,
       estado: formData.estado,
       fases: formData.fases,
       entrega: formData.entrega,
-      projectId: this.projectId!,
+      entregableId: this.entregableId!,
       publicacionOferta: formData.publicacionOferta,
     };
 
-    console.log('📤 ModalCreateComponent: Emitiendo timeboxOutput:', timeboxToSave);
-    console.log('🔍 ModalCreateComponent: timeboxToSave ID:', timeboxToSave.id);
     this.timeboxOutput.emit(timeboxToSave);
-    console.log('✅ ModalCreateComponent: timeboxOutput emitido');
   }
 }

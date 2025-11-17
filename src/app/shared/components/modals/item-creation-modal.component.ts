@@ -1,100 +1,189 @@
-import { Component, Input, Output, EventEmitter, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  Output,
+  EventEmitter,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  FormArray,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { UploadService } from '../../services/upload.service';
+import { Observable } from 'rxjs';
+
+export interface Product {
+  id: string;
+  nombre: string;
+  descripcion?: string;
+  responsable?: any;
+  adjuntos?: {
+    id?: string;
+    nombreArchivo: string;
+    descripcion?: string;
+    url?: string;
+  }[];
+  fechaCreacion?: string;
+}
 
 @Component({
-  selector: 'app-item-creation-modal',
+  selector: 'app-product-modal',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule],
   template: `
     <div
       *ngIf="show"
-      class="fixed inset-0 overflow-y-auto h-full w-full flex items-center justify-center z-50"
+      class="fixed inset-0 flex items-center justify-center bg-black/50  z-50"
+      (click)="handleClose()"
     >
       <div
-        class="absolute inset-0 bg-black opacity-30 backdrop-blur-lg"
-        (click)="handleClose()"
-      ></div>
-      <div class="bg-white p-6 rounded-md shadow-xl w-1/3 relative">
+        class="bg-white rounded-lg shadow-2xl p-6 w-11/12 sm:w-1/2 lg:w-1/2 relative max-h-[90vh] overflow-y-auto"
+        (click)="$event.stopPropagation()"
+      >
+        <!-- Close -->
         <button
-          class="absolute top-2 right-6 text-gray-400 hover:text-gray-600 text-lg cursor-pointer"
+          class="absolute top-2 right-4 text-gray-400 hover:text-gray-600 text-lg"
           (click)="handleClose()"
+          type="button"
         >
           ✕
         </button>
-        <h2 class="text-xl font-bold mb-4">
-          {{ mode === 'create' ? 'Crear nuevo item' : 'Editar item' }}
-        </h2>
-        <div>
-          <div class="mb-4" *ngIf="showTypeSelection">
-            <label for="itemType" class="text-xs font-semibold">Nuevo</label>
-            <select
-              id="itemType"
-              [(ngModel)]="selectedTypeItem"
-              class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-sm focus:outline-none focus:ring-[var(--primary)] focus:border-[var(--primary)] sm:text-sm text-gray-700"
-              (change)="onTypeChange()"
-            >
-              <option disabled [selected]="!selectedTypeItem">
-                Selecciona un tipo
-              </option>
-              <option *ngFor="let type of availableTypes" [value]="type">
-                {{ type }}
-              </option>
-            </select>
-          </div>
 
-          <div class="mb-4">
-            <label
-              for="name"
-              class="block text-sm font-medium text-gray-700 mb-1"
+        <h2 class="text-xl font-bold mb-4">
+          {{ mode === 'create' ? 'Crear Producto' : 'Editar Producto' }}
+        </h2>
+
+        <form
+          [formGroup]="productForm"
+          (ngSubmit)="onSubmit()"
+          class="space-y-4"
+        >
+          <!-- Nombre -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
               >Nombre</label
             >
             <input
               type="text"
-              id="name"
-              name="name"
-              [(ngModel)]="itemName"
-              class="block w-full px-3 py-2 rounded-sm border border-gray-100 focus:border-[var(--primary)] focus:ring-0 text-sm"
-              required
+              formControlName="nombre"
+              class="w-full border placeholder:text-gray-500 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-[var(--primary)] text-sm"
+              placeholder="Nombre del producto"
             />
+            <p
+              *ngIf="
+                productForm.get('nombre')?.invalid &&
+                productForm.get('nombre')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              El nombre es obligatorio.
+            </p>
           </div>
-          <div class="mb-4">
-            <label
-              for="description"
-              class="block text-sm font-medium text-gray-700 mb-1"
+
+          <!-- Descripción -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
               >Descripción</label
             >
             <textarea
-              id="description"
-              name="description"
-              [(ngModel)]="itemDescription"
+              formControlName="descripcion"
               rows="3"
-              class="block w-full px-3 py-2 rounded-sm border border-gray-100 focus:border-[var(--primary)] focus:ring-0 text-sm"
+              class="w-full border placeholder:text-gray-500 border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-[var(--primary)] text-sm"
+              placeholder="Descripción del producto"
             ></textarea>
+            <p
+              *ngIf="
+                productForm.get('descripcion')?.invalid &&
+                productForm.get('descripcion')?.touched
+              "
+              class="text-red-500 text-xs mt-1"
+            >
+              La descripción es obligatoria.
+            </p>
           </div>
 
-          <label
-            class="block flex-1 mb-4"
-            *ngIf="
-              selectedTypeItem === 'Documento' ||
-              selectedTypeItem === 'Video' ||
-              selectedTypeItem === 'Imagen' ||
-              selectedTypeItem === 'Imágen'
-            "
-          >
-            <span class="sr-only">Choose file</span>
-            <input
-              (change)="handleFileSelected($event)"
-              type="file"
-              class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-[var(--primary)] hover:file:bg-indigo-100 cursor-pointer"
-            />
-            <span *ngIf="selectedFile" class="mt-2 text-sm text-gray-500"
-              >Archivo seleccionado: {{ selectedFile.name }}</span
+          <!-- File input -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1"
+              >Documentación (adjuntar)</label
             >
-          </label>
 
-          <div class="flex justify-end space-x-2">
+            <input
+              type="file"
+              (change)="onFilesSelected($event)"
+              multiple
+              class="block w-full text-sm text-gray-600 file:mr-4 file:py-2 file:px-4 
+                     file:rounded-md file:border-0 file:text-sm file:font-semibold 
+                     file:bg-indigo-50 file:text-[var(--primary)] hover:file:bg-indigo-100 cursor-pointer"
+            />
+            <p class="text-xs text-gray-500 mt-2">
+              Puedes seleccionar uno o varios archivos. Se subirán
+              automáticamente.
+            </p>
+          </div>
+
+          <!-- Lista de adjuntos (FormArray) -->
+          <div
+            formArrayName="adjuntos"
+            *ngIf="adjuntos.length > 0"
+            class="mt-4"
+          >
+            <label class="block text-sm font-medium text-gray-700 mb-2"
+              >Archivos adjuntos</label
+            >
+
+            <div
+              *ngFor="let adjFG of adjuntos.controls; let i = index"
+              [formGroupName]="i"
+              class="flex items-start gap-3 p-3 mb-2 border border-gray-200 rounded-md bg-gray-50"
+            >
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-medium text-gray-800 truncate">
+                    📎
+                    <a
+                      *ngIf="adjFG.value.url; else plainName"
+                      [href]="adjFG.value.url"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="underline text-[var(--primary)]"
+                      >{{ adjFG.value.nombreArchivo }}</a
+                    >
+                    <ng-template #plainName>{{
+                      adjFG.value.nombreArchivo
+                    }}</ng-template>
+                  </p>
+                </div>
+
+                <input
+                  type="text"
+                  formControlName="descripcion"
+                  placeholder="Nombre o justificación del archivo"
+                  class="mt-2 w-full border bg-white border-gray-300 placeholder:text-gray-500 rounded-md px-2 py-1 text-xs focus:outline-none focus:border-[var(--primary)]"
+                />
+              </div>
+
+              <div class="flex flex-col items-end gap-2">
+                <button
+                  type="button"
+                  (click)="removeAdjunto(i)"
+                  class="text-gray-400 hover:text-red-500 cursor-pointer duration-200"
+                  title="Eliminar adjunto"
+                >
+                  x
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex justify-end space-x-2 mt-4">
             <button
               type="button"
               (click)="handleClose()"
@@ -104,220 +193,186 @@ import { UploadService } from '../../services/upload.service';
             </button>
             <button
               type="submit"
+              [disabled]="productForm.invalid"
               (click)="onSubmit()"
-              class="px-4 py-2 bg-[var(--primary)] text-white rounded-sm hover:bg-[var(--primaryDark)]"
+              class="px-4 py-2 bg-[var(--primary)] text-white rounded-sm hover:bg-[var(--primaryDark)] disabled:opacity-50"
             >
               {{ mode === 'create' ? 'Crear' : 'Guardar' }}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   `,
 })
-export class ItemCreationModalComponent implements OnInit, OnChanges {
-  @Input() show: boolean = false;
+export class ProductModalComponent implements OnInit, OnChanges {
+  @Input() show = false;
   @Input() mode: 'create' | 'edit' = 'create';
-  @Input() itemData: any; // Datos del elemento si estamos en modo 'edit'
-
-  // Si estamos creando un ítem dentro de un padre (proyecto o carpeta), este será su ID
-  @Input() parentId: string | null = null;
-  // El tipo de ítem que se va a crear o editar. Puede ser un solo tipo (e.g., 'Proyecto' para la vista de proyectos)
-  // o null si el modal debe ofrecer varias opciones (e.g., en una vista de contenido de carpeta).
-  @Input() itemTypeContext:
-    | 'Proyecto'
-    | 'Carpeta'
-    | 'Documento'
-    | 'Video'
-    | 'Imagen'
-    | null = null;
+  @Input() productData: Product | null = null;
 
   @Output() close = new EventEmitter<void>();
-  @Output() itemSaved = new EventEmitter<any>(); // Emitirá el nuevo/actualizado item
+  @Output() productSaved = new EventEmitter<Product>();
 
-  itemName: string = '';
-  itemDescription: string = '';
-  selectedTypeItem: string = ''; // El tipo seleccionado por el usuario en el dropdown
-  availableTypes: string[] = []; // Opciones disponibles en el dropdown
-  showTypeSelection: boolean = true; // Controla la visibilidad del select de tipo
+  productForm!: FormGroup;
 
-  selectedFile: File | null = null;
-
-  constructor(private uploadService: UploadService) {}
+  constructor(private fb: FormBuilder, private uploadService: UploadService) {}
 
   ngOnInit(): void {
-    this.initializeModal();
+    this.buildForm();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Reinicializar cuando cambien las propiedades de entrada importantes
-    if ((changes['show'] && changes['show'].currentValue) || 
-        changes['itemTypeContext'] || 
-        changes['parentId'] || 
-        changes['mode']) {
-      this.initializeModal();
+    // Cuando cambie productData o se abra el modal, parchear valores
+    if (changes['productData'] && !changes['productData'].isFirstChange()) {
+      this.patchProductData();
+    }
+    if (changes['show'] && changes['show'].currentValue) {
+      // Si se abre y hay productData (modo edit), cargar
+      this.patchProductData();
     }
   }
 
-  private initializeModal(): void {
-    // Si `itemTypeContext` está definido, significa que el modal se invoca para crear
-    // un tipo específico de ítem (ej. solo 'Proyecto').
-    // Si es null, se permite al usuario elegir entre los tipos de contenido.
-    if (this.itemTypeContext === 'Proyecto') {
-      this.availableTypes = ['Proyecto'];
-      this.showTypeSelection = false; // No mostrar el select si solo hay una opción predefinida
-    } else if (this.parentId) {
-      // Si hay un parentId, significa que estamos creando contenido dentro de un proyecto/carpeta
-      this.availableTypes = ['Carpeta', 'Documento', 'Video', 'Imagen'];
-      this.showTypeSelection = true;
-    } else {
-      // Caso por defecto si no hay context ni parentId, ofrecer todos (ej. desde una vista global de creación)
-      this.availableTypes = [
-        'Proyecto',
-        'Carpeta',
-        'Documento',
-        'Video',
-        'Imagen',
-      ];
-      this.showTypeSelection = true;
-    }
+  private buildForm(): void {
+    this.productForm = this.fb.group({
+      nombre: [this.productData?.nombre || '', Validators.required],
+      descripcion: [this.productData?.descripcion || '', Validators.required],
+      adjuntos: this.fb.array([]),
+    });
 
-    // Establecer el tipo seleccionado inicialmente
-    if (this.itemTypeContext) {
-      this.selectedTypeItem = this.itemTypeContext;
-    } else if (this.parentId) {
-      // Si hay parentId, usar 'Carpeta' como tipo por defecto
-      this.selectedTypeItem = 'Carpeta';
-    } else if (this.availableTypes.length > 0) {
-      // Si no hay un contexto específico y hay opciones, seleccionar la primera por defecto
-      this.selectedTypeItem = this.availableTypes[0];
-    }
-
-    if (this.mode === 'edit' && this.itemData) {
-      this.itemName = this.itemData.nombre || '';
-      this.itemDescription = this.itemData.descripcion || '';
-      this.selectedTypeItem = this.itemData.tipo || ''; // En edición, se muestra el tipo actual
-      // Lógica para previsualizar archivo si existe en modo edición
-      if (
-        this.itemData.adjunto &&
-        (this.selectedTypeItem === 'Documento' ||
-          this.selectedTypeItem === 'Video' ||
-          this.selectedTypeItem === 'Imagen' ||
-          this.selectedTypeItem === 'Imágen')
-      ) {
-        // En un caso real, no tendrías el objeto File original al editar,
-        // solo el nombre/URL. Aquí podrías simularlo o mostrar un placeholder.
-        // this.fileName = this.itemData.adjunto.nombre;
-        // this.fileUrl = this.itemData.adjunto.url;
-      }
+    // Si ya había adjuntos en productData al inicializar, cárgalos
+    if (this.productData?.adjuntos?.length) {
+      this.productData.adjuntos.forEach((a) => this.pushAdjuntoFromData(a));
     }
   }
 
-  // Permite reaccionar si el usuario cambia el tipo en el select
-  onTypeChange(): void {
-    // Si cambia el tipo a uno que requiere archivo, el input de archivo aparecerá automáticamente por el *ngIf
-    // Si cambia a 'Proyecto' o 'Carpeta', el input de archivo desaparecerá.
-    this.selectedFile = null; // Limpiar el archivo seleccionado si el tipo cambia
+  private patchProductData(): void {
+    if (!this.productForm) {
+      this.buildForm();
+      return;
+    }
+    this.productForm.patchValue({
+      nombre: this.productData?.nombre || '',
+      descripcion: this.productData?.descripcion || '',
+    });
+
+    // limpiar formarray y recargar adjuntos (si existen)
+    this.adjuntos.clear();
+    if (this.productData?.adjuntos?.length) {
+      this.productData.adjuntos.forEach((a) => this.pushAdjuntoFromData(a));
+    }
+  }
+
+  /** FormArray getter */
+  get adjuntos(): FormArray {
+    return this.productForm.get('adjuntos') as FormArray;
+  }
+
+  /** Empuja un adjunto existente al FormArray */
+  private pushAdjuntoFromData(a: {
+    id?: string;
+    nombreArchivo: string;
+    descripcion?: string;
+    url?: string;
+  }): void {
+    const fg = this.fb.group({
+      id: [a.id || null],
+      nombreArchivo: [a.nombreArchivo || '', Validators.required],
+      descripcion: [a.descripcion || ''],
+      url: [a.url || null],
+    });
+    this.adjuntos.push(fg);
+  }
+
+  /** Maneja selección de archivos (multiple supported) */
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const files = Array.from(input.files);
+
+    // Subir cada archivo y añadir al form array
+    for (const file of files) {
+      // Opcional: mostrar un "placeholder" mientras sube
+      const placeholderFG = this.fb.group({
+        id: [null],
+        nombreArchivo: [`${file.name} (subiendo...)`],
+        descripcion: [''],
+        url: [null],
+      });
+      this.adjuntos.push(placeholderFG);
+      const indexOfPlaceholder = this.adjuntos.length - 1;
+
+      // Llamada al servicio de subida
+      this.uploadFileAndReplace(file).subscribe({
+        next: (res) => {
+          // asumimos res.data.id y opcional res.data.url
+          const data = (res && (res as any).data) || {};
+          // Reemplazar los valores del FG placeholder
+          const fg = this.adjuntos.at(indexOfPlaceholder) as FormGroup;
+          fg.patchValue({
+            id: data.id || null,
+            nombreArchivo: file.name,
+            descripcion: '',
+            url: data.url || null,
+          });
+        },
+        error: (err) => {
+          console.error('Error subiendo', file.name, err);
+          // remover placeholder si falla
+          this.adjuntos.removeAt(indexOfPlaceholder);
+          alert(`Error al subir ${file.name}`);
+        },
+      });
+    }
+
+    // limpiar input para permitir re-subir mismos archivos
+    input.value = '';
+  }
+
+  /** Wrapper para uploadService.uploadFile — devuelve Observable<any> */
+  private uploadFileAndReplace(file: File): Observable<any> {
+    // Si tu UploadService devuelve directamente el observable correcto, úsalo.
+    // Aquí asumimos uploadFile(file): Observable<{ data: { id: string, url?: string } }>
+    return this.uploadService.uploadFile(file);
+  }
+
+  /** Elimina adjunto por índice */
+  removeAdjunto(index: number): void {
+    // opcional: si el adj tiene id y deseas pedir confirmación o borrar del backend, hazlo aquí.
+    this.adjuntos.removeAt(index);
+  }
+
+  onSubmit(): void {
+    if (this.productForm.invalid) {
+      this.productForm.markAllAsTouched();
+      return;
+    }
+
+    const value = this.productForm.value;
+    const product: Product = {
+      id: this.productData?.id || crypto.randomUUID(),
+      nombre: value.nombre,
+      descripcion: value.descripcion,
+      fechaCreacion:
+        this.productData?.fechaCreacion || new Date().toISOString(),
+      adjuntos: value.adjuntos.map((a: any) => ({
+        id: a.id,
+        nombreArchivo: a.nombreArchivo,
+        descripcion: a.descripcion,
+        url: a.url,
+      })),
+    };
+
+    this.productSaved.emit(product);
+    this.handleClose();
   }
 
   handleClose(): void {
     this.close.emit();
-    this.resetForm();
-  }
-
-  resetForm(): void {
-    this.itemName = '';
-    this.itemDescription = '';
-    this.selectedFile = null;
-    this.initializeModal();
-  }
-
-  handleFileSelected(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    if (target.files && target.files.length > 0) {
-      this.selectedFile = target.files[0];
-    } else {
-      this.selectedFile = null;
-    }
-  }
-
-  async onSubmit(): Promise<void> {
-    if (!this.selectedTypeItem || !this.itemName) {
-      alert('Por favor, selecciona un tipo y proporciona un nombre.');
-      return;
-    }
-
-    const newItem: any = {
-      nombre: this.itemName,
-      descripcion: this.itemDescription,
-    };
-
-    // Si estamos creando un proyecto (no contenido dentro de un proyecto)
-    if (this.selectedTypeItem === 'Proyecto') {
-      // Para proyectos, no necesitamos tipo ni parentId
-      newItem.fechaCreacion = new Date().toISOString();
-      this.itemSaved.emit(newItem);
-      this.handleClose();
-      return;
-    }
-
-    // Para contenido dentro de proyectos, usar la estructura correcta
-    newItem.tipo = this.selectedTypeItem;
-    if (this.parentId) {
-      newItem.parentId = this.parentId;
-    }
-
-    // Lógica para manejar adjuntos (documentos, videos, imágenes)
-    if (
-      this.selectedTypeItem === 'Documento' ||
-      this.selectedTypeItem === 'Video' ||
-      this.selectedTypeItem === 'Imagen' ||
-      this.selectedTypeItem === 'Imágen'
-    ) {
-      if (this.selectedFile) {
-        try {
-          // Subir el archivo usando el servicio
-          this.uploadService.uploadFile(this.selectedFile).subscribe({
-            next: (uploadResult) => {
-              // Agregar el adjuntoId al nuevo item
-              newItem.adjuntoId = uploadResult.data.id;
-              
-              // Continuar con la creación del item
-              this.itemSaved.emit(newItem);
-              this.handleClose();
-            },
-            error: (error) => {
-              console.error('Error al subir archivo:', error);
-              alert(`Error al subir archivo: ${error.message || 'Error desconocido'}`);
-            }
-          });
-          return; // Salir aquí para evitar que se ejecute el código siguiente
-        } catch (error) {
-          console.error('Error al subir archivo:', error);
-          const errorMessage = error instanceof Error ? error.message : 'Error desconocido al subir archivo';
-          alert(`Error al subir archivo: ${errorMessage}`);
-          return;
-        }
-      } else if (this.mode === 'create') {
-        alert('Por favor, selecciona un archivo para este tipo de ítem.');
-        return;
-      }
-      // En modo 'edit', si no se selecciona un nuevo archivo, se asume que se mantiene el existente.
-      if (
-        this.mode === 'edit' &&
-        this.itemData?.adjuntoId &&
-        !this.selectedFile
-      ) {
-        newItem.adjuntoId = this.itemData.adjuntoId;
-      }
-    } else if (this.selectedTypeItem === 'Carpeta') {
-      newItem.contenido = []; // Una carpeta empieza vacía
-    }
-
-    // Solo emitir si no hay archivo (los archivos se manejan en el subscribe)
-    if (!this.selectedFile) {
-      this.itemSaved.emit(newItem); // Emitimos el objeto con los datos
-      this.handleClose(); // Cerrar el modal
+    // reset form but keep structure (in case modal reused)
+    if (this.productForm) {
+      this.productForm.reset();
+      this.adjuntos.clear();
     }
   }
 }

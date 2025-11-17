@@ -16,8 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { Observable, Subject } from 'rxjs';
 import { map, takeUntil } from 'rxjs/operators';
 import Gantt from 'frappe-gantt';
-import { ProjectService } from '../../services/project.service';
-import { Project } from '../../../../shared/interfaces/project.interface';
+import { ProductService } from '../../services/product.service';
+import { Product } from '../../../../shared/interfaces/product.interface';
 import { Timebox } from '../../../../shared/interfaces/timebox.interface';
 import { ModalCreateComponent } from '../../components/modal-create-timebox/modal-create.component';
 
@@ -33,14 +33,14 @@ export class TimeboxFrappeGanttComponent
   implements OnInit, AfterViewInit, OnDestroy
 {
   @Input() colorMap: { [k: string]: string } = {
-    'En Definición': '#9CA3AF',
-    Disponible: '#10B981',
-    'En Ejecución': '#3B82F6',
-    Finalizado: '#6B7280',
+    'En Definición': '#A65F01',
+    Disponible: '#4F46E5',
+    'En Ejecución': '#4F46E5',
+    Finalizado: '#31ae42',
   };
   // Variables para proyectos
-  projects$: Observable<Project[]>;
-  selectedProjectId = '';
+  products$: Observable<Product[]>;
+  selectedentregableId = '';
   selectedProjectName = signal<string>('');
   // Signals
   timeboxes = signal<Timebox[]>([]);
@@ -74,7 +74,7 @@ export class TimeboxFrappeGanttComponent
   private ganttInstance: any = null;
   private destroyed$ = new Subject<void>();
 
-  constructor(private projectService: ProjectService) {
+  constructor(private productService: ProductService) {
     // Effect para renderizar el Gantt cuando cambien las tareas o la vista esté lista
     effect(() => {
       const tasks = this.ganttTasks();
@@ -90,7 +90,7 @@ export class TimeboxFrappeGanttComponent
     });
 
     // Cargar proyectos
-    this.projects$ = this.projectService.getProjects();
+    this.products$ = this.productService.getProjects();
   }
 
   ngOnInit(): void {}
@@ -105,30 +105,31 @@ export class TimeboxFrappeGanttComponent
     this.destroyGantt();
   }
 
-  onProjectChange(newProjectId: string) {
-    console.log('Proyecto seleccionado:', newProjectId);
-    this.selectedProjectId = newProjectId;
+  onProjectChange(newentregableId: string) {
+    console.log('Proyecto seleccionado:', newentregableId);
+    this.selectedentregableId = newentregableId;
     //cambio de nombre para el proyecto
-    this.projects$
+    this.products$
       .pipe(
         map(
-          (projects: Project[]) =>
-            projects.find((p) => p.id === this.selectedProjectId)?.nombre || ''
+          (products: Product[]) =>
+            products.find((p) => p.id === this.selectedentregableId)?.nombre ||
+            ''
         )
       )
       .subscribe((projectName) => {
         this.selectedProjectName.set(projectName);
       });
 
-    this.disabledButton = this.selectedProjectId != '' ? false : true;
-    if (!newProjectId) {
+    this.disabledButton = this.selectedentregableId != '' ? false : true;
+    if (!newentregableId) {
       this.timeboxes.set([]);
       this.destroyGantt();
       return;
     }
 
-    this.projectService
-      .getTimeboxesByProjectId(newProjectId)
+    this.productService
+      .getTimeboxesByEntregableId(newentregableId)
       .pipe(takeUntil(this.destroyed$))
       .subscribe((timeboxes) => {
         this.timeboxes.set(timeboxes);
@@ -169,6 +170,7 @@ export class TimeboxFrappeGanttComponent
         popup_on: 'hover',
         readonly: true,
         language: 'es',
+        infinite_padding: false,
         on_click: (task: any) => this.onTaskClick(task),
         on_date_change: (task: any, start: Date, end: Date) =>
           this.onTaskDateChange(task, start, end),
@@ -188,7 +190,6 @@ export class TimeboxFrappeGanttComponent
         const ganttContainer = el.querySelector('.gantt-container');
         if (ganttContainer) {
           (ganttContainer as HTMLElement).style.overflowY = 'hidden';
-          (ganttContainer as HTMLElement).style.overflowX = 'scroll';
           (ganttContainer as HTMLElement).style.minHeight = '';
           (ganttContainer as HTMLElement).style.height = '100%';
         }
@@ -244,7 +245,7 @@ export class TimeboxFrappeGanttComponent
     console.log(tb.estado);
     switch (tb.estado) {
       case 'En Definición':
-        progress = 0;
+        progress = 10;
         break;
       case 'Finalizado':
         progress = 100;
@@ -459,19 +460,19 @@ export class TimeboxFrappeGanttComponent
   }
 
   handleTimeboxSave(timeboxFromModal: Timebox): void {
-    if (!this.selectedProjectId) {
-      console.error('❌ No hay projectId');
+    if (!this.selectedentregableId) {
+      console.error('❌ No hay entregableId');
       return;
     }
 
     if (timeboxFromModal.id) {
       // Actualizar timebox existente
-      this.projectService
-        .updateTimebox(this.selectedProjectId, timeboxFromModal)
+      this.productService
+        .updateTimebox(this.selectedentregableId, timeboxFromModal)
         .subscribe({
           next: (resultTimebox: Timebox) => {
             console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
-            this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir los cambios
+            this.onProjectChange(this.selectedentregableId); // Recargar timeboxes para incluir los cambios
           },
           error: (error: any) => {
             console.error('❌ Error actualizando timebox:', error);
@@ -480,13 +481,13 @@ export class TimeboxFrappeGanttComponent
         });
     } else {
       // Crear nuevo timebox
-      this.projectService
-        .createTimebox(this.selectedProjectId, timeboxFromModal)
+      this.productService
+        .createTimebox(this.selectedentregableId, timeboxFromModal)
         .subscribe({
           next: (resultTimebox: Timebox) => {
             console.log('✅ Timebox creado exitosamente:', resultTimebox);
             this.selectedTimebox = { ...resultTimebox };
-            this.onProjectChange(this.selectedProjectId); // Recargar timeboxes para incluir el nuevo
+            this.onProjectChange(this.selectedentregableId); // Recargar timeboxes para incluir el nuevo
           },
           error: (error: any) => {
             console.error('Error creando timebox:', error);

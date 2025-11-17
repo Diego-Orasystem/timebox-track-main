@@ -77,13 +77,6 @@ export class RefinementComponent {
         this.showModalDisponibilidad[index][day] = false;
       });
     });
-
-    // Inicializa los arrays de control de modales para cada revisión existente
-    this.revisiones.controls.forEach((_, index) => {
-      this.showModalParticipantes[index] = false;
-      this.showModalChecklist[index] = false;
-      this.showModalAdjuntos[index] = false;
-    });
   }
 
   /**
