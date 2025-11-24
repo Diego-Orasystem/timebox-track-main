@@ -1,18 +1,24 @@
 <div class="p-3 sm:p-3 bg-gray-50 min-h-max font-sans">
-  <div class="h-[87vh] bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300 ">
-    <div class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-3 mb-4">
+  <div
+    class="h-[87vh] bg-white rounded-sm shadow-sm py-6 transition-shadow duration-300"
+  >
+    <div
+      class="w-full flex flex-col sm:flex-row items-center justify-between gap-4 px-3 mb-4"
+    >
       <!-- Selector de proyecto -->
-      <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+      <div
+        class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto"
+      >
         <div class="relative w-full sm:w-auto min-w-[280px]">
           <select
-            [(ngModel)]="selectedProjectId"
+            [(ngModel)]="selectedentregableId"
             (ngModelChange)="onProjectChange($event)"
             class="block w-full px-4 py-2 rounded-sm text-xs border border-gray-200 focus:outline-none focus:ring-1 focus:ring-[var(--primary)] focus:border-[var(--primary)] transition-all duration-200 text-[var(--darkText)] bg-white"
           >
             <option value="" disabled>Seleccione un proyecto *</option>
-            <option *ngIf="selectedProjectId != ''" value="">Limpiar</option>
-            <ng-container *ngIf="projects$ | async as projects">
-              <option *ngFor="let project of projects" [value]="project.id">
+            <option *ngIf="selectedentregableId != ''" value="">Limpiar</option>
+            <ng-container *ngIf="products$ | async as products">
+              <option *ngFor="let project of products" [value]="project.id">
                 {{ project.nombre }}
               </option>
             </ng-container>
@@ -20,7 +26,7 @@
         </div>
       </div>
       <!-- Controles de vista -->
-      <div *ngIf="selectedProjectId !== ''" class="flex items-center gap-5">
+      <div *ngIf="selectedentregableId !== ''" class="flex items-center gap-5">
         <button
           (click)="openModal()"
           [disabled]="disabledButton"
@@ -78,74 +84,98 @@
     </div>
     <!-- Contenedor del Gantt y Lista -->
     <div class="px-3 mt-6 flex gap-4 h-11/12">
-      <div *ngIf="selectedProjectId !== ''" class="flex w-full gap-4">
+      <div *ngIf="selectedentregableId !== ''" class="flex w-full gap-4">
         <!-- Lista de Tareas estilo MS Project -->
         <div class="w-1/4">
           <!-- Cabecera del listado -->
-          <div class="bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-300 rounded-t-sm pt-3">
+          <div
+            class="bg-gradient-to-b from-gray-50 to-gray-100 border border-gray-300 rounded-t-sm pt-3"
+          >
             <div class="px-4 py-2.5 border-b border-gray-300">
-              <h2 class="text-xs font-bold text-gray-700 uppercase tracking-wide">
+              <h2
+                class="text-xs font-bold text-gray-700 uppercase tracking-wide"
+              >
                 {{ selectedProjectName() }}
               </h2>
             </div>
             <!-- Headers de columnas estilo Project -->
-            <div class="mt-1 grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-300 bg-gray-100">
+            <div
+              class="mt-1 grid grid-cols-12 gap-2 px-3 py-2 text-[10px] font-semibold text-gray-600 uppercase tracking-wider border-b border-gray-300 bg-gray-100"
+            >
               <div class="col-span-5">Nombre</div>
               <div class="col-span-3 text-center">Inicio</div>
               <div class="col-span-3 text-center">Fin</div>
               <div class="col-span-1 text-center">%</div>
             </div>
           </div>
-          
+
           <!-- Contenedor scrolleable de tareas -->
           <div class="border-x border-b border-gray-300 rounded-b-sm bg-white">
-            <div class="overflow-y-auto" [style.height]="'calc(65vh - 56px)'">
-              <div 
+            <div class="overflow-y-auto" [style.height]="'calc(71vh - 56px)'">
+              <div
                 *ngFor="let task of ganttTasks(); let i = index"
                 (click)="highlightTask(task)"
-                [class.bg-blue-50]="selectedTaskId === task.id"
+                [class.bg-slate-50]="selectedTaskId === task.id"
                 [class.border-l-4]="selectedTaskId === task.id"
-                [class.border-l-blue-500]="selectedTaskId === task.id"
-                class="border-b border-gray-200 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-all duration-150"
+                [class.border-l-gray-800]="selectedTaskId === task.id"
+                class="border-b border-gray-200 py-1.5 pr-2 last:border-b-0 cursor-pointer hover:bg-gray-50 transition-all duration-150"
               >
                 <!-- Fila de datos estilo tabla -->
-                <div class="grid grid-cols-12 gap-2 px-3 py-1.5 items-center text-xs">
+                <div
+                  class="grid grid-cols-12 gap-2 px-3 py-1.5 items-center text-xs"
+                >
                   <!-- Nombre de tarea con indicador -->
                   <div class="col-span-5 flex items-center gap-1.5">
-                    <span class="flex-shrink-0 w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-bold text-white" 
-                          [style.background-color]="task.__color">
-                      {{i + 1}}
+                    <span
+                      class="flex-shrink-0 w-5 h-5 rounded-sm flex items-center justify-center text-[9px] font-bold text-white"
+                      [style.background-color]="task.__color"
+                    >
+                      {{ i + 1 }}
                     </span>
-                    <span class="font-medium text-gray-800 truncate" [title]="task.name">
-                      {{task.name}}
+                    <span
+                      class="font-medium text-gray-800 truncate"
+                      [title]="task.name"
+                    >
+                      {{ task.name }}
                     </span>
                   </div>
-                  
+
                   <!-- Fecha inicio -->
-                  <div class="col-span-3 text-center text-gray-600 text-[11px] font-mono">
-                    {{task.start | date:'dd/MM/yy'}}
+                  <div
+                    class="col-span-3 text-center text-gray-600 text-[11px] font-mono"
+                  >
+                    {{ task.start | date : "dd/MM/yy" }}
                   </div>
-                  
+
                   <!-- Fecha fin -->
-                  <div class="col-span-3 text-center text-gray-600 text-[11px] font-mono">
-                    {{task.end | date:'dd/MM/yy'}}
+                  <div
+                    class="col-span-3 text-center text-gray-600 text-[11px] font-mono"
+                  >
+                    {{ task.end | date : "dd/MM/yy" }}
                   </div>
-                  
+
                   <!-- Progreso -->
                   <div class="col-span-1 text-center">
-                    <span class="text-[10px] font-bold" 
-                          [class.text-green-600]="task.progress === 100"
-                          [class.text-blue-600]="task.progress > 0 && task.progress < 100"
-                          [class.text-gray-400]="task.progress === 0">
-                      {{task.progress}}%
+                    <span
+                      class="text-[10px] font-bold"
+                      [class.text-[var(--secondary)]]="task.progress === 100"
+                      [class.text-[var(--primary)]]="
+                        task.progress > 10 && task.progress < 100
+                      "
+                      [class.text-[#A65F01]]="task.progress === 10"
+                      [class.text-gray-400]="task.progress === 0"
+                    >
+                      {{ task.progress }}%
                     </span>
                   </div>
                 </div>
-                
+
                 <!-- Barra de progreso -->
                 <div class="px-3 pb-2">
-                  <div class="w-full bg-gray-200 rounded-full h-1 overflow-hidden">
-                    <div 
+                  <div
+                    class="w-full bg-gray-200 rounded-full h-1 overflow-hidden"
+                  >
+                    <div
                       class="h-full rounded-full transition-all duration-300 relative"
                       [style.width]="task.progress + '%'"
                       [style.background-color]="task.__color"
@@ -161,21 +191,29 @@
 
         <!-- Gantt Chart -->
         <div class="w-3/4">
-          <div #ganttRoot class="w-full bg-white border border-gray-300 rounded h-full"></div>
+          <div
+            #ganttRoot
+            class="w-full bg-white border border-gray-300 rounded h-full"
+          ></div>
         </div>
       </div>
-      
-      <div *ngIf="selectedProjectId === ''" class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded">
-        <p class="text-gray-500 text-sm">Seleccione un proyecto para ver su diagrama Gantt</p>
+
+      <div
+        *ngIf="selectedentregableId === ''"
+        class="w-full min-h-[500px] flex items-center justify-center bg-gray-50 border-2 border-dashed border-gray-300 rounded"
+      >
+        <p class="text-gray-500 text-sm">
+          Seleccione un proyecto para ver su diagrama Gantt
+        </p>
       </div>
     </div>
   </div>
 </div>
-  <app-modal-create
-    [show]="showModal"
-    (close)="closeModal()"
-    [mode]="modalMode"
-    [timeboxData]="selectedTimebox"
-    [projectId]="selectedProjectId"
-    (timeboxOutput)="handleTimeboxSave($event)"
-  ></app-modal-create>
+<app-modal-create
+  [show]="showModal"
+  (close)="closeModal()"
+  [mode]="modalMode"
+  [timeboxData]="selectedTimebox"
+  [entregableId]="selectedentregableId"
+  (timeboxOutput)="handleTimeboxSave($event)"
+></app-modal-create>

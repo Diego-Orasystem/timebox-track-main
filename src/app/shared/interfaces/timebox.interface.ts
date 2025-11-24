@@ -27,10 +27,11 @@ export interface Timebox {
     fechaPublicacion?: string;
     postulaciones?: Postulacion[];
   };
-  projectId: string;
-  appId: string;
+  entregableId: string;
   compensacionEconomica: CompensacionEconomica;
   estado: 'En Definición' | 'Disponible' | 'En Ejecución' | 'Finalizado';
+  parentTimeboxId?: string;
+  timeboxsAsociados?: Timebox[];
   created_at?: string;
 }
 

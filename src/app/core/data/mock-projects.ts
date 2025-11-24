@@ -1,4 +1,4 @@
-import { Project } from '../../shared/interfaces/project.interface';
+import { Product } from '../../shared/interfaces/product.interface';
 import { MOCK_TIMEBOXES } from './mock-timeboxes';
 
 //Timeboxes
@@ -12,7 +12,7 @@ import { MOCK_TIMEBOXES } from './mock-timeboxes';
 //       rol: 'Business Analyst',
 //     },
 //     estado: 'En Ejecución',
-//     projectId: 'proj-01',
+//     entregableId: 'proj-01',
 //     appId: 'app-01',
 //     fases: {
 //       planning: {
@@ -165,7 +165,7 @@ import { MOCK_TIMEBOXES } from './mock-timeboxes';
 // ];
 
 //Proyectos y apps
-export const MOCK_PROJECTS: Project[] = [
+export const MOCK_PROJECTS: Product[] = [
   {
     id: 'proj-01',
     nombre: 'Plataforma de Gestión Interna',
@@ -177,107 +177,6 @@ export const MOCK_PROJECTS: Project[] = [
       rol: 'Jefa de Proyectos',
     },
     fechaCreacion: '2024-01-15',
-    apps: [
-      {
-        id: 'app-01',
-        nombre: 'Módulo de Recursos Humanos',
-        descripcion: 'Gestión de contratos, vacaciones y datos del personal.',
-        team: [
-          {
-            nombre: 'Andrés Vera',
-            email: 'andres.vera@empresa.cl',
-            rol: 'Fullstack Developer',
-          },
-          {
-            nombre: 'Laura Pinto',
-            email: 'laura.pinto@empresa.cl',
-            rol: 'QA Analyst',
-          },
-        ],
-        estado: 'activa',
-        version: '2.3.1',
-        enlaces: [
-          { nombre: 'Planning', url: 'https://rrhh.empresa.cl' },
-          { nombre: 'Servers', url: 'https://api.rrhh.empresa.cl' },
-          { nombre: 'Development', url: 'https://api.rrhh.empresa.cl' },
-          { nombre: 'Landing Page', url: 'https://api.rrhh.empresa.cl' },
-        ],
-        contenido: [
-          {
-            id: 'cnt-01',
-            nombre: 'Documentación Funcional',
-            tipo: 'Documento',
-            adjunto: {
-              type: 'Doc',
-              fechaAdjunto: '',
-              nombre: 'doc-funcional.pdf',
-              url: '/docs/doc-funcional.pdf',
-            },
-          },
-          {
-            id: 'cnt-02',
-            nombre: 'Arquitectura',
-            tipo: 'Imagen',
-            adjunto: {
-              type: 'Imagen',
-              fechaAdjunto: '',
-              nombre: 'arq.png',
-              url: '/img/arq.png',
-            },
-          },
-        ],
-        timeboxes: [...MOCK_TIMEBOXES],
-      },
-      {
-        id: 'app-02',
-        nombre: 'Módulo Finanzas',
-        descripcion: 'Gestión de finanzas',
-        team: [
-          {
-            nombre: 'Andrés Vera',
-            email: 'andres.vera@empresa.cl',
-            rol: 'Fullstack Developer',
-          },
-          {
-            nombre: 'Laura Pinto',
-            email: 'laura.pinto@empresa.cl',
-            rol: 'QA Analyst',
-          },
-        ],
-        estado: 'activa',
-        version: '2.3.1',
-        enlaces: [
-          { nombre: 'Planning', url: 'https://rrhh.empresa.cl' },
-          { nombre: 'Servers', url: 'https://api.rrhh.empresa.cl' },
-          { nombre: 'Development', url: 'https://api.rrhh.empresa.cl' },
-        ],
-        contenido: [
-          {
-            id: 'cnt-01',
-            nombre: 'Documentación Funcional',
-            tipo: 'Documento',
-            adjunto: {
-              type: 'Doc',
-              fechaAdjunto: '',
-              nombre: 'doc-funcional.pdf',
-              url: '/docs/doc-funcional.pdf',
-            },
-          },
-          {
-            id: 'cnt-02',
-            nombre: 'Arquitectura',
-            tipo: 'Imagen',
-            adjunto: {
-              type: 'Imagen',
-              fechaAdjunto: '',
-              nombre: 'arq.png',
-              url: '/img/arq.png',
-            },
-          },
-        ],
-        timeboxes: [...MOCK_TIMEBOXES],
-      },
-    ],
   },
   {
     id: 'proj-02',
@@ -290,53 +189,6 @@ export const MOCK_PROJECTS: Project[] = [
       rol: 'Líder Técnico',
     },
     fechaCreacion: '2023-10-01',
-    apps: [
-      {
-        id: 'app-02',
-        nombre: 'Gestión de Equipos',
-        descripcion: 'App para controlar notebooks, PCs, móviles y licencias.',
-        team: [
-          {
-            nombre: 'Fabiola Reyes',
-            email: 'fabiola.reyes@empresa.cl',
-            rol: 'Backend Developer',
-          },
-        ],
-        estado: 'en desarrollo',
-        version: '1.0.0-beta',
-        enlaces: [
-          {
-            nombre: 'Repositorio Git',
-            url: 'https://github.com/empresa/inventario-ti',
-          },
-        ],
-        contenido: [
-          {
-            id: 'cnt-03',
-            nombre: 'Video explicativo',
-            tipo: 'Video',
-            adjunto: {
-              type: '',
-              fechaAdjunto: '',
-              nombre: 'demo.mp4',
-              url: '/videos/demo.mp4',
-            },
-          },
-          {
-            id: 'cnt-04',
-            nombre: 'Manual de uso',
-            tipo: 'Documento',
-            adjunto: {
-              type: '',
-              fechaAdjunto: '',
-              nombre: 'manual.pdf',
-              url: '/docs/manual.pdf',
-            },
-          },
-        ],
-        timeboxes: [...MOCK_TIMEBOXES],
-      },
-    ],
   },
   {
     id: 'proj-03',
@@ -349,46 +201,5 @@ export const MOCK_PROJECTS: Project[] = [
       rol: 'Product Owner',
     },
     fechaCreacion: '2022-07-20',
-    apps: [
-      {
-        id: 'app-03',
-        nombre: 'Ticketing App',
-        descripcion:
-          'Recibe, clasifica y deriva solicitudes de soporte técnico.',
-        team: [
-          {
-            nombre: 'Jorge Ortega',
-            email: 'jorge.ortega@empresa.cl',
-            rol: 'Frontend Developer',
-          },
-        ],
-        estado: 'mantenimiento',
-        version: '3.2.5',
-        enlaces: [
-          { nombre: 'Portal de Soporte', url: 'https://soporte.empresa.cl' },
-        ],
-        contenido: [
-          {
-            id: 'cnt-05',
-            nombre: 'Estructura de carpetas',
-            tipo: 'Carpeta',
-            contenido: [
-              {
-                id: 'cnt-05a',
-                nombre: 'Flujogramas',
-                tipo: 'Documento',
-                adjunto: {
-                  type: '',
-                  fechaAdjunto: '',
-                  nombre: 'flujo.pdf',
-                  url: '/docs/flujo.pdf',
-                },
-              },
-            ],
-          },
-        ],
-        timeboxes: [...MOCK_TIMEBOXES],
-      },
-    ],
   },
 ];

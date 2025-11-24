@@ -1,53 +1,6 @@
 <div class="form-container w-full inline-flex items-start space-x-6">
   <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
     <button
-      (click)="openModalResponsable()"
-      class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
-    >
-      <svg
-        width="16px"
-        height="16px"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        fill="#000000"
-      >
-        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-        <g
-          id="SVGRepo_tracerCarrier"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ></g>
-        <g id="SVGRepo_iconCarrier">
-          <title></title>
-          <g id="Complete">
-            <g id="user">
-              <g>
-                <path
-                  d="M20,21V19a4,4,0,0,0-4-4H8a4,4,0,0,0-4,4v2"
-                  fill="none"
-                  stroke="#0B0B0B"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                ></path>
-                <circle
-                  cx="12"
-                  cy="7"
-                  fill="none"
-                  r="4"
-                  stroke="#0B0B0B"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                ></circle>
-              </g>
-            </g>
-          </g>
-        </g>
-      </svg>
-      Responsable
-    </button>
-    <button
       (click)="openModalParticipantes()"
       class="group w-full inline-flex text-start items-center gap-2 text-[12px] bg-[var(--backgroundLight)] px-3 py-2 cursor-pointer rounded-md transition-all duration-200 ease-in-out border border-transparent hover:bg-slate-200 hover:border-slate-200"
     >
@@ -209,10 +162,7 @@
       <div *ngIf="form.get('completada')?.value">
         <span class="text-xs text-gray-500 font-medium">Fase completada: </span>
         <span class="text-[12px] text-[var(--secondary)] font-semibold">
-          {{
-            getFormattedDate(form.get("fechaCompletado")?.value) ||
-              "Sin definir"
-          }}
+          {{ getFormattedDate(form.get("fechaFase")?.value) || "Sin definir" }}
         </span>
       </div>
       <div
@@ -341,7 +291,6 @@
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
 
@@ -402,7 +351,6 @@
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
 
@@ -461,7 +409,6 @@
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
 
@@ -520,7 +467,6 @@
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
 
@@ -581,12 +527,9 @@
                 </li>
               </ul>
             </div>
-
           </div>
         </div>
       </section>
-
-
 
       <!--Participantes del kickoff-->
       <section class="participantes">
@@ -663,7 +606,7 @@
           <div
             class="inline-flex items-center w-60 justify-between bg-[var(--backgroundLight)] px-3 py-2 rounded-sm border border-[var(--lines)] cursor-pointer mb-2"
           >
-            <span class="text-xs">{{ p.get("persona")?.value }}</span>
+            <span class="text-xs">{{ p.get("email")?.value }}</span>
             <button
               *ngIf="participantes.length > 0"
               (click)="eliminarParticipante(i)"

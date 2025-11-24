@@ -49,7 +49,7 @@
 
       <!-- Paso actual (no completado y no pasado) -->
       <!-- Si el paso no está completado Y es el paso activo -->
-      <ng-container *ngIf="i === activeStep && !step.completed">
+      <ng-container *ngIf="!step.completed && i === firstPendingStepIndex">
         <svg
           width="64px"
           height="64px"
@@ -86,9 +86,9 @@
         </svg>
       </ng-container>
 
-      <!-- Paso pendiente (no completado y no activo) -->
+      <!-- Pasos pendientes no completados -->
       <!-- Si el paso no está completado Y no es el paso activo -->
-      <ng-container *ngIf="i !== activeStep && !step.completed">
+      <ng-container *ngIf="!step.completed && i > firstPendingStepIndex">
         <svg
           width="64px"
           height="64px"
@@ -130,8 +130,8 @@
     <span
       [ngClass]="{
         'font-semibold text-[var(--darkText)]': activeStep === i,
-        'text-[var(--darkText)]': step.completed,
-        'text-[var(--disabled)]': !step.completed && i > activeStep
+        'text-[var(--darkText)]': step.completed || i === firstPendingStepIndex,
+        'text-[var(--disabled)]': !step.completed && i > firstPendingStepIndex,
       }"
     >
       {{ step.name | titlecase }}

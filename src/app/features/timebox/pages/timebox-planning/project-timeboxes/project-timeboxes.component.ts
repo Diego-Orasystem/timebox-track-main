@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { Timebox } from '../../../../../shared/interfaces/timebox.interface';
 import { TimeboxTableComponent } from '../../../components/timebox-table/timebox-table.component';
-import { ProjectService } from '../../../services/project.service';
+import { ProductService } from '../../../services/product.service';
 import { ModalCreateComponent } from '../../../components/modal-create-timebox/modal-create.component';
 
 @Component({
@@ -83,14 +83,14 @@ import { ModalCreateComponent } from '../../../components/modal-create-timebox/m
       (close)="closeModal()"
       [mode]="modalMode"
       [timeboxData]="selectedTimebox"
-      [projectId]="projectId"
+      [entregableId]="entregableId"
       (timeboxOutput)="handleTimeboxSave($event)"
     ></app-modal-create>
   `,
 })
 export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
   projectTimeboxes: Timebox[] = [];
-  projectId: string | null = null;
+  entregableId: string | null = null;
   showModal: boolean = false;
   modalMode: 'create' | 'read' | 'edit' = 'create';
   selectedTimebox: Timebox = {} as Timebox;
@@ -98,15 +98,15 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
 
   constructor(
     private route: ActivatedRoute,
-    private projectService: ProjectService
+    private productService: ProductService
   ) {}
 
   ngOnInit(): void {
-    // Suscribirse a los parámetros de la ruta para obtener el projectId
+    // Suscribirse a los parámetros de la ruta para obtener el entregableId
     this.routeSubscription = this.route.parent?.paramMap.subscribe((params) => {
-      // Usamos .parent para acceder al ':projectId' de la ruta padre (ProjectDetailComponent)
-      this.projectId = params.get('projectId');
-      if (this.projectId) {
+      // Usamos .parent para acceder al ':entregableId' de la ruta padre (ProjectDetailComponent)
+      this.entregableId = params.get('productId');
+      if (this.entregableId) {
         this.loadProjectTimeboxes();
       }
     });
@@ -117,17 +117,19 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
   }
 
   loadProjectTimeboxes(): void {
-    if (this.projectId) {
-      this.projectService.getTimeboxesByProjectId(this.projectId).subscribe({
-        next: (timeboxes: Timebox[]) => {
-          this.projectTimeboxes = timeboxes || [];
-          console.log('Timeboxes cargados:', this.projectTimeboxes);
-        },
-        error: (error: any) => {
-          console.error('Error cargando timeboxes del proyecto:', error);
-          this.projectTimeboxes = [];
-        }
-      });
+    if (this.entregableId) {
+      this.productService
+        .getTimeboxesByEntregableId(this.entregableId)
+        .subscribe({
+          next: (timeboxes: Timebox[]) => {
+            this.projectTimeboxes = timeboxes || [];
+            console.log('Timeboxes cargados:', this.projectTimeboxes);
+          },
+          error: (error: any) => {
+            console.error('Error cargando timeboxes del proyecto:', error);
+            this.projectTimeboxes = [];
+          },
+        });
     }
   }
 
@@ -139,10 +141,8 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
 
   // Método llamado desde la tabla/lista para editar un timebox
   onTimeboxSelected(timebox: Timebox): void {
-    console.log('🔍 onTimeboxSelected - timebox original:', timebox);
-    console.log('🔍 onTimeboxSelected - timebox ID:', timebox.id);
-    console.log('🔍 onTimeboxSelected - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
-    
+    console.log('Timebox Seleccionado: ', JSON.stringify(timebox, null, 2));
+
     // Mapear los datos del backend al formato que espera el frontend
     this.selectedTimebox = {
       ...timebox,
@@ -150,29 +150,36 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
       tipoTimebox: timebox.tipoTimebox,
       businessAnalyst: timebox.businessAnalyst,
       // Asegurar que las fases estén inicializadas y mapear campos específicos
-      fases: timebox.fases ? {
-        planning: timebox.fases.planning ? {
-          ...timebox.fases.planning,
-          // Mapear fecha_inicio del backend a fechaInicio del frontend
-          fechaInicio: timebox.fases.planning.fecha_inicio || timebox.fases.planning.fechaInicio || '',
-          // El teamLeader ya viene correctamente formateado desde la API
-          teamLeader: timebox.fases.planning.teamLeader || undefined
-        } : undefined,
-        kickOff: timebox.fases.kickOff,
-        refinement: timebox.fases.refinement,
-        qa: timebox.fases.qa,
-        close: timebox.fases.close
-      } : {
-        planning: undefined,
-        kickOff: undefined,
-        refinement: undefined,
-        qa: undefined,
-        close: undefined
-      }
+      fases: timebox.fases
+        ? {
+            planning: timebox.fases.planning
+              ? {
+                  ...timebox.fases.planning,
+                  // Mapear fecha_inicio del backend a fechaInicio del frontend
+                  fechaInicio:
+                    timebox.fases.planning.fecha_inicio ||
+                    timebox.fases.planning.fechaInicio ||
+                    '',
+                  adjuntos: timebox.fases.planning.adjuntos || [],
+                  // El teamLeader ya viene correctamente formateado desde la API
+                  teamLeader: timebox.fases.planning.teamLeader || undefined,
+                }
+              : undefined,
+            kickOff: timebox.fases.kickOff,
+            refinement: timebox.fases.refinement,
+            qa: timebox.fases.qa,
+            close: timebox.fases.close,
+          }
+        : {
+            planning: undefined,
+            kickOff: undefined,
+            refinement: undefined,
+            qa: undefined,
+            close: undefined,
+          },
     };
     console.log('🔍 Timebox seleccionado para editar:', this.selectedTimebox);
-    console.log('🔍 selectedTimebox ID:', this.selectedTimebox.id);
-    console.log('🔍 selectedTimebox teamLeader:', this.selectedTimebox.fases?.planning?.teamLeader);
+
     this.modalMode = 'edit';
     this.showModal = true;
   }
@@ -185,48 +192,43 @@ export class ProjectTimeboxesPageComponent implements OnInit, OnDestroy {
   }
 
   handleTimeboxSave(timeboxFromModal: Timebox): void {
-    console.log('🔄 ProjectTimeboxesComponent: handleTimeboxSave llamado con:', timeboxFromModal);
-    console.log('🔍 timeboxFromModal ID:', timeboxFromModal.id);
-    
-    if (!this.projectId) {
-      console.error('❌ No hay projectId');
+    if (!this.entregableId) {
+      console.error('❌ No hay entregableId');
       return;
     }
 
     if (timeboxFromModal.id) {
       console.log('🔄 Actualizando timebox existente:', timeboxFromModal.id);
       // Actualizar timebox existente
-      this.projectService.updateTimebox(
-        this.projectId,
-        timeboxFromModal
-      ).subscribe({
-        next: (resultTimebox: Timebox) => {
-          console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
-          this.selectedTimebox = { ...resultTimebox };
-          this.loadProjectTimeboxes();
-        },
-        error: (error: any) => {
-          console.error('❌ Error actualizando timebox:', error);
-          alert('Error al actualizar el timebox. Inténtalo de nuevo.');
-        }
-      });
+      this.productService
+        .updateTimebox(this.entregableId, timeboxFromModal)
+        .subscribe({
+          next: (resultTimebox: Timebox) => {
+            console.log('✅ Timebox actualizado exitosamente:', resultTimebox);
+            this.selectedTimebox = { ...resultTimebox };
+            this.loadProjectTimeboxes();
+          },
+          error: (error: any) => {
+            console.error('❌ Error actualizando timebox:', error);
+            alert('Error al actualizar el timebox. Inténtalo de nuevo.');
+          },
+        });
     } else {
       console.log('🔄 Creando nuevo timebox...');
       // Crear nuevo timebox
-      this.projectService.createTimebox(
-        this.projectId,
-        timeboxFromModal
-      ).subscribe({
-        next: (resultTimebox: Timebox) => {
-          console.log('✅ Timebox creado exitosamente:', resultTimebox);
-          this.selectedTimebox = { ...resultTimebox };
-          this.loadProjectTimeboxes();
-        },
-        error: (error: any) => {
-          console.error('Error creando timebox:', error);
-          alert('Error al crear el timebox. Inténtalo de nuevo.');
-        }
-      });
+      this.productService
+        .createTimebox(this.entregableId, timeboxFromModal)
+        .subscribe({
+          next: (resultTimebox: Timebox) => {
+            console.log('✅ Timebox creado exitosamente:', resultTimebox);
+            this.selectedTimebox = { ...resultTimebox };
+            this.loadProjectTimeboxes();
+          },
+          error: (error: any) => {
+            console.error('Error creando timebox:', error);
+            alert('Error al crear el timebox. Inténtalo de nuevo.');
+          },
+        });
     }
   }
 }

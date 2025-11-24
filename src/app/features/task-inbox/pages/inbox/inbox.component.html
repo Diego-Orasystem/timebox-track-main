@@ -1,13 +1,13 @@
-<div class="p-10 flex flex-col gap-4 font-inter bg-gray-50">
+<div class="px-10 pt-4 pb-4 flex flex-col gap-4 font-inter bg-gray-50">
   <div
     class="header flex flex-col md:flex-row items-start md:items-center justify-between w-full"
   >
-    <div class="flex flex-col select-none mb-4 md:mb-0">
+    <div class="flex flex-col select-none">
       <h1 class="text-md font-extrabold text-[var(--darkText)]">
-        Timeboxes {{ filterState }}s
+        Timeboxs {{ filterState }}s
       </h1>
       <p class="text-sm text-[var(--text-medium)] mt-1">
-        Explora, solicita y gestiona tus asignaciones de timebox.
+        Explora, solicita y gestiona tus asignaciones de timeboxs.
       </p>
     </div>
   </div>
@@ -98,7 +98,7 @@
       </div>
     </div>
   </div>
-  <div class="w-full inline-flex gap-4 pb-4">
+  <div class="w-full inline-flex gap-4">
     <div class="w-full flex justify-end">
       <div
         class="inline-flex flex-wrap gap-1 bg-[var(--backgroundLight)] p-1 rounded-sm border border-[var(--lines)] shadow-sm"
@@ -106,26 +106,7 @@
         <label
           class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
           [ngClass]="{
-            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
-              filterState === 'Todos',
-            'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
-              filterState !== 'Todos'
-          }"
-        >
-          <input
-            type="radio"
-            name="filterState"
-            value="Todos"
-            [(ngModel)]="filterState"
-            (change)="applyFilters()"
-            class="hidden"
-          />
-          <span>Todos</span>
-        </label>
-        <label
-          class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
-          [ngClass]="{
-            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
+            'bg-gray-800 text-[var(--lightText)] font-semibold shadow-sm':
               filterState === 'Disponible',
             'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
               filterState !== 'Disponible'
@@ -144,7 +125,7 @@
         <label
           class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
           [ngClass]="{
-            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
+            'bg-gray-800 text-[var(--lightText)] font-semibold shadow-sm':
               filterState === 'Solicitado',
             'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
               filterState !== 'Solicitado'
@@ -163,7 +144,7 @@
         <label
           class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
           [ngClass]="{
-            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
+            'bg-gray-800 text-[var(--lightText)] font-semibold shadow-sm':
               filterState === 'Asignado',
             'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
               filterState !== 'Asignado'
@@ -182,7 +163,7 @@
         <label
           class="flex-1 text-sm text-center cursor-pointer px-4 py-2 rounded-sm transition-all duration-200 ease-in-out"
           [ngClass]="{
-            'bg-[var(--primary)] text-[var(--lightText)] font-semibold shadow-sm':
+            'bg-gray-800 text-[var(--lightText)] font-semibold shadow-sm':
               filterState === 'Finalizado',
             'text-[var(--text-medium)] hover:bg-[var(--backgroundMain)]':
               filterState !== 'Finalizado'
@@ -275,12 +256,12 @@
 
       <!-- Compensación -->
       <div class="flex flex-wrap gap-4 mt-0">
-                  <div class="inline-flex items-center place-items-center text-xs gap-1">
-            💰
-            <span class="text-slate-500 font-medium">{{
-              formatFinanciamientoMonto(item)
-            }}</span>
-          </div>
+        <div class="inline-flex items-center place-items-center text-xs gap-1">
+          💰
+          <span class="text-slate-500 font-medium">{{
+            formatFinanciamientoMonto(item)
+          }}</span>
+        </div>
 
         <div class="inline-flex items-center place-items-center text-xs gap-1">
           ⏱️
@@ -889,7 +870,9 @@
                 </div>
               </div>
               <ng-template #noInfo>
-                <p class="text-[12px] text-gray-500 mt-2">No hay información.</p>
+                <p class="text-[12px] text-gray-500 mt-2">
+                  No hay información.
+                </p>
               </ng-template>
             </section>
           </div>
@@ -1860,8 +1843,6 @@
 
       <hr class="border-t border-[var(--lines)] w-full" />
 
-
-
       <hr
         *ngIf="timeboxSeleccionado.fases.kickOff"
         class="border-t border-[var(--lines)] w-full"
@@ -2088,8 +2069,6 @@
         </ng-template>
       </section>
 
-
-
       <!-- Call to Action Button -->
       <div class="w-full pt-6">
         <!-- Solicitar timebox -->
@@ -2156,7 +2135,18 @@
               }"
               class="px-4 py-3 text-[12px] font-medium rounded-sm focus:outline-none cursor-pointer duration-300 mt-3"
             >
-              Postular a {{ hayRolesSeleccionados() ? rolesSeleccionados.length : 0 }} Rol{{ hayRolesSeleccionados() && rolesSeleccionados.length !== 1 ? 'es' : '' }} Seleccionado{{ hayRolesSeleccionados() && rolesSeleccionados.length !== 1 ? 's' : '' }}
+              Postular a
+              {{ hayRolesSeleccionados() ? rolesSeleccionados.length : 0 }}
+              Rol{{
+                hayRolesSeleccionados() && rolesSeleccionados.length !== 1
+                  ? "es"
+                  : ""
+              }}
+              Seleccionado{{
+                hayRolesSeleccionados() && rolesSeleccionados.length !== 1
+                  ? "s"
+                  : ""
+              }}
             </button>
           </div>
 

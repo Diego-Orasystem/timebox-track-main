@@ -182,7 +182,6 @@ const closeFinalizado: Close = {
 const qaData: QaData = {
   // Estado General
   estadoConsolidacion: 'Completado',
-  progresoConsolidacion: 100,
 
   // Despliegue
   fechaPreparacionEntorno: '2025-07-19T04:53:09.033Z', // Formato YYYY-MM-DD para compatibilidad
@@ -193,19 +192,9 @@ const qaData: QaData = {
     'El despliegue se realizó sin incidentes mayores. Se observó un ligero aumento en el tiempo de carga inicial, pero se normalizó después de 5 minutos. Los logs no muestran errores críticos post-despliegue. Se recomienda monitoreo continuo durante las primeras 24 horas.',
 
   // Testing General
-  planPruebasUrl: 'https://ejemplo.com/documentos/plan_pruebas_v2.pdf',
   resultadosPruebas: '280/300 casos de prueba pasados (93% de cobertura).',
   bugsIdentificados: '3 bugs abiertos (1 crítico, 2 menores).',
-  urlBugs: 'https://jira.ejemplo.com/browse/PROJ-123',
   responsableQA: 'María González (QA Lead)',
-
-  // UAT
-  fechaInicioUAT: '2025-06-21',
-  fechaFinUAT: '2025-06-22',
-  estadoUAT: 'Aprobado',
-  responsableUAT: 'Carlos Rodríguez (Product Owner)',
-  feedbackUAT:
-    'Los usuarios de negocio validaron la funcionalidad principal y las nuevas características. Se recibieron comentarios positivos sobre la usabilidad, aunque se sugirieron mejoras menores en la interfaz de usuario que se abordarán en futuras iteraciones. El rendimiento fue satisfactorio para los volúmenes de prueba.',
 
   // Adjuntos
   adjuntosQA: [
@@ -252,8 +241,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
     estado: 'En Definición',
     publicacionOferta: { publicado: false, solicitado: false },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -305,8 +294,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -390,8 +379,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -485,8 +474,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -556,8 +545,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -607,8 +596,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },
@@ -658,8 +647,8 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       ],
     },
 
-    projectId: 'proj-dashboard-kpi',
-    appId: 'app-01',
+    entregableId: 'proj-dashboard-kpi',
+
     compensacionEconomica: {
       skills: [
         { tipo: 'Tecnológica', nombre: 'Angular' },

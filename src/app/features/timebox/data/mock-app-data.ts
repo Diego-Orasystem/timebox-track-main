@@ -1,4 +1,4 @@
-import { Project } from '../../../shared/interfaces/project.interface';
+import { Project } from '../../../shared/interfaces/product.interface';
 import { MOCK_TIMEBOXES } from './mock-timeboxes';
 
 // --- Mock de Proyectos ---

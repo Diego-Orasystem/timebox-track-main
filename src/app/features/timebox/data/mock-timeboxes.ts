@@ -18,6 +18,7 @@ const planningActivo: Planning = {
   descripcion:
     'Definición del alcance para el desarrollo del módulo de clientes.',
   fechaFase: '',
+  fechaCompletado: '',
   eje: 'Expansión de Mercado',
   aplicativo: 'CRM Principal',
   alcance: 'Módulo de Gestión de Clientes',
@@ -31,6 +32,7 @@ const planningActivo: Planning = {
       type: 'archivo',
       nombre: 'ActaPlanning.pdf',
       url: '/docs/acta_planning.pdf',
+      fechaAdjunto: '',
     },
   ],
   skills: [
@@ -45,7 +47,7 @@ const planningActivo: Planning = {
 };
 
 const kickOffEjecucion: KickOff = {
-  fechaFase: '2025-07-12T04:53:09.033Z',
+  fechaCompletado: '2025-07-12T04:53:09.033Z',
   teamMovilization: {
     businessAdvisor: {
       nombre: '',
@@ -68,6 +70,7 @@ const kickOffEjecucion: KickOff = {
       type: 'archivo',
       nombre: 'PresentacionKickOff.pptx',
       url: '/docs/kickoff_pres.pptx',
+      fechaAdjunto: '',
     },
   ],
   participantes: MOCK_PERSONAS.slice(0, 3), // Juan, María, Carlos
@@ -76,7 +79,7 @@ const kickOffEjecucion: KickOff = {
 };
 
 const refinementActivo: Refinement = {
-  fechaFase: '2025-07-15T04:53:09.033Z',
+  fechaCompletado: '2025-07-15T04:53:09.033Z',
   revisiones: [
     {
       tipo: 'Revision',
@@ -90,10 +93,14 @@ const refinementActivo: Refinement = {
           type: 'archivo',
           nombre: 'EspecificacionDetalle.docx',
           url: '/docs/espec_detalle.docx',
+          fechaAdjunto: '',
         },
       ],
       listaAcuerdos: [{ label: 'Requisito X clarificado', checked: true }],
-      completada: false,
+      cierreSolicitud: {
+        completada: false,
+        fechaDeRealizacion: '',
+      },
     },
   ],
 
@@ -109,15 +116,10 @@ const EntregaEjecucion: Entrega = {
       type: 'archivo',
       nombre: 'ModuloClientesV1.zip',
       url: '/entrega/mod_clientes_v1.zip',
+      fechaAdjunto: '',
     },
   ],
-  adjuntosEvidencias: [
-    {
-      type: 'archivo',
-      nombre: 'VideoDemoClientes.mp4',
-      url: '/entrega/demo_clientes.mp4',
-    },
-  ],
+  completada: false,
   observaciones:
     'Primera versión funcional del módulo de clientes, incluye alta y edición.',
 };
@@ -128,11 +130,14 @@ const solicitudCierreFinalizado: SolicitudRevision = {
   horarioDisponibilidad: {
     Miércoles: { bloques: [{ start: '14:00', end: '15:00' }] },
   },
-  completada: true,
+  cierreSolicitud: {
+    completada: true,
+    fechaDeRealizacion: '',
+  },
 };
 
 const closeFinalizado: Close = {
-  fechaFase: '2025-07-19T04:53:09.033Z',
+  fechaCompletado: '2025-07-19T04:53:09.033Z',
   solicitudCierre: solicitudCierreFinalizado,
   checklist: [
     { label: 'Todas las pruebas pasadas', checked: true },
@@ -143,6 +148,7 @@ const closeFinalizado: Close = {
       type: 'archivo',
       nombre: 'InformeCierreTimebox.pdf',
       url: '/reports/cierre_timebox.pdf',
+      fechaAdjunto: '',
     },
   ],
   cumplimiento: 'Total',
@@ -162,7 +168,6 @@ const closeFinalizado: Close = {
 const qaData: QaData = {
   // Estado General
   estadoConsolidacion: 'Completado',
-  progresoConsolidacion: 100,
 
   // Despliegue
   fechaPreparacionEntorno: '2025-07-19T04:53:09.033Z', // Formato YYYY-MM-DD para compatibilidad
@@ -173,19 +178,9 @@ const qaData: QaData = {
     'El despliegue se realizó sin incidentes mayores. Se observó un ligero aumento en el tiempo de carga inicial, pero se normalizó después de 5 minutos. Los logs no muestran errores críticos post-despliegue. Se recomienda monitoreo continuo durante las primeras 24 horas.',
 
   // Testing General
-  planPruebasUrl: 'https://ejemplo.com/documentos/plan_pruebas_v2.pdf',
   resultadosPruebas: '280/300 casos de prueba pasados (93% de cobertura).',
   bugsIdentificados: '3 bugs abiertos (1 crítico, 2 menores).',
-  urlBugs: 'https://jira.ejemplo.com/browse/PROJ-123',
   responsableQA: 'María González (QA Lead)',
-
-  // UAT
-  fechaInicioUAT: '2025-06-21',
-  fechaFinUAT: '2025-06-22',
-  estadoUAT: 'Aprobado',
-  responsableUAT: 'Carlos Rodríguez (Product Owner)',
-  feedbackUAT:
-    'Los usuarios de negocio validaron la funcionalidad principal y las nuevas características. Se recibieron comentarios positivos sobre la usabilidad, aunque se sugirieron mejoras menores en la interfaz de usuario que se abordarán en futuras iteraciones. El rendimiento fue satisfactorio para los volúmenes de prueba.',
 
   // Adjuntos
   adjuntosQA: [
@@ -193,16 +188,19 @@ const qaData: QaData = {
       nombre: 'Reporte_Pruebas_Funcionales_V2.pdf',
       url: 'https://ejemplo.com/adjuntos/reporte_funcional_v2.pdf',
       type: 'archivo',
+      fechaAdjunto: '',
     },
     {
       nombre: 'Acta_Cierre_UAT_Fase_1.docx',
       url: 'https://ejemplo.com/adjuntos/acta_uat_fase1.docx',
       type: 'archivo',
+      fechaAdjunto: '',
     },
     {
       nombre: 'Dashboard_Performance.png',
       url: 'https://ejemplo.com/adjuntos/dashboard_perf.png',
       type: 'archivo',
+      fechaAdjunto: '',
     },
   ],
   completada: true, // Añadido el campo 'completada' de tu interfaz
@@ -225,8 +223,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
     },
     estado: 'En Definición',
     publicacionOferta: { publicado: false, solicitado: false },
-    monto: 0,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
 
   // 2. Timebox en estado "Disponible" (Planning completado, listo para KickOff)
@@ -260,8 +265,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 5000,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
 
   // 3. Timebox en estado "En Ejecución" (Ya tuvo KickOff y alguna entrega)
@@ -287,7 +299,7 @@ export const MOCK_TIMEBOXES: Timebox[] = [
       },
       refinement: {
         ...refinementActivo,
-        fechaFase: '2025-07-15T04:53:09.033Z',
+        fechaCompletado: '2025-07-15T04:53:09.033Z',
         completada: true, // Un refinement completado
       },
       qa: qaData,
@@ -302,13 +314,7 @@ export const MOCK_TIMEBOXES: Timebox[] = [
           type: 'archivo',
           nombre: 'WireframesV1.pdf',
           url: '/entrega/wireframes_v1.pdf',
-        },
-      ],
-      adjuntosEvidencias: [
-        {
-          type: 'archivo',
-          nombre: 'TestUsabilidadV1.mp4',
-          url: '/entrega/test_usab_v1.mp4',
+          fechaAdjunto: '',
         },
       ],
       observaciones:
@@ -333,8 +339,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 0,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
 
   // 4. Timebox en estado "Finalizado" (Con todas las fases y un cierre)
@@ -362,12 +375,13 @@ export const MOCK_TIMEBOXES: Timebox[] = [
             type: 'archivo',
             nombre: 'AgendaRetro.pdf',
             url: '/docs/agenda_retro.pdf',
+            fechaAdjunto: '',
           },
         ],
       },
       refinement: {
         ...refinementActivo,
-        fechaFase: '2025-07-15T04:53:09.033Z',
+        fechaCompletado: '2025-07-15T04:53:09.033Z',
         completada: true, // Un refinement completado
       },
       qa: qaData,
@@ -375,6 +389,7 @@ export const MOCK_TIMEBOXES: Timebox[] = [
     },
     entrega: {
       id: 'del-retro-001',
+      completada: true,
       fechaEntrega: '2025-07-18T04:53:09.033Z',
       responsable: 'Carlos Ruiz',
       adjuntosEntregables: [
@@ -382,13 +397,7 @@ export const MOCK_TIMEBOXES: Timebox[] = [
           type: 'archivo',
           nombre: 'LeccionesAprendidasQ2.pdf',
           url: '/entrega/lecciones_q2.pdf',
-        },
-      ],
-      adjuntosEvidencias: [
-        {
-          type: 'archivo',
-          nombre: 'AcuerdosEquipo.docx',
-          url: '/entrega/acuerdos_equipo.docx',
+          fechaAdjunto: '',
         },
       ],
       observaciones:
@@ -413,8 +422,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 0,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
 
   // 5. Timebox en estado "En Ejecución" con múltiples refinamientos
@@ -436,18 +452,19 @@ export const MOCK_TIMEBOXES: Timebox[] = [
             nombre: 'Juan Pérez',
           },
         },
-        fechaFase: '2025-07-12T04:53:09.033Z',
+        fechaCompletado: '2025-07-12T04:53:09.033Z',
         participantes: MOCK_PERSONAS.slice(0, 3), // Juan, María, Carlos
       },
       refinement: {
         ...refinementActivo,
-        fechaFase: '2025-07-14T04:53:09.033Z',
+        fechaCompletado: '2025-07-14T04:53:09.033Z',
         completada: true, // Un refinement completado
       },
       qa: qaData,
     },
     entrega: {
       id: 'del-pagos-001',
+      completada: true,
       fechaEntrega: '2025-07-16T04:53:09.033Z',
       responsable: 'Juan Pérez',
       adjuntosEntregables: [
@@ -455,13 +472,7 @@ export const MOCK_TIMEBOXES: Timebox[] = [
           type: 'archivo',
           nombre: 'ProcesadorPagosBasico.zip',
           url: '/entrega/pagos_basico.zip',
-        },
-      ],
-      adjuntosEvidencias: [
-        {
-          type: 'archivo',
-          nombre: 'LogPruebasUnitariasPagos.txt',
-          url: '/entrega/log_pruebas_pagos.txt',
+          fechaAdjunto: '',
         },
       ],
       observaciones: 'Implementación básica de procesamiento de pagos.',
@@ -485,8 +496,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 0,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
   {
     id: 'tb-006',
@@ -518,8 +536,15 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 5000,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
   {
     id: 'tb-007',
@@ -551,7 +576,14 @@ export const MOCK_TIMEBOXES: Timebox[] = [
         },
       ],
     },
-    monto: 5000,
-    projectId: 'proj-dashboard-kpi',
+    compensacionEconomica: {
+      entregaAnticipada: {
+        duracionEstimadaDias: 1,
+        valorBase: 0,
+      },
+      esfuerzoHH: 20,
+      skills: [],
+    },
+    entregableId: 'proj-dashboard-kpi',
   },
 ];
