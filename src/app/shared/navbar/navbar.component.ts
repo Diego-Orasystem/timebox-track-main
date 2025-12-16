@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'sp-navbar',
-  imports: [CommonModule, RouterModule, BreadcrumbComponent],
+  imports: [CommonModule, RouterModule],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
   standalone: true,

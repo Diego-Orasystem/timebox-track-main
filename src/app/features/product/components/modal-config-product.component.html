@@ -1,0 +1,267 @@
+<div *ngIf="show" class="fixed inset-0 flex items-center justify-center z-9999">
+  <div
+    class="absolute inset-0 bg-black opacity-30 backdrop-blur-lg"
+    (click)="handleClose()"
+  ></div>
+
+  <!-- Contenido del modal -->
+  <div class="relative bg-white rounded-md shadow-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto z-10">
+    <!-- Header con gradiente -->
+    <div class="bg-gradient-to-r from-[var(--primary)] to-[var(--primaryDark)] text-white p-6">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold">
+              {{ mode === 'edit' ? 'Editar Producto' : 'Crear Nuevo Producto' }}
+            </h2>
+            <p class="text-sm opacity-80">Configura los detalles del producto</p>
+          </div>
+        </div>
+        <button
+          class="text-gray-400 hover:text-gray-600 text-xl cursor-pointer"
+          (click)="handleClose()"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="max-h-[calc(90vh-140px)] overflow-y-auto">
+      <div class="p-6 space-y-8">
+        
+        <!-- Información Básica -->
+        <div class="bg-gray-50 rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Información del Producto</h3>
+              <p class="text-sm text-gray-600">Define los datos fundamentales del producto</p>
+            </div>
+          </div>
+
+          <!-- Nombre del Producto -->
+          <div class="space-y-2 mb-6">
+            <label for="nombre" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+              </svg>
+              Nombre del Producto *
+            </label>
+            <div class="relative">
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                placeholder="Ej: Sistema de Gestión, Plataforma Web, Aplicación Móvil..."
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+                [class.border-red-500]="isFieldInvalid('nombre')"
+              />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                </svg>
+              </div>
+            </div>
+            <p *ngIf="isFieldInvalid('nombre')" class="text-red-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('nombre') }}
+            </p>
+          </div>
+
+          <!-- Responsable del Producto -->
+          <div class="space-y-2 mb-6">
+            <label for="idResponsable" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+              Responsable del Producto *
+            </label>
+            <div class="relative">
+              <select
+                id="idResponsable"
+                formControlName="idResponsable"
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+                [class.border-red-500]="isFieldInvalid('idResponsable')"
+              >
+                <option value="" disabled>Seleccione un responsable</option>
+                <ng-container *ngIf="personas$ | async as personas">
+                  <option *ngFor="let persona of personas" [value]="persona.id">
+                    {{ persona.nombre }}
+                  </option>
+                </ng-container>
+              </select>
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+              </div>
+            </div>
+            <p *ngIf="isFieldInvalid('idResponsable')" class="text-red-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('idResponsable') }}
+            </p>
+          </div>
+
+          <!-- Descripción -->
+          <div class="space-y-2">
+            <label for="descripcion" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Descripción del Producto *
+            </label>
+            <div class="relative">
+              <textarea
+                id="descripcion"
+                formControlName="descripcion"
+                rows="4"
+                placeholder="Describe detalladamente el propósito, características y funcionalidades del producto..."
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white resize-none"
+                [class.border-red-500]="isFieldInvalid('descripcion')"
+              ></textarea>
+              <div class="absolute left-4 top-4">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+            </div>
+            <p *ngIf="isFieldInvalid('descripcion')" class="text-red-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('descripcion') }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Documentación -->
+        <div class="bg-indigo-50 rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Documentación</h3>
+              <p class="text-sm text-gray-600">Adjunta archivos relacionados al producto (opcional)</p>
+            </div>
+          </div>
+          
+          <!-- Upload Area -->
+          <div class="relative">
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              (change)="onFilesSelected($event)"
+              class="hidden"
+              #fileInput
+            />
+            <div 
+              (click)="fileInput.click()"
+              class="group cursor-pointer border-2 border-dashed border-indigo-300 hover:border-indigo-400 rounded-xl p-8 text-center transition-all duration-300 hover:bg-indigo-25"
+            >
+              <div class="space-y-4">
+                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-indigo-100 to-indigo-200 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-medium text-gray-700 group-hover:text-indigo-600 transition-colors">
+                    Arrastra archivos aquí o haz clic para seleccionar
+                  </p>
+                  <p class="text-sm text-gray-500 mt-2">
+                    Formatos soportados: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">Tamaño máximo: 10MB por archivo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de archivos -->
+          <div *ngIf="selectedFiles.length > 0" class="mt-6 space-y-3">
+            <h4 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Archivos seleccionados ({{ selectedFiles.length }})
+            </h4>
+            <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div *ngFor="let file of selectedFiles; let i = index" 
+                   class="group flex items-center justify-between p-4 bg-white border border-indigo-200 rounded-lg hover:shadow-sm transition-all">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ file.name }}</p>
+                    <p class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(1) }} MB</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeFile(i)"
+                  class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                  title="Eliminar archivo"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones Sticky en el fondo -->
+      <div class="sticky bottom-0 bg-white border-t border-gray-200 p-6">
+        <div class="flex justify-end gap-4">
+          <button
+            type="button"
+            (click)="handleClose()"
+            class="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="productForm.invalid || isLoading"
+            class="px-8 py-3 text-sm font-medium text-white bg-gradient-to-r from-[var(--primary)] to-[var(--primaryDark)] hover:from-[var(--primaryDark)] hover:to-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-400 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
+          >
+            <svg *ngIf="!isLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <svg *ngIf="isLoading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {{ isLoading ? 'Procesando...' : (mode === 'edit' ? 'Actualizar' : 'Crear') }} Producto
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

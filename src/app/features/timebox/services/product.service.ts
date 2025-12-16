@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { Product } from '../../../shared/interfaces/product.interface';
+import { Entregable, Product } from '../../../shared/interfaces/product.interface';
 import { Timebox } from '../../../shared/interfaces/timebox.interface';
 import { ApiService } from '../../../shared/services/api.service';
 
@@ -14,6 +14,45 @@ export class ProductService {
   constructor(private apiService: ApiService) {
     // Cargar proyectos desde el backend al inicializar
     this.loadProductsFromApi();
+  }
+
+  /** Normaliza el timebox del backend al modelo del frontend */
+  private mapBackendTimebox(tb: any): Timebox {
+    return {
+      id: tb.id,
+      tipoTimebox: tb.tipo_timebox_id,
+      businessAnalyst: undefined, // mapear si tienes datos
+      fases: {
+        planning: {
+          // Ajusta si el backend provee fechas específicas de planning
+          fechaInicio: tb.created_at ? new Date(tb.created_at).toISOString() : '',
+          fechaCompletado: '',
+          nombre: '',
+          codigo: '',
+          descripcion: '',
+          fechaFase: '',
+          eje: '',
+          aplicativo: '',
+          alcance: '',
+          esfuerzo: '',
+          skills: [],
+          completada: false
+        },
+        // kickOff/refinement/qa/close según disponibilidad en backend
+      },
+      entrega: undefined,
+      publicacionOferta: { solicitado: false },
+      entregableId: tb.entregable_id,
+      compensacionEconomica: {
+        skills: [],
+        esfuerzoHH: 0,
+        entregaAnticipada: { duracionEstimadaDias: 0, valorBase: 0 },
+      },
+      estado: tb.estado as Timebox['estado'],
+      parentTimeboxId: undefined,
+      timeboxsAsociados: [],
+      created_at: tb.created_at ? new Date(tb.created_at).toISOString() : undefined,
+    };
   }
 
   /**
@@ -78,16 +117,16 @@ export class ProductService {
   }
 
   /**
-   * Carga los proyectos desde el backend
+   * Carga los productos desde el backend
    */
   private loadProductsFromApi(): void {
     this.apiService
       .getData<{ status: boolean; message: string; data: Product[] }>(
-        '/project/all'
+        '/product/all'
       )
       .pipe(
         catchError((error) => {
-          console.error('Error cargando proyectos:', error);
+          console.error('Error cargando productos:', error);
           return of({ status: false, message: 'Error', data: [] });
         })
       )
@@ -99,53 +138,54 @@ export class ProductService {
   }
 
   /**
-   * Obtiene todos los proyectos
+   * Obtiene todos los productos
    */
   getProjects(): Observable<Product[]> {
     return this.apiService
       .getData<{ status: boolean; message: string; data: Product[] }>(
-        '/project/all'
+        '/product/all'
       )
       .pipe(
         map((response) => response.data),
         catchError((error) => {
-          console.error('Error obteniendo proyectos:', error);
+          console.error('Error obteniendo productos:', error);
           return of([]);
         })
       );
   }
 
   /**
-   * Obtiene un proyecto por ID
+   * Obtiene un producto por ID
    */
   getProductById(id: string): Observable<Product> {
     return this.apiService
       .getData<{ status: boolean; message: string; data: Product }>(
-        `/project/${id}`
+        `/product/${id}`
       )
       .pipe(
         map((response) => response.data),
         catchError((error) => {
-          console.error(`Error obteniendo proyecto ${id}:`, error);
+          console.error(`Error obteniendo producto ${id}:`, error);
           return throwError(
-            () => new Error(`Proyecto con ID ${id} no encontrado`)
+            () => new Error(`Producto con ID ${id} no encontrado`)
           );
         })
       );
   }
 
   /**
-   * Crea un nuevo proyecto
+   * Crea un nuevo producto
    */
-  createProduct(nombre: string, descripcion: string): Observable<Product> {
+  createProduct(product: Product): Observable<Product> {
     const productData = {
-      nombre,
-      descripcion,
+      nombre  : product.nombre,
+      descripcion: product.descripcion,
+      idResponsable: product.idResponsable || null,
     };
 
     return this.apiService
       .post<{ status: boolean; message: string; data: Product }>(
-        '/project',
+        '/product',
         productData
       )
       .pipe(
@@ -162,12 +202,12 @@ export class ProductService {
   }
 
   /**
-   * Actualiza un proyecto existente
+   * Actualiza un producto existente
    */
   updateProduct(id: string, updateData: Partial<Product>): Observable<Product> {
     return this.apiService
       .put<{ status: boolean; message: string; data: Product }>(
-        `/project/${id}`,
+        `/product/${id}`,
         updateData
       )
       .pipe(
@@ -190,7 +230,7 @@ export class ProductService {
    */
   deleteProduct(id: string): Observable<boolean> {
     return this.apiService
-      .delete<{ status: boolean; message: string }>(`/project/${id}`)
+      .delete<{ status: boolean; message: string }>(`/product/${id}`)
       .pipe(
         map((response) => {
           // Actualizar la lista local
@@ -198,9 +238,9 @@ export class ProductService {
           return response.status;
         }),
         catchError((error) => {
-          console.error(`Error eliminando proyecto ${id}:`, error);
+          console.error(`Error eliminando producto ${id}:`, error);
           return throwError(
-            () => new Error(`Error al eliminar el proyecto con ID ${id}`)
+            () => new Error(`Error al eliminar el producto con ID ${id}`)
           );
         })
       );
@@ -212,7 +252,7 @@ export class ProductService {
   getTimeboxesByEntregableId(entregableId: string): Observable<Timebox[]> {
     return this.apiService
       .getData<{ status: boolean; message: string; data: Timebox[] }>(
-        `/project/${entregableId}/timeboxes`
+        `/product/${entregableId}/timeboxes`
       )
       .pipe(
         map((response) =>
@@ -255,10 +295,6 @@ export class ProductService {
           const transformedTimebox = this.transformTimeboxFromBackend(
             response.data
           );
-          console.log(
-            '🔍 ProjectService.updateTimebox - timebox transformado:',
-            transformedTimebox
-          );
           return transformedTimebox;
         }),
         catchError((error) => {
@@ -280,18 +316,17 @@ export class ProductService {
     entregableId: string,
     timebox: Omit<Timebox, 'id'>
   ): Observable<Timebox> {
-    console.log('CreateTimeboxService: ', JSON.stringify(timebox, null, 2));
-
     // Mapear los campos del frontend al formato esperado por el backend
     const timeboxData = {
       tipoTimeboxId: timebox.tipoTimebox, // Mapear tipoTimebox a tipoTimeboxId
-      projectId: entregableId, //Una vez modificado el modelo en el back cambiar por entregableId
+      projectId: entregableId,
       businessAnalystId: timebox.businessAnalyst?.nombre || null,
       estado: timebox.estado || 'En Definición',
       // Enviar las fases completas
       fases: timebox.fases || {},
       entrega: timebox.entrega || null,
       publicacionOferta: timebox.publicacionOferta || null,
+      entregableId: timebox.entregableId,
     };
 
     return this.apiService
@@ -307,6 +342,31 @@ export class ProductService {
             error
           );
           return throwError(() => new Error('Error al crear el timebox'));
+        })
+      );
+  }
+
+  /**
+   * router.get('/details/product/:productId', productIdValidation, ProductController.getEntregablesDetailsByProduct);
+   * Obtiene los detalles de los entregables asociados a un producto
+   * 
+   */
+  getEntregablesDetailsByProduct(productId: string): Observable<Entregable[]> {
+    return this.apiService
+      .getData<{ status: boolean; message: string; data: any[] }>(`/product/details/${productId}`)
+      .pipe(
+        map(resp => {
+          const data = resp?.data ?? [];
+          return data.map((e: any) => ({
+            id: e.id,
+            nombre: e.nombre,
+            tipo: e.tipo,
+            descripcion: e.descripcion,
+            productId: e.productId ?? e.project_id,
+            timeboxes: Array.isArray(e.timeboxes ?? e.items) 
+              ? (e.timeboxes ?? e.items).map((tb: any) => this.mapBackendTimebox(tb))
+              : [], // si el backend entrega los timeboxes aparte, ajusta aquí
+          })) as Entregable[];
         })
       );
   }

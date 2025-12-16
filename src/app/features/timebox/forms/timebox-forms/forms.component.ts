@@ -96,6 +96,17 @@ export class FormsComponent implements OnInit {
     });
   }
 
+  getEntregableError(): string {
+    const entregable = this.form.get('entregable') as FormControl;
+    let error = '';
+    if (entregable.errors) {
+      if (entregable.errors['required']) {
+        error = 'Este campo es requerido';
+      }
+    }
+    return error;
+  }
+
   getTipoTimeboxError(): string {
     const tipoTimebox = this.form.get('tipoTimebox') as FormControl;
     let error = '';
@@ -139,6 +150,7 @@ export class FormsComponent implements OnInit {
       nombre: 'Nombre del timebox',
       codigo: 'Código',
       descripcion: 'Descripción',
+      entregable: 'Entregable',
       tipoTimebox: 'Tipo de timebox',
       eje: 'Eje',
       aplicativo: 'Aplicativo',
@@ -180,6 +192,7 @@ export class FormsComponent implements OnInit {
   /**Inicializa el parent form de las fases del timebox */
   createForm() {
     this.form = this.fb.group({
+      entregable: ['', [Validators.required]],
       tipoTimebox: ['', [Validators.required]],
       businessAnalyst: [''],
       estado: [''],
@@ -273,6 +286,7 @@ export class FormsComponent implements OnInit {
     this.resetFormArrays(); // Limpia los FormArrays antes de rellenarlos
 
     // Mapear campos del backend al formulario
+    this.form.get('entregable')?.patchValue(timebox.entregableId);
     this.form.get('tipoTimebox')?.patchValue(timebox.tipoTimebox);
     this.form.get('estado')?.patchValue(timebox.estado);
     this.form.get('created_at')?.patchValue(timebox.created_at);
@@ -300,6 +314,7 @@ export class FormsComponent implements OnInit {
 
         // Establecer tipoTimebox por separado
         this.form.get('planning.tipoTimebox')?.setValue(timebox.tipoTimebox);
+        this.form.get('planning.entregable')?.setValue(timebox.entregableId);
 
         // Verificar que se aplicó correctamente
         setTimeout(() => {
@@ -331,6 +346,7 @@ export class FormsComponent implements OnInit {
         skills: [],
         cumplimiento: [],
         completada: false,
+        entregable: timebox.entregableId,
       };
       this.form.get('planning')?.patchValue(basicPlanningData);
     }
@@ -882,6 +898,7 @@ export class FormsComponent implements OnInit {
           'alcance',
           'esfuerzo',
           'fechaInicio',
+          'entregable'
         ];
         const allRequiredFieldsFilled = requiredFields.every((field) => {
           const value = planningForm.get(field)?.value;
@@ -1029,6 +1046,7 @@ export class FormsComponent implements OnInit {
     const updatedTimebox: Timebox = {
       ...this.timeboxData, // Mantener los datos existentes del Timebox
       tipoTimebox: formValues.tipoTimebox,
+      entregableId: formValues.entregable,
       // Fusionar las fases, asegurando que las sub-propiedades no se pierdan si son nulas en el formulario
       fases: {
         ...this.timeboxData.fases, // Mantener fases existentes

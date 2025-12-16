@@ -64,6 +64,18 @@
           </p>
         </div>
         <div class="ml-5 mt-2">
+          <li class="text-xs" *ngIf="getEntregableError()">
+            <strong>Entregable:</strong> {{ getEntregableError() }}
+          </li>
+          <li
+            class="text-xs"
+            *ngFor="let error of getPlanningErrors() | keyvalue"
+          >
+            <strong>{{ getFieldDisplayName(error.key) }}:</strong>
+            {{ error.value }}
+          </li>
+        </div>
+        <div class="ml-5 mt-2">
           <li class="text-xs" *ngIf="getTipoTimeboxError()">
             <strong>Tipo Timebox:</strong> {{ getTipoTimeboxError() }}
           </li>

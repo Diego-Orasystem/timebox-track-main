@@ -3,6 +3,11 @@
   class="form-container w-full inline-flex items-start space-x-6"
 >
   <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
+    <app-select-entregable
+      [entregableId]="this.rootFormGroup.control.get('entregable')?.value"
+      (entregableChange)="onEntregableChange($event)"
+    >
+    </app-select-entregable>
     <app-select-timebox-type
       [timeboxTypeId]="this.rootFormGroup.control.get('tipoTimebox')?.value"
       (timeboxTypeChange)="onTimeboxTypeChange($event)"

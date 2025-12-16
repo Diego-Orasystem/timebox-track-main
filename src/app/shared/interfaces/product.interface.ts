@@ -6,6 +6,7 @@ export interface Product {
   nombre: string;
   descripcion?: string;
   responsable?: Persona;
+  idResponsable?: string;
   documentacion?: Adjuntos[];
   fechaCreacion?: string;
 }

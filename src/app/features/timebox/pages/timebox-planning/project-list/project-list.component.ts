@@ -3,12 +3,12 @@ import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { ProductService } from '../../../services/product.service';
 import { Product } from '../../../../../shared/interfaces/product.interface';
-import { ProductModalComponent } from '../../../../../shared/components/modals/item-creation-modal.component';
+import { ModalConfigProductComponent } from '../../../../../features/product/components/modal-config-product.component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, ProductModalComponent],
+  imports: [CommonModule, ModalConfigProductComponent],
   template: `
     <div class="p-10 flex flex-col gap-10 w-full">
       <div class="header flex items-center justify-between w-full">
@@ -21,7 +21,7 @@ import { ProductModalComponent } from '../../../../../shared/components/modals/i
           </p>
         </div>
         <button
-          (click)="openModal('create')"
+          (click)="openCreateProductModal()"
           class="max-w-40 cursor-pointer text-[12px] space-x-1 inline-flex items-center justify-between px-5 py-3 bg-[var(--primary)] text-[var(--lightText)] rounded-sm hover:bg-[var(--primaryDark)] transition-colors duration-200"
         >
           <svg
@@ -123,7 +123,7 @@ import { ProductModalComponent } from '../../../../../shared/components/modals/i
               >
                 <button
                   class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
-                  (click)="editProduct(product)"
+                  (click)="openEditProductModal(product)"
                 >
                   Editar
                 </button>
@@ -144,21 +144,24 @@ import { ProductModalComponent } from '../../../../../shared/components/modals/i
       </div>
     </div>
 
-    <!-- Modal reutilizable -->
-    <app-product-modal
-      [show]="showModal"
-      [mode]="modalMode"
-      [productData]="selectedProduct"
-      (close)="closeModal()"
-      (productSaved)="handleProductSaved($event)"
-    ></app-product-modal>
+    <!-- Modal de crear/editar producto -->
+    <app-modal-config-product
+      [show]="showProductModal"
+      [mode]="productModalMode"
+      [productData]="selectedProductForEdit"
+      (close)="closeProductModal()"
+      (productOutput)="handleProductSave($event)"
+    ></app-modal-config-product>
   `,
 })
 export class ProductListComponent implements OnInit {
   products: Product[] = [];
-  showModal = false;
-  modalMode: 'create' | 'edit' = 'create';
-  selectedProduct: Product | null = null;
+  
+  // Variables para el modal de producto
+  showProductModal = false;
+  productModalMode: 'create' | 'edit' = 'create';
+  selectedProductForEdit?: Product;
+  
   openMenuId: string | null = null; // Controla el menú desplegado
 
   constructor(private productService: ProductService, private router: Router) {}
@@ -176,6 +179,7 @@ export class ProductListComponent implements OnInit {
         this.products = [];
       },
     });
+
   }
 
   toggleMenu(id: string, event: Event): void {
@@ -187,20 +191,44 @@ export class ProductListComponent implements OnInit {
     this.router.navigate(['products', product.id]);
   }
 
-  openModal(mode: 'create' | 'edit', product?: Product): void {
-    this.modalMode = mode;
-    this.selectedProduct = product || null;
-    this.showModal = true;
+  // ← NUEVOS MÉTODOS para el modal de producto
+  openCreateProductModal(): void {
+    this.productModalMode = 'create';
+    this.selectedProductForEdit = undefined;
+    this.showProductModal = true;
   }
 
-  closeModal(): void {
-    this.showModal = false;
+  openEditProductModal(product: Product): void {
+    this.openMenuId = null; // Cerrar el menú dropdown
+    this.productModalMode = 'edit';
+    this.selectedProductForEdit = product;
+    this.showProductModal = true;
   }
 
-  editProduct(product: Product): void {
-    this.openMenuId = null;
-    this.openModal('edit', product);
+  closeProductModal(): void {
+    this.showProductModal = false;
+    this.selectedProductForEdit = undefined;
   }
+
+  handleProductSave(product: Product): void {
+    if (this.productModalMode === 'create') {
+      // Agregar el nuevo producto a la lista
+      this.products.unshift(product);
+      console.log('✅ Nuevo producto creado:', product);
+    } else if (this.productModalMode === 'edit') {
+      // Actualizar el producto en la lista
+      const index = this.products.findIndex((p) => p.id === product.id);
+      if (index !== -1) {
+        this.products[index] = product;
+      }
+      console.log('📝 Producto actualizado:', product);
+    }
+    
+    this.closeProductModal();
+  }
+
+  // ← REMOVER MÉTODOS ANTIGUOS DEL MODAL
+  // Ya no necesitas: openModal, closeModal, handleProductSaved
 
   deleteProduct(product: Product): void {
     this.openMenuId = null;
@@ -219,35 +247,5 @@ export class ProductListComponent implements OnInit {
         alert('Error al eliminar el producto.');
       },
     });
-  }
-
-  handleProductSaved(product: Product): void {
-    if (this.modalMode === 'create') {
-      this.productService
-        .createProduct(product.nombre, product.descripcion || '')
-        .subscribe({
-          next: (newProduct: Product) => {
-            this.products.unshift(newProduct);
-            console.log('✅ Nuevo producto creado:', newProduct);
-          },
-          error: (error: any) => {
-            console.error('❌ Error creando producto:', error);
-            alert('Error al crear el producto.');
-          },
-        });
-    } else if (this.modalMode === 'edit') {
-      this.productService.updateProduct(product.id, product).subscribe({
-        next: (updated: Product) => {
-          const index = this.products.findIndex((p) => p.id === product.id);
-          if (index !== -1) this.products[index] = updated;
-          console.log('📝 Producto actualizado:', updated);
-        },
-        error: (error: any) => {
-          console.error('❌ Error actualizando producto:', error);
-        },
-      });
-    }
-
-    this.closeModal();
   }
 }

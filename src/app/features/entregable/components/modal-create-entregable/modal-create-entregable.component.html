@@ -1,0 +1,339 @@
+<div *ngIf="show" class="fixed inset-0 flex items-center justify-center z-9999">
+  <div
+    class="absolute inset-0 bg-black opacity-30 backdrop-blur-lg"
+    (click)="handleClose()"
+  ></div>
+
+  <!-- Contenido del modal -->
+  <div class="relative bg-white rounded-md shadow-lg w-full max-w-4xl max-h-[95vh] overflow-hidden z-10">
+    <!-- Header con gradiente -->
+    <div class="bg-gradient-to-r from-[var(--primary)] to-[var(--primaryDark)] text-white p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-xl font-semibold">
+            {{ mode === 'edit' ? 'Editar Entregable' : 'Crear Nuevo Entregable' }}
+          </h2>
+          <div *ngIf="products$ && productId" class="mt-2 text-xs bg-white/10 px-2 py-1 rounded">
+            Producto:
+            <ng-container *ngIf="products$ | async as products">
+              <span class="font-semibold">{{ getProductName(products, productId) }}</span>
+            </ng-container>
+          </div>
+        </div>
+        <button
+          class="text-gray-200 hover:text-white text-xl cursor-pointer"
+          (click)="handleClose()"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="entregableForm" (ngSubmit)="onSubmit()" class="max-h-[calc(95vh-140px)] overflow-y-auto">
+      <div class="p-6 space-y-8">
+        
+        <!-- Selector de Producto (si no viene productId) -->
+        <div *ngIf="shouldShowProductSelector()" class="bg-blue-50 border border-blue-200 rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Producto</h3>
+              <p class="text-sm text-gray-600">Selecciona el producto al que pertenece este entregable</p>
+            </div>
+          </div>
+          
+          <div class="relative">
+            <select
+              id="productId"
+              formControlName="productId"
+              class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+              [class.border-red-500]="isFieldInvalid('productId')"
+            >
+              <option value="" disabled>Seleccione un producto</option>
+              <ng-container *ngIf="products$ | async as products">
+                <option *ngFor="let product of products" [value]="product.id">
+                  {{ product.nombre }}
+                </option>
+              </ng-container>
+            </select>
+            <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+              </svg>
+            </div>
+            <p *ngIf="isFieldInvalid('productId')" class="text-red-500 text-xs mt-2 flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('productId') }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Información Básica -->
+        <div class="bg-gray-50 rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Información Básica</h3>
+              <p class="text-sm text-gray-600">Define los datos fundamentales del entregable</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Entregable Padre -->
+            <div class="space-y-2">
+              <label for="entregableId" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                </svg>
+                Entregable Padre (opcional)
+              </label>
+              <div class="relative">
+                <select
+                  id="entregableId"
+                  formControlName="entregableId"
+                  class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+                >
+                  <option value="">Sin entregable padre</option>
+                  <ng-container *ngIf="entregables$ | async as entregables">
+                    <option 
+                      *ngFor="let entregable of entregables" 
+                      [value]="entregable.id"
+                      [disabled]="mode === 'edit' && entregableData?.id === entregable.id"
+                    >
+                      {{ entregable.nombre }} ({{ entregable.tipo }})
+                    </option>
+                  </ng-container>
+                </select>
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                  </svg>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Tipo -->
+            <div class="space-y-2">
+              <label for="tipo" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+                <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                </svg>
+                Tipo de Entregable *
+              </label>
+              <div class="relative">
+                <select
+                  id="tipo"
+                  formControlName="tipo"
+                  class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+                  [class.border-red-500]="isFieldInvalid('tipo') || entregableForm.get('tipo')?.hasError('tipoMismatchWithParent')"
+                >
+                  <option *ngFor="let tipo of tipoOptions" [value]="tipo">{{ tipo }}</option>
+                </select>
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                  </svg>
+                </div>
+              </div>
+              <p *ngIf="isFieldInvalid('tipo')" class="text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                {{ getFieldError('tipo') }}
+              </p>
+              <p *ngIf="entregableForm.get('tipo')?.hasError('tipoMismatchWithParent')" class="text-red-500 text-xs flex items-center gap-1">
+                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                </svg>
+                El tipo del entregable debe coincidir con el tipo del entregable padre.
+              </p>
+            </div>
+          </div>
+
+          <!-- Nombre -->
+          <div class="space-y-2 mb-6">
+            <label for="nombre" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+              </svg>
+              Nombre del Entregable *
+            </label>
+            <div class="relative">
+              <input
+                id="nombre"
+                type="text"
+                formControlName="nombre"
+                placeholder="Ej: Release v1.0, Sprint 1, Milestone Alpha..."
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white"
+                [class.border-red-500]="isFieldInvalid('nombre')"
+              />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                </svg>
+              </div>
+            </div>
+            <p *ngIf="isFieldInvalid('nombre')" class="text-red-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('nombre') }}
+            </p>
+          </div>
+
+          <!-- Descripción -->
+          <div class="space-y-2">
+            <label for="descripcion" class="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Descripción *
+            </label>
+            <div class="relative">
+              <textarea
+                id="descripcion"
+                formControlName="descripcion"
+                rows="4"
+                placeholder="Describe detalladamente el propósito, alcance y objetivos de este entregable..."
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent text-sm bg-white resize-none"
+                [class.border-red-500]="isFieldInvalid('descripcion')"
+              ></textarea>
+              <div class="absolute left-4 top-4">
+                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+              </div>
+            </div>
+            <p *ngIf="isFieldInvalid('descripcion')" class="text-red-500 text-xs flex items-center gap-1">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+              </svg>
+              {{ getFieldError('descripcion') }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Documentación -->
+        <div class="bg-purple-50 rounded-lg p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900">Documentación</h3>
+              <p class="text-sm text-gray-600">Adjunta archivos relacionados al entregable</p>
+            </div>
+          </div>
+          
+          <!-- Upload Area más atractiva -->
+          <div class="relative">
+            <input
+              type="file"
+              multiple
+              accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"
+              (change)="onFilesSelected($event)"
+              class="hidden"
+              #fileInput
+            />
+            <div 
+              (click)="fileInput.click()"
+              class="group cursor-pointer border-2 border-dashed border-purple-300 hover:border-purple-400 rounded-xl p-8 text-center transition-all duration-300 hover:bg-purple-25"
+            >
+              <div class="space-y-4">
+                <div class="w-16 h-16 mx-auto bg-gradient-to-br from-purple-100 to-purple-200 rounded-full flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-lg font-medium text-gray-700 group-hover:text-purple-600 transition-colors">
+                    Arrastra archivos aquí o haz clic para seleccionar
+                  </p>
+                  <p class="text-sm text-gray-500 mt-2">
+                    Formatos soportados: PDF, DOC, DOCX, XLS, XLSX, PNG, JPG
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">Tamaño máximo: 10MB por archivo</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Lista de archivos mejorada -->
+          <div *ngIf="selectedFiles.length > 0" class="mt-6 space-y-3">
+            <h4 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+              <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+              </svg>
+              Archivos seleccionados ({{ selectedFiles.length }})
+            </h4>
+            <div class="space-y-2 max-h-40 overflow-y-auto">
+              <div *ngFor="let file of selectedFiles; let i = index" 
+                   class="group flex items-center justify-between p-4 bg-white border border-purple-200 rounded-lg hover:shadow-sm transition-all">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" />
+                    </svg>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-gray-900 truncate">{{ file.name }}</p>
+                    <p class="text-xs text-gray-500">{{ (file.size / 1024 / 1024).toFixed(1) }} MB</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  (click)="removeFile(i)"
+                  class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded-lg transition-all"
+                  title="Eliminar archivo"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones Sticky en el fondo -->
+      <div class="sticky bottom-0 bg-white border-t border-gray-200 p-6">
+        <div class="flex justify-end gap-4">
+          <button
+            type="button"
+            (click)="handleClose()"
+            class="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 flex items-center gap-2"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="entregableForm.invalid"
+            class="px-8 py-3 text-sm font-medium text-white bg-gradient-to-r from-[var(--primary)] to-[var(--primaryDark)] hover:from-[var(--primaryDark)] hover:to-[var(--primary)] disabled:opacity-50 disabled:cursor-not-allowed disabled:from-gray-400 disabled:to-gray-400 rounded-lg transition-all duration-200 flex items-center gap-2 shadow-lg hover:shadow-xl"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            {{ mode === 'edit' ? 'Actualizar' : 'Crear' }} Entregable
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -83,7 +83,6 @@ import { ModalCreateComponent } from '../../../components/modal-create-timebox/m
       (close)="closeModal()"
       [mode]="modalMode"
       [timeboxData]="selectedTimebox"
-      [entregableId]="entregableId"
       (timeboxOutput)="handleTimeboxSave($event)"
     ></app-modal-create>
   `,

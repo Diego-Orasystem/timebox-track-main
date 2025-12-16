@@ -32,6 +32,7 @@ import { TimeboxApiService } from '../../../../services/timebox-api.service';
 import { formatDate } from '../../../../../../shared/helpers/date-formatter';
 import { UploadService } from '../../../../../../shared/services/upload.service';
 import { environment } from '../../../../../../../environments/environment';
+import { SelectEntregableComponent } from "./components/select-entregable.component";
 
 @Component({
   selector: 'app-planning',
@@ -46,7 +47,8 @@ import { environment } from '../../../../../../../environments/environment';
     AdjuntosFormComponent,
     ChecklistFormComponent,
     SelectTimeboxTypeComponent,
-  ],
+    SelectEntregableComponent
+],
   templateUrl: './planning.component.html',
 })
 export class PlanningComponent implements OnInit, OnDestroy {
@@ -365,6 +367,10 @@ export class PlanningComponent implements OnInit, OnDestroy {
 
   onEsfuerzoChange(esfuerzo: string) {
     this.form.get('esfuerzo')?.setValue(esfuerzo);
+  }
+
+  onEntregableChange(entregable: { id: string; nombre: string }) {
+    this.rootFormGroup.control.get('entregable')?.setValue(entregable.id);
   }
 
   //Adjuntos

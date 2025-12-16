@@ -28,7 +28,7 @@ export class ModalCreateComponent implements OnChanges {
   @Input() timeboxData: Timebox = {} as Timebox;
   @Output() timeboxOutput = new EventEmitter<Timebox>();
 
-  @Input() entregableId: string | null = null;
+  @Input() productId: string | null = null; // RENOMBRADO desde entregableId
   @Input() folderId: string | null = null;
 
   steps = [
@@ -153,7 +153,7 @@ export class ModalCreateComponent implements OnChanges {
       estado: formData.estado,
       fases: formData.fases,
       entrega: formData.entrega,
-      entregableId: this.entregableId!,
+      entregableId: formData.entregableId,         // id seleccionado en el formulario
       publicacionOferta: formData.publicacionOferta,
     };
 
