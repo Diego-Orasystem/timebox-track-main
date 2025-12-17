@@ -196,3 +196,13 @@
   [productId]="selectedProductId"
   (timeboxOutput)="handleTimeboxSave($event)"
 ></app-modal-create>
+
+<!-- Monta/desmonta el modal de Entregable para recrearlo -->
+<app-modal-create-entregable
+  *ngIf="entregableModalMounted"
+  [show]="showEntregableModal"
+  (close)="closeEntregableModal()"
+  [productId]="selectedProductId"
+  [entregables]="entregablesForProduct"
+  (entregableOutput)="handleEntregableSave($event)"
+></app-modal-create-entregable>

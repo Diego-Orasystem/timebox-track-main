@@ -15,7 +15,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Observable, Subject, forkJoin } from 'rxjs';
-import { map, takeUntil } from 'rxjs/operators';
+import { map, takeUntil, take } from 'rxjs/operators';
 import Gantt from 'frappe-gantt';
 import { ProductService } from '../../services/product.service';
 import { Product, Entregable } from '../../../../shared/interfaces/product.interface';
@@ -32,9 +32,7 @@ import { TimeboxService } from '../../services/timebox.service';
   styleUrls: ['./timebox-frappe-gantt.component.css'],
   encapsulation: ViewEncapsulation.None,
 })
-export class TimeboxFrappeGanttComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() colorMap: { [k: string]: string } = {
     'En Definición': '#A65F01',
     Disponible: '#4F46E5',
@@ -58,6 +56,7 @@ export class TimeboxFrappeGanttComponent
   // Tooltip
   showTooltip = false;
   showEntregableModal = false;
+  entregableModalMounted = true; // ← controla el montaje del modal
 
   entregablesForProduct: Entregable[] = [];
 
@@ -83,6 +82,9 @@ export class TimeboxFrappeGanttComponent
   private ganttInstance: any = null;
   private destroyed$ = new Subject<void>();
   selectedProjectName = signal<string>('');
+
+  private invalidLogSet = new Set<string>(); // evita logs repetidos
+  private entregableTasksCache = new Map<string, any[]>(); // cache tareas por entregable
 
   constructor(
     private productService: ProductService,
@@ -116,13 +118,18 @@ export class TimeboxFrappeGanttComponent
   }
 
   onProjectChange(newProductId: string) {
+    console.debug('[Gantt] onProjectChange ->', newProductId);
     this.selectedProductId = newProductId;
+
+    // Fuerza recreación del modal de Entregable (ngOnInit vuelve a correr)
+    this.remountEntregableModal();
 
     this.products$
       .pipe(
         map((products: Product[]) =>
           products.find((p) => p.id === this.selectedProductId)?.nombre || ''
-        )
+        ),
+        take(1) // ← evita subs acumuladas
       )
       .subscribe((projectName) => {
         this.selectedProjectName.set(projectName);
@@ -134,6 +141,8 @@ export class TimeboxFrappeGanttComponent
       this.timeboxes.set([]);
       this.entregablesForProduct = [];
       this.entregableTimeboxes.clear();
+      this.entregableTasksCache.clear();
+      this.invalidLogSet.clear();
       this.destroyGantt();
       return;
     }
@@ -143,28 +152,30 @@ export class TimeboxFrappeGanttComponent
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
         next: (entregables: Entregable[]) => {
+          console.debug('[Gantt] entregables recibidos:', Array.isArray(entregables) ? entregables.length : 0);
           this.entregablesForProduct = Array.isArray(entregables) ? entregables : [];
 
           if (this.entregablesForProduct.length === 0) {
             this.entregableTimeboxes.clear();
+            this.entregableTasksCache.clear();
             this.timeboxes.set([]);
-            this.renderGantt([]);
+            this.invalidLogSet.clear();
+            // No llames render aquí; el efecto se encarga
             return;
           }
 
-          // IDs de timeboxes desde los entregables
           const ids = this.entregablesForProduct.flatMap(e =>
             (Array.isArray(e.timeboxes) ? e.timeboxes : []).map(tb => tb.id)
           );
 
           if (ids.length === 0) {
             this.entregableTimeboxes.clear();
+            this.entregableTasksCache.clear();
             this.timeboxes.set([]);
-            this.renderGantt([]);
+            this.invalidLogSet.clear();
             return;
           }
 
-          // Consultar detalle por cada id y reemplazar
           forkJoin(ids.map(id => this.timeboxService.getTimebox(id)))
             .pipe(takeUntil(this.destroyed$))
             .subscribe({
@@ -180,18 +191,18 @@ export class TimeboxFrappeGanttComponent
                 });
 
                 const allDetailed = Array.from(this.entregableTimeboxes.values()).flat();
-                this.timeboxes.set(allDetailed);
 
-                const tasks = allDetailed
-                  .map(tb => this.timeboxToGanttTask(tb))
-                  .filter(t => !!t.start && !!t.end);
-                this.renderGantt(tasks);
+                // Actualiza caches y señal una sola vez
+                this.updateTimeboxCaches(allDetailed);
+
+                // No llames render aquí; el efecto se encarga
               },
               error: (err) => {
                 console.error('Error obteniendo detalle de timeboxes:', err);
                 this.entregableTimeboxes.clear();
+                this.entregableTasksCache.clear();
                 this.timeboxes.set([]);
-                this.renderGantt([]);
+                this.invalidLogSet.clear();
               }
             });
         },
@@ -199,35 +210,52 @@ export class TimeboxFrappeGanttComponent
           console.error('Error cargando entregables del producto:', err);
           this.entregablesForProduct = [];
           this.entregableTimeboxes.clear();
+          this.entregableTasksCache.clear();
           this.timeboxes.set([]);
+          this.invalidLogSet.clear();
           this.destroyGantt();
         },
       });
   }
 
-  private renderGantt(tasks: any[]) {
-    if (!this.ganttRoot || !this.ganttRoot.nativeElement) {
-      return;
-    }
+  private updateTimeboxCaches(allDetailed: Timebox[]) {
+    this.invalidLogSet.clear();
+    this.entregableTasksCache.clear();
 
+    // Cache tareas por entregable y log único por id sin fechas
+    this.entregablesForProduct.forEach(e => {
+      const tbs = this.entregableTimeboxes.get(e.id) || [];
+      const tasks = tbs.map(tb => {
+        const { start, end } = this.extractStartEndFromTimebox(tb);
+        if (!start || !end) {
+          if (!this.invalidLogSet.has(tb.id)) {
+            console.warn(`❌ Timebox ${tb.id} no tiene fechas válidas en ninguna fuente`);
+            this.invalidLogSet.add(tb.id);
+          }
+        }
+        return this.timeboxToGanttTask(tb);
+      });
+      this.entregableTasksCache.set(e.id, tasks);
+    });
+
+    // Actualiza señal para el efecto
+    this.timeboxes.set(allDetailed);
+  }
+
+  private renderGantt(tasks: any[]) {
+    if (!this.ganttRoot || !this.ganttRoot.nativeElement) return;
     if (tasks.length === 0) {
       console.warn('No hay tareas para renderizar');
       return;
     }
-
     this.destroyGantt();
-
     const el = this.ganttRoot.nativeElement;
     el.innerHTML = '';
-    /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
-    //ordernar las task por fecha de creación descendente
     tasks.sort((a, b) => {
       const dateA = new Date(a.createdAt).getTime();
       const dateB = new Date(b.createdAt).getTime();
       return dateA - dateB;
     });
-    //console.log('Tareas despues del sort:', tasks);
-
     try {
       const ganttOptions: any = {
         view_mode: this.currentViewMode(),
@@ -244,16 +272,9 @@ export class TimeboxFrappeGanttComponent
           this.onTaskDateChange(task, start, end),
         on_progress_change: (task: any, progress: number) => void 0,
       };
-
-      /*REQUERIMIENTO DE MEJORA SEGUNDO SPRINT*/
-      /*Quitar botón Today*/
       this.ganttInstance = new Gantt(el, tasks, ganttOptions);
       const todayBtn = el.querySelector('.today-button');
-      if (todayBtn) {
-        todayBtn.classList.add('hidden');
-      }
-
-      // Acá se fuerza el overflow hidden después de un pequeño delay para evitar un segundo scroll en el container
+      if (todayBtn) todayBtn.classList.add('hidden');
       setTimeout(() => {
         const ganttContainer = el.querySelector('.gantt-container');
         if (ganttContainer) {
@@ -266,7 +287,6 @@ export class TimeboxFrappeGanttComponent
       console.error('Error:', error);
     }
   }
-
   private destroyGantt() {
     if (this.ganttRoot && this.ganttRoot.nativeElement) {
       try {
@@ -470,9 +490,7 @@ export class TimeboxFrappeGanttComponent
     }
 
     if (dates.length === 0) {
-      console.warn(
-        `❌ Timebox ${tb.id} no tiene fechas válidas en ninguna fuente`
-      );
+      // return undefined sin log; el log ocurre en updateTimeboxCaches
       return { start: undefined, end: undefined };
     }
 
@@ -602,6 +620,7 @@ export class TimeboxFrappeGanttComponent
   openEntregableModal() {
     this.showTooltip = false;
     this.showEntregableModal = true;
+    this.entregableModalMounted = true; // asegura que esté montado al abrir
   }
 
   closeEntregableModal() {
@@ -610,6 +629,10 @@ export class TimeboxFrappeGanttComponent
 
   handleEntregableSave(entregableData: Partial<Entregable>) {
     this.closeEntregableModal();
+    // Refrescar para ver el nuevo entregable y sus timeboxes
+    if (this.selectedProductId) {
+      this.onProjectChange(this.selectedProductId);
+    }
   }
 
   // Helper: tareas por entregable usando los detalles
@@ -626,5 +649,12 @@ export class TimeboxFrappeGanttComponent
     if (!tooltip) {
       this.showTooltip = false;
     }
+  }
+
+  private remountEntregableModal(): void {
+    this.entregableModalMounted = false; // destruye el componente
+    setTimeout(() => {
+      this.entregableModalMounted = true; // crea de nuevo el componente
+    }, 0);
   }
 }

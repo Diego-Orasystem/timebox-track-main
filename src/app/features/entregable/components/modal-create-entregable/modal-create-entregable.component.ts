@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, OnInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { Product, Entregable } from '../../../../shared/interfaces/product.interface';
 import { EntregableService } from '../../../timebox/services/entregable.service';
 
@@ -20,6 +21,7 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
   @Input() products$?: Observable<Product[]>;
   @Input() entregables$?: Observable<Entregable[]>;
   @Input() entregableData?: Entregable;
+  @Input() entregables: Entregable[] = []; // ← lista recibida desde el padre
 
   // NEW: outputs
   @Output() close = new EventEmitter<void>();
@@ -35,7 +37,14 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
 
   private cachedEntregables: Entregable[] = [];
 
-  constructor(private fb: FormBuilder, private entregableService: EntregableService) {
+  // Estado UI
+  saving = false; // ← deshabilita el botón mientras guarda
+
+  constructor(
+    private fb: FormBuilder,
+    private entregableService: EntregableService,
+    private cdr: ChangeDetectorRef,                 // ← inyecta CD
+  ) {
     this.entregableForm = this.fb.group({
       productId: ['', [Validators.required]],
       tipo: ['Release', [Validators.required]],
@@ -47,12 +56,12 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
   }
 
   ngOnInit(): void {
-    // Si viene productId, setear en el form y resolver nombre
     if (this.productId) {
       this.entregableForm.patchValue({ productId: this.productId });
-      this.resolveProductName();
     }
-
+    console.log('Entregables$ en OnInit:');
+    console.log(this.entregables$);
+    this.resolveProductName();
     // Suscripción para validar tipo vs entregable padre
     this.entregableForm.get('entregableId')?.valueChanges.subscribe(() => this.validateTipoMatchesParent());
     this.entregableForm.get('tipo')?.valueChanges.subscribe(() => this.validateTipoMatchesParent());
@@ -61,7 +70,14 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['productId'] && this.productId) {
       this.entregableForm.patchValue({ productId: this.productId });
-      this.resolveProductName();
+      this.entregableForm.get('entregableId')?.setValue(''); // ← limpiar selección
+      // Fuerza actualización visual del select
+      this.cdr.detectChanges();
+    }
+    if (changes['entregables']) {
+      this.cachedEntregables = Array.isArray(this.entregables) ? this.entregables : [];
+      this.validateTipoMatchesParent();
+      this.cdr.detectChanges(); // ← refrescar template
     }
 
     if (changes['entregableData'] && this.entregableData && this.mode === 'edit') {
@@ -80,12 +96,11 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
     }
 
     // Cachear entregables cuando cambie el input entregables$
-    if (changes['entregables$'] && this.entregables$) {
-      this.entregables$.subscribe(list => {
-        this.cachedEntregables = Array.isArray(list) ? list : [];
-        // Revalidar si cambió el listado
-        this.validateTipoMatchesParent();
-      });
+    if (changes['entregables']) {
+      this.cachedEntregables = Array.isArray(this.entregables) ? this.entregables : [];
+      // Debug rápido
+      console.debug('[ModalEntregable] recibidos:', this.cachedEntregables.length);
+      this.validateTipoMatchesParent();
     }
   }
 
@@ -116,25 +131,49 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
     this.resetForm();
   }
 
+  // Filtra por productId; si no existe en el item, intenta project_id. Si no hay pid, no filtra.
+  filteredEntregables(list?: Entregable[] | null): Entregable[] {
+    const source = Array.isArray(list)
+      ? list
+      : (this.cachedEntregables.length ? this.cachedEntregables : this.entregables);
+
+    if (!Array.isArray(source)) return [];
+    const pid = this.entregableForm.get('productId')?.value || this.productId || null;
+    const selfId = this.entregableData?.id;
+
+    return source.filter(e => {
+      const itemPid = (e as any).productId ?? (e as any).project_id ?? null;
+      const sameProduct = !pid || itemPid === pid; // ← si no hay pid, no filtra
+      return sameProduct && e.id !== selfId;
+    });
+  }
+
   onSubmit(): void {
     this.validateTipoMatchesParent();
 
-    if (this.entregableForm.valid) {
-      const formValue = this.entregableForm.value;
+    if (this.entregableForm.invalid || this.saving) {
+      this.entregableForm.markAllAsTouched();
+      return;
+    }
 
-      // payload base para API
-      const payload: Partial<Entregable> = {
-        nombre: formValue.nombre,
-        descripcion: formValue.descripcion,
-        productId: this.productId || formValue.productId,
-        tipo: formValue.tipo,
-        entregableId: formValue.entregableId || null,
-        documentacion: this.selectedFiles.length > 0 ? this.processFiles() : (this.entregableData?.documentacion || [])
-      };
+    const formValue = this.entregableForm.value;
+    const payload: Partial<Entregable> = {
+      nombre: formValue.nombre,
+      descripcion: formValue.descripcion,
+      productId: this.productId || formValue.productId,
+      tipo: formValue.tipo,
+      entregableId: formValue.entregableId || null,
+      documentacion: this.selectedFiles.length > 0
+        ? this.processFiles()
+        : (this.entregableData?.documentacion || [])
+    };
 
-      if (this.mode === 'create') {
-        // Crear entregable
-        this.entregableService.create(payload).subscribe({
+    this.saving = true; // ← bloquear botón
+
+    if (this.mode === 'create') {
+      this.entregableService.create(payload)
+        .pipe(finalize(() => (this.saving = false)))
+        .subscribe({
           next: (created) => {
             this.entregableOutput.emit(created);
             this.handleClose();
@@ -144,13 +183,15 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
             this.entregableForm.markAllAsTouched();
           }
         });
-      } else {
-        // Actualizar entregable existente
-        if (!this.entregableData?.id) {
-          console.warn('No hay ID de entregable para actualizar.');
-          return;
-        }
-        this.entregableService.update(this.entregableData.id, payload).subscribe({
+    } else {
+      if (!this.entregableData?.id) {
+        console.warn('No hay ID de entregable para actualizar.');
+        this.saving = false;
+        return;
+      }
+      this.entregableService.update(this.entregableData.id, payload)
+        .pipe(finalize(() => (this.saving = false)))
+        .subscribe({
           next: (updated) => {
             this.entregableOutput.emit(updated);
             this.handleClose();
@@ -160,9 +201,6 @@ export class ModalCreateEntregableComponent implements OnChanges, OnInit {
             this.entregableForm.markAllAsTouched();
           }
         });
-      }
-    } else {
-      this.entregableForm.markAllAsTouched();
     }
   }
 
