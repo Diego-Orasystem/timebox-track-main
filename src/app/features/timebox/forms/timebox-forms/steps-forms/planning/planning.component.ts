@@ -73,8 +73,9 @@ export class PlanningComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.form = this.rootFormGroup.control.get(this.formGroupName) as FormGroup;
+     this.form = this.rootFormGroup.control.get(this.formGroupName) as FormGroup;
 
+    console.log('🔹 [Planning] ngOnInit → valores iniciales planning:', this.form.value);
     // Cargar personas desde la API
     this.timeboxApiService.getPersonas().subscribe({
       next: (personas) => {
@@ -369,10 +370,10 @@ export class PlanningComponent implements OnInit, OnDestroy {
     this.form.get('esfuerzo')?.setValue(esfuerzo);
   }
 
-  onEntregableChange(entregable: { id: string; nombre: string }) {
-    this.rootFormGroup.control.get('entregable')?.setValue(entregable.id);
+ onEntregableChange(entregable: { id: string; nombre: string }) {
+    // Actualiza los controles raíz del form
+    this.rootFormGroup.control.get('entregableId')?.setValue(entregable.id);
   }
-
   //Adjuntos
   showModalAdjuntos = false;
 

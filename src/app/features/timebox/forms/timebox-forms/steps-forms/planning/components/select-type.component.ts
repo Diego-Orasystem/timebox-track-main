@@ -11,11 +11,12 @@ import {
 import { FormsModule } from '@angular/forms';
 import { TimeboxType } from '../../../../../../../shared/interfaces/timebox.interface';
 import { Observable } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
 import { TimeboxTypeService } from '../../../../../pages/timebox-maintainer/services/timebox-maintainer.service';
 
 @Component({
   selector: 'app-select-timebox-type',
-  imports: [CommonModule, FormsModule, NgIf, NgFor], // Explicitly include NgIf and NgFor
+  imports: [CommonModule, FormsModule, NgIf, NgFor],
   standalone: true,
   template: `
     <div class="relative w-full">
@@ -103,42 +104,51 @@ import { TimeboxTypeService } from '../../../../../pages/timebox-maintainer/serv
   `,
 })
 export class SelectTimeboxTypeComponent implements OnInit, OnChanges {
-  @Input() timeboxTypeId: string | null = null; // Input to receive the ID from the parent
+  @Input() timeboxTypeId: string | null = null;
 
-  selectedTimeboxTypeName: string = ''; // Stores the name for display
+  @Output() timeboxTypeChange = new EventEmitter<string>();
 
+  selectedTimeboxTypeName: string = '';
   opciones$!: Observable<TimeboxType[]>;
-
   isDropdownOpen = false;
 
-  @Output() timeboxTypeChange = new EventEmitter<string>(); // Emitting the ID string
+  private tiposLoaded = false;
+  private lastTypeId: string | null = null;
+  private opcionesCache: TimeboxType[] = [];
 
   constructor(private timeboxTypeService: TimeboxTypeService) {}
+
   ngOnInit(): void {
     this.opciones$ = this.timeboxTypeService.getAllTimeboxTypes();
+
+    // Esperar al PRIMER array NO vacío antes de preseleccionar
+    this.opciones$
+      .pipe(
+        filter((opts) => Array.isArray(opts) && opts.length > 0),
+        take(1)
+      )
+      .subscribe((opts) => {
+        this.opcionesCache = opts;
+        this.tiposLoaded = true;
+        this.applyPreselected();
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    // Si el Input 'timeboxTypeId' ha cambiado
     if (changes['timeboxTypeId']) {
-      const newTypeId = changes['timeboxTypeId'].currentValue;
+      this.lastTypeId = changes['timeboxTypeId'].currentValue ?? null;
+      this.applyPreselected();
+    }
+  }
 
-      // Usar getValue() para obtener el valor actual del BehaviorSubject del servicio
-      // Esto es síncrono y asegura que tienes los datos disponibles si ya se cargaron
-      const currentOptions =
-        this.timeboxTypeService.timeboxTypesSubject.getValue();
+  private applyPreselected(): void {
+    const id = this.lastTypeId ?? this.timeboxTypeId ?? null;
+    if (!this.tiposLoaded || !id) return;
 
-      const selectedType = currentOptions.find((opt) => opt.id === newTypeId);
-
-      if (
-        selectedType &&
-        selectedType.nombre !== this.selectedTimeboxTypeName
-      ) {
-        this.selectedTimeboxTypeName = selectedType.nombre;
-      } else if (!selectedType && (newTypeId === null || newTypeId === '')) {
-        // Manejar el caso donde el input es nulo o vacío (ej. resetear el formulario)
-        this.selectedTimeboxTypeName = '';
-      }
+    const selectedType = this.opcionesCache.find((opt) => opt.id === id);
+    if (selectedType) {
+      this.selectedTimeboxTypeName = selectedType.nombre;
+      this.timeboxTypeChange.emit(selectedType.id);
     }
   }
 
@@ -147,15 +157,12 @@ export class SelectTimeboxTypeComponent implements OnInit, OnChanges {
   }
 
   selectOption(opcion: TimeboxType) {
-    // Receive the full TimeboxType object
     this.selectedTimeboxTypeName = opcion.nombre;
-    this.timeboxTypeChange.emit(opcion.id); // Emit the ID
+    this.timeboxTypeChange.emit(opcion.id);
     this.isDropdownOpen = false;
   }
 
-  // onChange is not used in your template for this component
   onChange(value: string) {
-    console.log(value);
     this.timeboxTypeChange.emit(value);
   }
 }

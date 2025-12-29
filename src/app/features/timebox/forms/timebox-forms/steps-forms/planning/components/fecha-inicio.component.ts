@@ -75,8 +75,11 @@ export class FechaInicioComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['fechaInicio']) {
       const newValue = changes['fechaInicio'].currentValue;
+      console.log('[FechaInicioComponent] nueva fechaInicio INPUT:', newValue);
+
       if (newValue) {
         const inputValue = this.toInputDateFormat(newValue);
+        console.log('[FechaInicioComponent] valor para <input type=date>:', inputValue);
         this.fechaControl.patchValue(inputValue, { emitEvent: false });
       }
     }
@@ -93,11 +96,15 @@ export class FechaInicioComponent implements OnInit, OnChanges {
 
   /** Muestra la fecha con tu formato, sin perder el día */
   formatDateDisplay(date: string): string {
-    // Si viene en formato 'YYYY-MM-DD', crearla manualmente como fecha local
+    // Si viene en formato 'YYYY-MM-DD' o 'YYYY-MM-DDTHH:mm:ssZ', normalizar primero
+    if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
+      date = date.split('T')[0]; // nos quedamos solo con la parte de fecha
+    }
+
     let localDate: Date;
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       const [y, m, d] = date.split('-').map(Number);
-      localDate = new Date(y, m - 1, d); // ⚠️ crea la fecha local sin UTC
+      localDate = new Date(y, m - 1, d);
     } else {
       localDate = new Date(date);
     }
@@ -106,11 +113,21 @@ export class FechaInicioComponent implements OnInit, OnChanges {
 
   /** Convierte una fecha en cualquier formato a 'YYYY-MM-DD' */
   private toInputDateFormat(date: string): string {
-    // Si ya viene como 'YYYY-MM-DD', la devolvemos igual
+    // 'YYYY-MM-DD'
     if (/^\d{4}-\d{2}-\d{2}$/.test(date)) {
       return date;
     }
+    // 'YYYY-MM-DDTHH:mm:ss.sssZ' u otra variante con 'T'
+    if (/^\d{4}-\d{2}-\d{2}T/.test(date)) {
+      return date.split('T')[0];
+    }
+
     const d = new Date(date);
+    if (isNaN(d.getTime())) {
+      console.warn('[FechaInicioComponent] fecha inválida recibida:', date);
+      return '';
+    }
+
     const year = d.getFullYear();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError, BehaviorSubject } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { Observable, of, throwError, BehaviorSubject, forkJoin } from 'rxjs';
+import { map, catchError, switchMap } from 'rxjs/operators';
 import { Entregable, Product } from '../../../shared/interfaces/product.interface';
 import { Timebox } from '../../../shared/interfaces/timebox.interface';
 import { ApiService } from '../../../shared/services/api.service';
@@ -16,58 +16,18 @@ export class ProductService {
     this.loadProductsFromApi();
   }
 
-  /** Normaliza el timebox del backend al modelo del frontend */
-  private mapBackendTimebox(tb: any): Timebox {
-    return {
-      id: tb.id,
-      tipoTimebox: tb.tipo_timebox_id,
-      businessAnalyst: undefined, // mapear si tienes datos
-      fases: {
-        planning: {
-          // Ajusta si el backend provee fechas específicas de planning
-          fechaInicio: tb.created_at ? new Date(tb.created_at).toISOString() : '',
-          fechaCompletado: '',
-          nombre: '',
-          codigo: '',
-          descripcion: '',
-          fechaFase: '',
-          eje: '',
-          aplicativo: '',
-          alcance: '',
-          esfuerzo: '',
-          skills: [],
-          completada: false
-        },
-        // kickOff/refinement/qa/close según disponibilidad en backend
-      },
-      entrega: undefined,
-      publicacionOferta: { solicitado: false },
-      entregableId: tb.entregable_id,
-      compensacionEconomica: {
-        skills: [],
-        esfuerzoHH: 0,
-        entregaAnticipada: { duracionEstimadaDias: 0, valorBase: 0 },
-      },
-      estado: tb.estado as Timebox['estado'],
-      parentTimeboxId: undefined,
-      timeboxsAsociados: [],
-      created_at: tb.created_at ? new Date(tb.created_at).toISOString() : undefined,
-    };
-  }
-
   /**
    * Transforma un timebox del formato del backend al formato del frontend
    */
   private transformTimeboxFromBackend(timebox: any): Timebox {
-    // console.log('🔍 transformTimeboxFromBackend - timebox recibido:', timebox);
     // console.log('🔍 transformTimeboxFromBackend - planning recibido:', timebox.fases?.planning);
     // console.log('🔍 transformTimeboxFromBackend - teamLeader recibido:', timebox.fases?.planning?.teamLeader);
-
+    // console.log('🔍 transformTimeboxFromBackend - entregableId recibido:', timebox.entregable_id);
     return {
       ...timebox,
       // Mapear campos del backend al frontend
       tipoTimebox: timebox.tipo_timebox_id || timebox.tipoTimebox,
-      entregableId: timebox.project_id || timebox.entregableId,
+      entregableId: timebox.entregable_id,
       // Asegurar que fases existe con estructura básica y mapear correctamente
       fases: timebox.fases
         ? {
@@ -86,6 +46,8 @@ export class ProductService {
                   skills: timebox.fases.planning.skills || [],
                   // El cumplimiento ya viene correctamente formateado desde la API
                   cumplimiento: timebox.fases.planning.cumplimiento || [],
+                  // Agrego entreble id para usarlo desde el modal
+                  entregableId: timebox.entregable_id || timebox.entregableId,
                 }
               : undefined,
             kickOff: timebox.fases.kickOff
@@ -353,20 +315,57 @@ export class ProductService {
    */
   getEntregablesDetailsByProduct(productId: string): Observable<Entregable[]> {
     return this.apiService
-      .getData<{ status: boolean; message: string; data: any[] }>(`/product/details/${productId}`)
+      .getData<{ status: boolean; message: string; data: any[] }>(
+        `/product/details/${productId}`
+      )
       .pipe(
-        map(resp => {
+        switchMap((resp) => {
           const data = resp?.data ?? [];
-          return data.map((e: any) => ({
+
+          // Entregables base SIN timeboxes aún
+          const baseEntregables = data.map((e: any) => ({
             id: e.id,
             nombre: e.nombre,
             tipo: e.tipo,
             descripcion: e.descripcion,
             productId: e.productId ?? e.project_id,
-            timeboxes: Array.isArray(e.timeboxes ?? e.items) 
-              ? (e.timeboxes ?? e.items).map((tb: any) => this.mapBackendTimebox(tb))
-              : [], // si el backend entrega los timeboxes aparte, ajusta aquí
-          })) as Entregable[];
+          }));
+
+          if (!baseEntregables.length) {
+            return of<Entregable[]>([]);
+          }
+
+          // Para cada entregable, traemos sus timeboxes con getTimeboxesByEntregableId
+          return forkJoin(
+            baseEntregables.map((ent) =>
+              this.getTimeboxesByEntregableId(ent.id).pipe(
+                map((tbs) => {
+                  // console.log(
+                  //   '📦 getTimeboxesByEntregableId',
+                  //   ent.id,
+                  //   ent.nombre,
+                  //   '→ timeboxes desde getTimeboxesByEntregableId:',
+                  //   tbs.map((tb) => ({
+                  //     id: tb.id,
+                  //     fechaInicio: tb.fases?.planning?.fechaInicio,
+                  //     entregableId: tb.entregableId,
+                  //   }))
+                  // );
+                  return {
+                    ...ent,
+                    timeboxes: tbs,
+                  } as Entregable;
+                })
+              )
+            )
+          );
+        }),
+        catchError((error) => {
+          console.error(
+            `Error obteniendo detalles de entregables del producto ${productId}:`,
+            error
+          );
+          return of<Entregable[]>([]);
         })
       );
   }

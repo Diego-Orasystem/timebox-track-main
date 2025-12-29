@@ -165,6 +165,15 @@ export class TimeboxService {
    * @returns El Timebox creado.
    */
   createTimebox(entregableId: string, initialTimeboxData: Timebox): Timebox {
+    console.log(
+      '📝 [TimeboxService.createTimebox] INPUT',
+      {
+        entregableId,
+        planning: initialTimeboxData?.fases?.planning,
+        fases: initialTimeboxData?.fases,
+      }
+    );
+
     const newTimebox: Timebox = {
       id: uuidv4(),
       entregableId: entregableId,
@@ -185,7 +194,27 @@ export class TimeboxService {
       },
     };
 
+    console.log(
+      '📝 [TimeboxService.createTimebox] NEW TIMEBOX (antes de estado)',
+      {
+        id: newTimebox.id,
+        entregableId: newTimebox.entregableId,
+        planning: newTimebox.fases?.planning,
+        fases: newTimebox.fases,
+      }
+    );
+
     newTimebox.estado = this.determineTimeboxState(newTimebox); // Determinar estado inicial
+
+    console.log(
+      '📝 [TimeboxService.createTimebox] NEW TIMEBOX (después de estado)',
+      {
+        id: newTimebox.id,
+        estado: newTimebox.estado,
+        planning: newTimebox.fases?.planning,
+      }
+    );
+
     this.registerOrUpdateTimebox(newTimebox, 'add'); // Registrarlo en la colección global
 
     return JSON.parse(JSON.stringify(newTimebox)); // Devuelve una copia
@@ -197,6 +226,15 @@ export class TimeboxService {
    * @returns El Timebox actualizado o null si no se encuentra.
    */
   updateTimebox(updatedTimeboxData: Timebox): Timebox | null {
+    console.log(
+      '📝 [TimeboxService.updateTimebox] INPUT updatedTimeboxData',
+      {
+        id: updatedTimeboxData?.id,
+        planning: updatedTimeboxData?.fases?.planning,
+        fases: updatedTimeboxData?.fases,
+      }
+    );
+
     const index = this.allTimeboxes.findIndex(
       (tb) => tb.id === updatedTimeboxData.id
     );
@@ -204,11 +242,25 @@ export class TimeboxService {
     if (index > -1) {
       const currentTb = this.allTimeboxes[index];
 
+      console.log(
+        '📝 [TimeboxService.updateTimebox] CURRENT timebox antes de merge',
+        {
+          id: currentTb.id,
+          planning: currentTb?.fases?.planning,
+          fases: currentTb?.fases,
+        }
+      );
+
       // Fusionar las fases y la entrega para mantener la granularidad
       const mergedFases = {
         ...currentTb.fases,
         ...updatedTimeboxData.fases,
       };
+
+      console.log(
+        '📝 [TimeboxService.updateTimebox] mergedFases',
+        { planning: mergedFases?.planning, mergedFases }
+      );
 
       const mergedEntrega = updatedTimeboxData.entrega
         ? { ...currentTb.entrega, ...updatedTimeboxData.entrega }
@@ -225,7 +277,26 @@ export class TimeboxService {
         entregableId: updatedTimeboxData.entregableId || currentTb.entregableId,
       };
 
+      console.log(
+        '📝 [TimeboxService.updateTimebox] mergedTb (antes de estado)',
+        {
+          id: mergedTb.id,
+          estadoPrevio: mergedTb.estado,
+          planning: mergedTb.fases?.planning,
+        }
+      );
+
       mergedTb.estado = this.determineTimeboxState(mergedTb); // Re-determinar el estado
+
+      console.log(
+        '📝 [TimeboxService.updateTimebox] mergedTb (después de estado)',
+        {
+          id: mergedTb.id,
+          estadoFinal: mergedTb.estado,
+          planning: mergedTb.fases?.planning,
+        }
+      );
+
       this.registerOrUpdateTimebox(mergedTb, 'update'); // Actualizar en la colección global
       return JSON.parse(JSON.stringify(mergedTb));
     } else {

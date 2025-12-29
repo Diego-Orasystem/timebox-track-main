@@ -117,26 +117,20 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     this.destroyGantt();
   }
 
-  onProjectChange(newProductId: string) {
-    console.debug('[Gantt] onProjectChange ->', newProductId);
+   onProjectChange(newProductId: string) {
     this.selectedProductId = newProductId;
-
-    // Fuerza recreación del modal de Entregable (ngOnInit vuelve a correr)
     this.remountEntregableModal();
-
     this.products$
       .pipe(
         map((products: Product[]) =>
           products.find((p) => p.id === this.selectedProductId)?.nombre || ''
         ),
-        take(1) // ← evita subs acumuladas
+        take(1)
       )
       .subscribe((projectName) => {
         this.selectedProjectName.set(projectName);
       });
-
     this.disabledButton = this.selectedProductId !== '' ? false : true;
-
     if (!newProductId) {
       this.timeboxes.set([]);
       this.entregablesForProduct = [];
@@ -152,7 +146,6 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       .pipe(takeUntil(this.destroyed$))
       .subscribe({
         next: (entregables: Entregable[]) => {
-          console.debug('[Gantt] entregables recibidos:', Array.isArray(entregables) ? entregables.length : 0);
           this.entregablesForProduct = Array.isArray(entregables) ? entregables : [];
 
           if (this.entregablesForProduct.length === 0) {
@@ -160,51 +153,19 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
             this.entregableTasksCache.clear();
             this.timeboxes.set([]);
             this.invalidLogSet.clear();
-            // No llames render aquí; el efecto se encarga
             return;
           }
 
-          const ids = this.entregablesForProduct.flatMap(e =>
-            (Array.isArray(e.timeboxes) ? e.timeboxes : []).map(tb => tb.id)
-          );
+          // Usar directamente los timeboxes que ya vienen en los entregables
+          this.entregableTimeboxes.clear();
+          const allDetailed: Timebox[] = [];
 
-          if (ids.length === 0) {
-            this.entregableTimeboxes.clear();
-            this.entregableTasksCache.clear();
-            this.timeboxes.set([]);
-            this.invalidLogSet.clear();
-            return;
-          }
-
-          forkJoin(ids.map(id => this.timeboxService.getTimebox(id)))
-            .pipe(takeUntil(this.destroyed$))
-            .subscribe({
-              next: (details) => {
-                const detailMap = new Map(details.filter(Boolean).map(d => [d!.id, d!]));
-
-                this.entregableTimeboxes.clear();
-                this.entregablesForProduct.forEach(e => {
-                  const detailed = (e.timeboxes || [])
-                    .map(tb => detailMap.get(tb.id))
-                    .filter(Boolean) as Timebox[];
-                  this.entregableTimeboxes.set(e.id, detailed);
-                });
-
-                const allDetailed = Array.from(this.entregableTimeboxes.values()).flat();
-
-                // Actualiza caches y señal una sola vez
-                this.updateTimeboxCaches(allDetailed);
-
-                // No llames render aquí; el efecto se encarga
-              },
-              error: (err) => {
-                console.error('Error obteniendo detalle de timeboxes:', err);
-                this.entregableTimeboxes.clear();
-                this.entregableTasksCache.clear();
-                this.timeboxes.set([]);
-                this.invalidLogSet.clear();
-              }
-            });
+          this.entregablesForProduct.forEach((e) => {
+            const tbs = (Array.isArray(e.timeboxes) ? e.timeboxes : []) as Timebox[];
+            this.entregableTimeboxes.set(e.id, tbs);
+            allDetailed.push(...tbs);
+          });
+          this.updateTimeboxCaches(allDetailed);
         },
         error: (err) => {
           console.error('Error cargando entregables del producto:', err);
@@ -218,10 +179,10 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       });
   }
 
+
   private updateTimeboxCaches(allDetailed: Timebox[]) {
     this.invalidLogSet.clear();
     this.entregableTasksCache.clear();
-
     // Cache tareas por entregable y log único por id sin fechas
     this.entregablesForProduct.forEach(e => {
       const tbs = this.entregableTimeboxes.get(e.id) || [];
@@ -299,18 +260,12 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   }
 
   private onTaskClick(task: { id: string }) {
-    // Garantizar detalle antes de abrir el modal
-    this.timeboxService.getTimebox(task.id)
-      .pipe(takeUntil(this.destroyed$))
-      .subscribe({
-        next: (tb) => {
-          if (!tb) return;
-          this.selectedTimebox = { ...tb };
-          this.modalMode = 'edit';
-          this.showModal = true;
-        },
-        error: (err) => console.error('Error obteniendo detalle de timebox:', err)
-      });
+    const all = this.timeboxes();
+    const tb = all.find((t) => t.id === task.id);
+
+    this.selectedTimebox = tb as Timebox;
+    this.modalMode = 'edit';
+    this.showModal = true;
   }
 
   openCreateModal() {

@@ -1,5 +1,13 @@
 import { CommonModule, NgIf, NgFor } from '@angular/common';
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { EntregableService } from '../../../../../services/entregable.service';
 import { Entregable } from '../../../../../../../shared/interfaces/product.interface';
@@ -16,7 +24,6 @@ import { Entregable } from '../../../../../../../shared/interfaces/product.inter
         (click)="toggleDropdown()"
       >
         <div class="w-full inline-flex gap-2 items-center">
-          <!-- Icono de Entregable (documento) -->
           <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
               d="M7 3h6l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
@@ -40,24 +47,19 @@ import { Entregable } from '../../../../../../../shared/interfaces/product.inter
           (click)="selectEntregable(e)"
           [title]="e.descripcion || e.nombre"
         >
-          <!-- Ícono según tipo -->
           <ng-container [ngSwitch]="e.tipo">
-            <!-- Release -->
             <svg *ngSwitchCase="'Release'" class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                d="M5 12h14M12 5v14" />
+                d="M5 3h14l-2 6 2 6H5l2-6-2-6z" />
             </svg>
-            <!-- Sprint -->
             <svg *ngSwitchCase="'Sprint'" class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 d="M4 7h11a4 4 0 0 1 0 8H7M4 7v10M7 21v-3" />
             </svg>
-            <!-- Milestone -->
             <svg *ngSwitchCase="'Milestone'" class="w-4 h-4 text-orange-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 d="M5 3h14l-2 6 2 6H5l2-6-2-6z" />
             </svg>
-            <!-- Default: documento -->
             <svg *ngSwitchDefault class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                 d="M7 3h6l5 5v13a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z" />
@@ -73,8 +75,7 @@ import { Entregable } from '../../../../../../../shared/interfaces/product.inter
     </div>
   `,
 })
-export class SelectEntregableComponent implements OnInit {
-  // Permite setear un entregable preseleccionado desde el padre
+export class SelectEntregableComponent implements OnInit, OnChanges {
   @Input() entregableId?: string | null;
   @Output() entregableChange = new EventEmitter<{ id: string; nombre: string }>();
 
@@ -82,26 +83,72 @@ export class SelectEntregableComponent implements OnInit {
   labelSeleccionado: string = '';
   isDropdownOpen = false;
 
+  // estado interno para coordinar lista + id
+  private entregablesLoaded = false;
+  private lastEntregableId: string | null = null;
+
   constructor(private entregableService: EntregableService) {}
 
   ngOnInit(): void {
+    console.log('[SelectEntregable] ngOnInit, entregableId inicial:', this.entregableId);
+
     this.entregableService.getAll().subscribe({
       next: (list) => {
         this.entregables = list || [];
-        // Si viene un ID preseleccionado, reflejarlo
-        if (this.entregableId) {
-          const pre = this.entregables.find((e) => e.id === this.entregableId);
-          if (pre) {
-            this.labelSeleccionado = pre.nombre;
-            this.entregableChange.emit({ id: pre.id, nombre: pre.nombre });
-          }
-        }
+        this.entregablesLoaded = true;
+
+        console.log(
+          '[SelectEntregable] lista cargada:',
+          this.entregables,
+          'entregableId actual:',
+          this.lastEntregableId ?? this.entregableId
+        );
+
+        this.tryApplyPreselected();
       },
       error: (err) => {
         console.error('Error cargando entregables:', err);
         this.entregables = [];
+        this.entregablesLoaded = true;
       },
     });
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['entregableId']) {
+      this.lastEntregableId = changes['entregableId'].currentValue ?? null;
+      console.log('[SelectEntregable] entregableId INPUT cambiado a:', this.lastEntregableId);
+      this.tryApplyPreselected();
+    }
+  }
+
+  private tryApplyPreselected(): void {
+    const id = this.lastEntregableId ?? this.entregableId ?? null;
+
+    console.log(
+      '[SelectEntregable] tryApplyPreselected → loaded:',
+      this.entregablesLoaded,
+      'id:',
+      id
+    );
+
+    if (!this.entregablesLoaded || !id) {
+      return;
+    }
+
+    const pre = this.entregables.find((e) => e.id === id);
+    if (pre) {
+      console.log('[SelectEntregable] preseleccionando entregable:', pre);
+      this.labelSeleccionado = pre.nombre;
+      this.entregableChange.emit({ id: pre.id, nombre: pre.nombre });
+    } else {
+      console.warn(
+        '[SelectEntregable] no se encontró entregable con id',
+        id,
+        'en la lista:',
+        this.entregables.map((e) => e.id)
+      );
+    }
   }
 
   toggleDropdown(): void {

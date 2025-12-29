@@ -33,6 +33,7 @@ export interface Timebox {
   parentTimeboxId?: string;
   timeboxsAsociados?: Timebox[];
   created_at?: string;
+  tipo_timebox_id?: string;
 }
 
 export interface CompensacionEconomica {

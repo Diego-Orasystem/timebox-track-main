@@ -4,7 +4,7 @@
 >
   <div class="actions flex flex-col gap-3 w-80 sticky top-6 self-start z-10">
     <app-select-entregable
-      [entregableId]="this.rootFormGroup.control.get('entregable')?.value"
+      [entregableId]="this.rootFormGroup.control.get('entregableId')?.value"
       (entregableChange)="onEntregableChange($event)"
     >
     </app-select-entregable>
@@ -544,7 +544,7 @@
           *ngIf="form.get('fechaInicio')?.value; else noInfo"
           class="text-xs text-[var(--darkText)]"
         >
-          {{ form.get("fechaInicio")?.value }}
+          {{  getFormattedDate(form.get("fechaInicio")?.value) }}
         </p>
       </div>
 

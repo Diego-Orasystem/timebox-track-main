@@ -97,7 +97,8 @@ export class FormsComponent implements OnInit {
   }
 
   getEntregableError(): string {
-    const entregable = this.form.get('entregable') as FormControl;
+    const entregable = this.form.get('entregableId') as FormControl;
+    console.log('[FormsComponent] entregableId control errors:', entregable.errors);
     let error = '';
     if (entregable.errors) {
       if (entregable.errors['required']) {
@@ -193,6 +194,7 @@ export class FormsComponent implements OnInit {
   createForm() {
     this.form = this.fb.group({
       entregable: ['', [Validators.required]],
+      entregableId: ['', [Validators.required]],
       tipoTimebox: ['', [Validators.required]],
       businessAnalyst: [''],
       estado: [''],
@@ -285,44 +287,41 @@ export class FormsComponent implements OnInit {
   patchFormValues(timebox: Timebox): void {
     this.resetFormArrays(); // Limpia los FormArrays antes de rellenarlos
 
-    // Mapear campos del backend al formulario
-    this.form.get('entregable')?.patchValue(timebox.entregableId);
-    this.form.get('tipoTimebox')?.patchValue(timebox.tipoTimebox);
+    const resolvedEntregableId: string =
+      timebox.entregableId ??
+      (timebox as any).entregable_id ??
+      (timebox as any).project_id ??
+      '';
+
+    const resolvedTipoTimebox: string =
+      timebox.tipoTimebox ??
+      (timebox as any).tipo_timebox_id ??
+      '';
+
+    console.log('[FormsComponent] patchFormValues → root ids:', {
+      entregableId: timebox.entregableId,
+      entregable_id: (timebox as any).entregable_id,
+      project_id: (timebox as any).project_id,
+      resolvedEntregableId,
+      tipoTimebox: timebox.tipoTimebox,
+      tipo_timebox_id: (timebox as any).tipo_timebox_id,
+      resolvedTipoTimebox,
+    });
+
+    this.form.patchValue({
+      entregable: resolvedEntregableId,
+      entregableId: resolvedEntregableId,
+      tipoTimebox: resolvedTipoTimebox,
+    });
+
     this.form.get('estado')?.patchValue(timebox.estado);
     this.form.get('created_at')?.patchValue(timebox.created_at);
+
     // Si hay datos de fases, usarlos; si no, inicializar con datos básicos
     if (timebox.fases) {
-      // Patch específico para planning con logging detallado
       if (timebox.fases.planning) {
-        // Hacer patch de todos los campos excepto arrays
-        const planningData = {
-          nombre: timebox.fases.planning.nombre || '',
-          codigo: timebox.fases.planning.codigo || '',
-          descripcion: timebox.fases.planning.descripcion || '',
-          eje: timebox.fases.planning.eje || '',
-          aplicativo: timebox.fases.planning.aplicativo || '',
-          alcance: timebox.fases.planning.alcance || '',
-          esfuerzo: timebox.fases.planning.esfuerzo || '',
-          adjuntos: timebox.fases.planning.adjuntos || [],
-          fechaInicio:
-            this.getFormattedDate(timebox.fases.planning.fechaInicio) || '',
-          teamLeader: timebox.fases.planning.teamLeader || null,
-          completada: timebox.fases.planning.completada || false,
-        };
-
-        this.form.get('planning')?.patchValue(planningData);
-
-        // Establecer tipoTimebox por separado
-        this.form.get('planning.tipoTimebox')?.setValue(timebox.tipoTimebox);
-        this.form.get('planning.entregable')?.setValue(timebox.entregableId);
-
-        // Verificar que se aplicó correctamente
-        setTimeout(() => {
-          console.log(
-            '🔍 Planning form after patch:',
-            this.form.get('planning')?.value
-          );
-        }, 100);
+        console.log('🔍 Patching planning phase:', timebox.fases.planning);
+        this.form.get('planning')?.patchValue(timebox.fases.planning);
       }
 
       this.form.get('kickOff')?.patchValue(timebox.fases.kickOff || {});
@@ -330,12 +329,11 @@ export class FormsComponent implements OnInit {
       this.form.get('qa')?.patchValue(timebox.fases.qa || {});
       this.form.get('close')?.patchValue(timebox.fases.close || {});
     } else {
-      // Inicializar con datos básicos del timebox
       const basicPlanningData = {
         nombre: '',
         codigo: '',
         descripcion: '',
-        tipoTimebox: timebox.tipoTimebox,
+        tipoTimebox: resolvedTipoTimebox,
         eje: '',
         aplicativo: '',
         alcance: '',
@@ -346,7 +344,7 @@ export class FormsComponent implements OnInit {
         skills: [],
         cumplimiento: [],
         completada: false,
-        entregable: timebox.entregableId,
+        entregable: resolvedEntregableId,
       };
       this.form.get('planning')?.patchValue(basicPlanningData);
     }
@@ -996,7 +994,10 @@ export class FormsComponent implements OnInit {
     publishTimebox: boolean
   ): void {
     const groupToUpdate = this.form.get(keyToUpdate) as FormGroup;
-
+    console.log(
+      `🔍 saveFormAndEmit: Procesando fase '${keyToUpdate}' con opciones:`,
+      { completePhase, advanceStep, publishTimebox }
+    );
     if (!groupToUpdate?.valid) {
       alert(
         `Formulario de ${keyToUpdate} inválido. Por favor, revisa los campos.`

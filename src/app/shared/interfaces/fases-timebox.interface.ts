@@ -19,6 +19,7 @@ export interface Planning {
   team_leader_nombre?: string;
   team_leader_id?: string;
   team_leader_json?: string | any;
+  entregableId?: string;
 }
 
 export interface KickOff {
