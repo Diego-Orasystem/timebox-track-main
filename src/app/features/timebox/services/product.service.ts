@@ -249,7 +249,7 @@ export class ProductService {
 
     return this.apiService
       .put<{ status: boolean; message: string; data: Timebox }>(
-        `/project/${entregableId}/timeboxes/${timebox.id}`,
+        `/product/${entregableId}/timeboxes/${timebox.id}`,
         timeboxData
       )
       .pipe(
@@ -293,7 +293,7 @@ export class ProductService {
 
     return this.apiService
       .post<{ status: boolean; message: string; data: Timebox }>(
-        `/project/${entregableId}/timeboxes`,
+        `/product/${entregableId}/timeboxes`,
         timeboxData
       )
       .pipe(

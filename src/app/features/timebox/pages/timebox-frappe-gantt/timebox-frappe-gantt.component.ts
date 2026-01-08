@@ -513,38 +513,22 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     this.modalMode = 'create'; // Resetea el modo a 'create' al cerrar
   }
 
-  handleTimeboxSave(timeboxFromModal: Timebox): void {
-    if (!this.selectedProductId) {
-      console.error('❌ No hay productId');
-      return;
-    }
+  handleTimeboxSave(tb: Timebox) {
+    const entregable = tb.entregableId ?? tb['entregableId'];
 
-    if (timeboxFromModal.id) {
-      this.productService
-        .updateTimebox(this.selectedProductId, timeboxFromModal) // usar productId
-        .subscribe({
-          next: (resultTimebox: Timebox) => {
-            this.onProjectChange(this.selectedProductId);
-          },
-          error: (error: any) => {
-            console.error('❌ Error actualizando timebox:', error);
-            alert('Error al actualizar el timebox. Inténtalo de nuevo.');
-          },
-        });
-    } else {
-      this.productService
-        .createTimebox(this.selectedProductId, timeboxFromModal) // usar productId
-        .subscribe({
-          next: (resultTimebox: Timebox) => {
-            this.selectedTimebox = { ...resultTimebox };
-            this.onProjectChange(this.selectedProductId);
-          },
-          error: (error: any) => {
-            console.error('Error creando timebox:', error);
-            alert('Error al crear el timebox. Inténtalo de nuevo.');
-          },
-        });
-    }
+    const payload: Omit<Timebox, 'id'> = {
+      ...tb,
+    } as any;
+    delete (payload as any).id;
+
+    const req$ = tb.id
+      ? this.productService.updateTimebox(entregable, tb)
+      : this.productService.createTimebox(entregable, payload);
+
+    req$.subscribe({
+      next: (saved) => console.log('✅ [Gantt] timebox guardado:', saved),
+      error: (err) => console.error('❌ [Gantt] error al guardar timebox:', err),
+    });
   }
 
   highlightTask(task: any) {

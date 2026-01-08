@@ -371,8 +371,13 @@ export class PlanningComponent implements OnInit, OnDestroy {
   }
 
  onEntregableChange(entregable: { id: string; nombre: string }) {
-    // Actualiza los controles raíz del form
+    console.log('[Planning] onEntregableChange →', entregable);
+
+    this.rootFormGroup.control.get('entregable')?.setValue(entregable.id);
     this.rootFormGroup.control.get('entregableId')?.setValue(entregable.id);
+
+    console.log('[Planning] root entregable:', this.rootFormGroup.control.get('entregable')?.value);
+    console.log('[Planning] root entregableId:', this.rootFormGroup.control.get('entregableId')?.value);
   }
   //Adjuntos
   showModalAdjuntos = false;

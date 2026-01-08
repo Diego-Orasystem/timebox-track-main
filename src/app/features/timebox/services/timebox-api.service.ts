@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { Timebox, TimeboxCategory, TimeboxType, Postulacion } from '../../../shared/interfaces/timebox.interface';
 import { Persona } from '../../../shared/interfaces/fases-timebox.interface';
 import { ApiService } from '../../../shared/services/api.service';
+import { map, tap, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -58,9 +60,50 @@ export class TimeboxApiService {
   /**
    * Crea un nuevo timebox
    */
-  createTimebox(timebox: Omit<Timebox, 'id'>): Observable<Timebox> {
-    return this.apiService.post<{status: boolean, message: string, data: Timebox}>('/timeboxes', timebox)
-      .pipe(map(response => response.data));
+ createTimebox(timebox: Omit<Timebox, 'id'>): Observable<Timebox> {
+    const startTime = performance.now();
+    console.log('🔹 [TimeboxApiService] createTimebox → payload a enviar:', timebox);
+
+    return this.apiService
+      .post<{ status: boolean; message: string; data: Timebox }>(
+        '/timeboxes',
+        timebox
+      )
+      .pipe(
+        tap((response) => {
+          const durationMs = performance.now() - startTime;
+          console.log('✅ [TimeboxApiService] createTimebox → respuesta bruta:', {
+            status: response.status,
+            message: response.message,
+            data: response.data,
+            durationMs,
+          });
+        }),
+        map((response) => response.data),
+        catchError((error: any) => {
+          const durationMs = performance.now() - startTime;
+
+          if (error instanceof HttpErrorResponse) {
+            console.error('❌ [TimeboxApiService] createTimebox → HttpErrorResponse', {
+              url: error.url,
+              status: error.status,
+              statusText: error.statusText,
+              message: error.message,
+              errorBody: error.error,
+              durationMs,
+              payload: timebox,
+            });
+          } else {
+            console.error('❌ [TimeboxApiService] createTimebox → error desconocido', {
+              error,
+              durationMs,
+              payload: timebox,
+            });
+          }
+
+          return throwError(() => error);
+        })
+      );
   }
 
   /**

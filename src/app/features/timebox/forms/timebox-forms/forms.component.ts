@@ -998,6 +998,29 @@ export class FormsComponent implements OnInit {
       `🔍 saveFormAndEmit: Procesando fase '${keyToUpdate}' con opciones:`,
       { completePhase, advanceStep, publishTimebox }
     );
+
+    // ⚠️ Validar también campos raíz cuando estamos en PLANNING
+    if (keyToUpdate === 'planning') {
+      const entregableIdCtrl = this.form.get('entregableId');
+      const tipoTimeboxCtrl = this.form.get('tipoTimebox');
+
+      entregableIdCtrl?.markAsTouched();
+      tipoTimeboxCtrl?.markAsTouched();
+      entregableIdCtrl?.updateValueAndValidity();
+      tipoTimeboxCtrl?.updateValueAndValidity();
+
+      if (entregableIdCtrl?.invalid || tipoTimeboxCtrl?.invalid) {
+        console.warn('[FormsComponent] saveFormAndEmit: entregableId/tipoTimebox inválidos', {
+          entregableId: entregableIdCtrl?.value,
+          tipoTimebox: tipoTimeboxCtrl?.value,
+          errorsEntregable: entregableIdCtrl?.errors,
+          errorsTipo: tipoTimeboxCtrl?.errors,
+        });
+        alert('Debes seleccionar un Entregable y un Tipo de timebox antes de guardar.');
+        return;
+      }
+    }
+
     if (!groupToUpdate?.valid) {
       alert(
         `Formulario de ${keyToUpdate} inválido. Por favor, revisa los campos.`
@@ -1047,7 +1070,7 @@ export class FormsComponent implements OnInit {
     const updatedTimebox: Timebox = {
       ...this.timeboxData, // Mantener los datos existentes del Timebox
       tipoTimebox: formValues.tipoTimebox,
-      entregableId: formValues.entregable,
+      entregableId: formValues.entregableId,
       // Fusionar las fases, asegurando que las sub-propiedades no se pierdan si son nulas en el formulario
       fases: {
         ...this.timeboxData.fases, // Mantener fases existentes
