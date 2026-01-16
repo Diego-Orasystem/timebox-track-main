@@ -34,6 +34,7 @@ export interface Timebox {
   timeboxsAsociados?: Timebox[];
   created_at?: string;
   tipo_timebox_id?: string;
+  orden?: number;
 }
 
 export interface CompensacionEconomica {

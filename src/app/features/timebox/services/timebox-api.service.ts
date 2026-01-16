@@ -123,6 +123,19 @@ export class TimeboxApiService {
   }
 
   /**
+   * Actualiza solo el campo de orden de un timebox
+   * Envía al backend el id del timebox y el número de orden.
+   */
+  updateTimeboxOrder(timeboxId: string, orden: number): Observable<Timebox> {
+    return this.apiService
+      .put<{ status: boolean; message: string; data: Timebox }>(
+        `/timeboxes/${timeboxId}/orden`,
+        { orden }
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  /**
    * Obtiene las categorías de timebox
    */
   getTimeboxCategories(): Observable<TimeboxCategory[]> {

@@ -19,10 +19,11 @@ import { map, takeUntil, take } from 'rxjs/operators';
 import Gantt from 'frappe-gantt';
 import { ProductService } from '../../services/product.service';
 import { Product, Entregable } from '../../../../shared/interfaces/product.interface';
-import { Timebox } from '../../../../shared/interfaces/timebox.interface';
-import { ModalCreateComponent } from '../../components/modal-create-timebox/modal-create.component';
-import { ModalCreateEntregableComponent } from '../../../entregable/components/modal-create-entregable/modal-create-entregable.component';
 import { TimeboxService } from '../../services/timebox.service';
+import { TimeboxApiService } from '../../services/timebox-api.service';
+import { ModalCreateEntregableComponent } from '../../../entregable/components/modal-create-entregable/modal-create-entregable.component';
+import { ModalCreateComponent } from '../../components/modal-create-timebox/modal-create.component';
+import { Timebox } from '../../../../shared/interfaces/timebox.interface';
 
 @Component({
   selector: 'app-timebox-frappe-gantt',
@@ -88,7 +89,8 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
 
   constructor(
     private productService: ProductService,
-    private timeboxService: TimeboxService
+      private timeboxService: TimeboxService,
+      private timeboxApiService: TimeboxApiService
   ) {
     effect(() => {
       const tasks = this.ganttTasks();
@@ -321,6 +323,7 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
     return {
       id: tb.id,
       name: taskName,
+      orden: tb.orden,
       start: start || this.getDefaultStartDate(),
       end: finalEnd || this.getDefaultEndDate(start),
       progress,
@@ -526,7 +529,6 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
       : this.productService.createTimebox(entregable, payload);
 
     req$.subscribe({
-      next: (saved) => console.log('✅ [Gantt] timebox guardado:', saved),
       error: (err) => console.error('❌ [Gantt] error al guardar timebox:', err),
     });
   }
@@ -577,7 +579,122 @@ export class TimeboxFrappeGanttComponent implements OnInit, AfterViewInit, OnDes
   // Helper: tareas por entregable usando los detalles
   getTasksForEntregable(entregableId: string): any[] {
     const tbs = this.entregableTimeboxes.get(entregableId) || [];
-    return tbs.map(tb => this.timeboxToGanttTask(tb));
+    // Usamos directamente el orden del array, que es el que
+    // vamos actualizando en moveTimebox. El campo `orden` se
+    // sigue enviando al backend, pero la vista respeta el orden
+    // manual definido por el usuario.
+    return tbs.map((tb) => this.timeboxToGanttTask(tb));
+  }
+
+  /**
+   * Cambia el orden de un timebox dentro del entregable (vista lateral)
+   * y envía al backend el id del timebox y el nuevo número de orden.
+   */
+  moveTimebox(entregableId: string, timeboxId: string, direction: 'up' | 'down'): void {
+    console.log('🔼🔽 [Gantt] moveTimebox click', {
+      entregableId,
+      timeboxId,
+      direction,
+    });
+
+    const list = this.entregableTimeboxes.get(entregableId);
+    if (!list || list.length < 2) {
+      console.warn('🔼🔽 [Gantt] Lista inválida o con menos de 2 timeboxes', {
+        length: list?.length ?? 0,
+      });
+      return;
+    }
+
+    const currentIndex = list.findIndex((tb) => tb.id === timeboxId);
+    console.log('🔼🔽 [Gantt] Índice actual', { currentIndex, total: list.length });
+    if (currentIndex === -1) {
+      console.warn('🔼🔽 [Gantt] Timebox no encontrado en la lista para mover');
+      return;
+    }
+
+    const newIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+
+    // No hacer nada si se intenta mover fuera de los límites
+    if (newIndex < 0 || newIndex >= list.length) {
+      console.warn('🔼🔽 [Gantt] Nuevo índice fuera de rango', { newIndex });
+      return;
+    }
+
+    const reordered = [...list];
+    const [moved] = reordered.splice(currentIndex, 1);
+    reordered.splice(newIndex, 0, moved);
+
+    console.log('🔼🔽 [Gantt] Lista reordenada en memoria', {
+      from: currentIndex,
+      to: newIndex,
+      ids: reordered.map((tb) => tb.id),
+    });
+
+    // Calcular qué timeboxes cambian de orden
+    const changedOrders = reordered
+      .map((tb, idx) => ({ tb, newOrden: idx + 1 }))
+      .filter(({ tb, newOrden }) => tb.orden !== newOrden);
+
+    // Actualizar el campo orden localmente
+    changedOrders.forEach(({ tb, newOrden }) => {
+      tb.orden = newOrden;
+    });
+
+    // Guardar la nueva lista en el mapa
+    this.entregableTimeboxes.set(entregableId, reordered);
+
+    // Reconstruir el arreglo completo para refrescar Gantt y caches
+    const allDetailed: Timebox[] = [];
+    this.entregablesForProduct.forEach((ent) => {
+      const tbs = this.entregableTimeboxes.get(ent.id) || [];
+      allDetailed.push(...tbs);
+    });
+    this.updateTimeboxCaches(allDetailed);
+
+    // Enviar cambios de orden al backend (id + nuevo orden)
+    changedOrders.forEach(({ tb, newOrden }) => {
+      if (!tb.id) {
+        return;
+      }
+
+      console.log('🔼🔽 [Gantt] Llamando API updateTimeboxOrder', {
+        timeboxId: tb.id,
+        orden: newOrden,
+      });
+
+      this.timeboxApiService.updateTimeboxOrder(tb.id, newOrden).subscribe({
+        next: () =>
+          console.log('✅ Orden de timebox actualizada en backend', {
+            timeboxId: tb.id,
+            orden: newOrden,
+          }),
+        error: (err) =>
+          console.error('❌ Error actualizando orden de timebox', {
+            timeboxId: tb.id,
+            orden: newOrden,
+            err,
+          }),
+      });
+    });
+  }
+
+  /**
+   * Handler explícito de clic para las flechas de orden en la plantilla.
+   * Detiene la propagación del evento de clic y delega en moveTimebox.
+   */
+  onArrowClick(
+    event: MouseEvent,
+    entregableId: string,
+    timeboxId: string,
+    direction: 'up' | 'down'
+  ): void {
+    console.log('🖱️ [Gantt] Arrow button click bruto', {
+      entregableId,
+      timeboxId,
+      direction,
+    });
+    event.stopPropagation();
+    this.moveTimebox(entregableId, timeboxId, direction);
   }
 
   // Agregar listener para cerrar tooltip al hacer click fuera
